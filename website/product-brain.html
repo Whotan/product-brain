@@ -223,6 +223,9 @@
     </div>
 
     <div class="callout"><p><strong>You don't write specs a special way.</strong> Use whatever style your team already likes — plain notes, RFCs, exported docs. Product Brain organizes them; it doesn't boss you around.</p></div>
+
+    <h2>The end of heavy technical documentation</h2>
+    <p>Keeping thick technical documents up to date — and reading through them to find one answer — used to be a real burden. It isn't anymore. In a world with capable LLMs and indexing tools like graphify, you can simply <strong>ask a question or request an explanation</strong> and get it, grounded in the real code and decisions. You no longer have to write and maintain heavy docs just so people can find things, or dig through pages to get unstuck. The knowledge that <em>is</em> worth writing down — your rules, your words, your "why" — stays small and human; everything else, you just ask.</p>
   </section>
 
   <!-- 02 PROBLEMS -->
@@ -288,6 +291,9 @@
     <h2>What "refresh" does</h2>
     <p>The refresh button is one command — <code>pb sync</code>. It gathers your apps' code and your hub's documents, then a tool called <a class="inline" href="https://pypi.org/project/graphifyy/" target="_blank">graphify</a> reads them and builds a <strong>map</strong> of how everything connects. After that, when you ask a question, Claude follows the map straight to the few relevant pieces — fast, and grounded in what's really there.</p>
     <p>You run refresh after meaningful changes (or set it to run automatically). That's the whole maintenance routine.</p>
+
+    <h2>Refreshing is fast after the first time</h2>
+    <p>The first refresh does the most work. After that, graphify remembers what it has already read (it fingerprints each file), so a refresh only re-reads what actually changed. Routine refreshes are quick and cheap — which makes it easy to run often, or schedule nightly, so the brain is never stale.</p>
 
     <h2>It reads more than text</h2>
     <p>You don't have to turn everything into tidy documents. graphify can read code, written docs (Markdown, PDFs, Word, spreadsheets), images, and even <strong>meeting recordings</strong> — it transcribes audio and video on your own machine. So a recorded kickoff call can become searchable knowledge sitting right next to the code it affects.</p>
@@ -381,7 +387,11 @@
   <!-- 06 SETUP -->
   <section class="section" id="setup">
     <h1>Setup guide</h1>
-    <p class="lead">About 15 minutes. You need someone who can run a couple of commands once; after that, anyone can use it.</p>
+    <p class="lead">About 15 minutes — and you can ask Claude to do every command for you.</p>
+
+    <div class="callout"><p><strong>Not technical? You're fine.</strong> You don't need to know git, Python, or how to install anything. Just ask Claude to do each step ("install the tools", "create the hub", "refresh") and it runs them and tells you what happened in plain words. The <em>only</em> step that might need a technical teammate, once, is creating the hub on GitHub and signing in the first time. Everything after setup is just asking questions — no commands at all.</p></div>
+
+    <p>The steps below show the commands for reference. If you're non-technical, read them as "things to ask Claude to do," not things you type.</p>
 
     <div class="step"><div class="num">1</div><div class="body"><h3>Install the two tools</h3>
       <p>graphify builds the map; Claude (Cowork or Claude Code) runs the wizard and answers questions.</p>
@@ -512,10 +522,6 @@ A single thing the user wants to get done.
     <div class="card"><h3>🔍 Researcher</h3>
       <p><strong>Goal:</strong> check whether we're using the best tools for each job.</p>
       <p><strong>What to test &amp; report:</strong> Is graphify the best map-builder? Are there better ways to keep the map fresh, or to detect drift? Share findings and alternatives.</p></div>
-
-    <div class="card"><h3>🏆 Stack Champion</h3>
-      <p><strong>Goal:</strong> own the experience for one language/framework (Python, Rails, Node, Go, …).</p>
-      <p><strong>What to test &amp; report:</strong> Best source folders to include, common gotchas, and a short "works great on X" guide.</p></div>
 
     <div class="card"><h3>✍️ Template Author</h3>
       <p><strong>Goal:</strong> improve a doc-type template (spec, decision, meeting note) or add a new one.</p>

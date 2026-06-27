@@ -116,15 +116,22 @@ def _copy_hardlink(src: Path, dst: Path):
                         dirs_exist_ok=True)
 
 
-def run_graphify(ws: Path, out: Path, dry: bool):
+def run_graphify(ws: Path, out: Path, dry: bool, rebuild: bool):
     cmd = ["graphify", str(ws), "--out", str(out)]
+    cache = out / "cache"
     if dry:
         log("would run: " + " ".join(cmd))
+        log("cache: would " + ("clear (full rebuild)" if rebuild else "reuse" if cache.exists() else "create"))
         return
     if not have("graphify"):
         die("graphify not found on PATH. Install it: pip install graphifyy")
     out.mkdir(parents=True, exist_ok=True)
-    log("run: " + " ".join(cmd))
+    if rebuild and cache.exists():
+        log("clearing graphify cache for a full rebuild…")
+        shutil.rmtree(cache, ignore_errors=True)
+    elif cache.exists():
+        # graphify fingerprints each file by content hash; unchanged files are skipped.
+        log("incremental build — reusing graphify cache (unchanged files are skipped)")
     run(cmd)
 
 
@@ -157,7 +164,7 @@ def write_report(hub: Path, cfg: dict, out: Path, dry: bool):
     log(f"wrote {report.relative_to(hub)}")
 
 
-def cmd_sync(hub: Path, dry: bool):
+def cmd_sync(hub: Path, dry: bool, rebuild: bool):
     cfg = load_config(hub)
     repos = cfg.get("repos", [])
     out = hub / cfg.get("graph", {}).get("out", "graph/")
@@ -168,7 +175,7 @@ def cmd_sync(hub: Path, dry: bool):
     pull_repos(hub, repos, dry)
     log("assembling workspace…")
     ws = assemble_workspace(hub, repos, dry)
-    run_graphify(ws, out, dry)
+    run_graphify(ws, out, dry, rebuild)
     write_report(hub, cfg, out, dry)
     log("done." if not dry else "dry-run complete (nothing written).")
 
@@ -194,8 +201,9 @@ def main():
     p = argparse.ArgumentParser(prog="pb", description="Product Brain hub CLI")
     p.add_argument("--hub", default=".", help="path to the hub repo (default: current dir)")
     sub = p.add_subparsers(dest="cmd", required=True)
-    s = sub.add_parser("sync", help="pull repos and (re)build the graph")
+    s = sub.add_parser("sync", help="pull repos and (re)build the graph (incremental by default)")
     s.add_argument("--dry-run", action="store_true", help="show the plan without writing or running graphify")
+    s.add_argument("--rebuild", action="store_true", help="clear the graphify cache and rebuild everything from scratch")
     sub.add_parser("status", help="show hub health at a glance")
     args = p.parse_args()
 
@@ -203,7 +211,7 @@ def main():
     if not hub.exists():
         die(f"hub path does not exist: {hub}")
     if args.cmd == "sync":
-        cmd_sync(hub, args.dry_run)
+        cmd_sync(hub, args.dry_run, args.rebuild)
     elif args.cmd == "status":
         cmd_status(hub)
 

@@ -30,6 +30,29 @@ Determine whether you're operating **on an existing hub** (a `brain.config.json`
 
 ---
 
+## Who runs the commands (important — many users are non-technical)
+
+Assume the user may be a PM or other non-technical person who does **not** know git, does not have
+Python/pip installed, and has never handled repo authentication. Do not ask them to run commands
+they won't understand. Instead:
+
+- **You (Claude) run the commands for them.** When a step needs `pip`, `graphify`, `pb sync`, or
+  `git` (add/commit), run it yourself in the shell and report the result in plain language. Never
+  hand a non-technical user a command to paste unless they ask for it.
+- **Check the toolbox first, fix gaps quietly.** Before relying on a tool, check it exists:
+  `command -v python3 pip3 git graphify`. If `graphify` is missing, install it for them
+  (`pip install graphifyy --break-system-packages`). If Python/pip itself is missing, tell them in
+  one friendly sentence what to install (or that a teammate can), and offer to continue with
+  everything that doesn't need it.
+- **The one thing that may need a technical teammate, once:** creating the hub repository on a host
+  (GitHub/GitLab) and signing in the first time (SSH keys / auth). If that's not set up, you can
+  still create the hub as a local folder and do everything else; note that pushing to a shared host
+  is a one-time setup a teammate can help with.
+- **After setup, there are no commands to learn.** The user just talks to you. Make that explicit:
+  "From here on, you don't need any commands — just ask me questions."
+
+---
+
 ## Step 1 — Audit
 
 Run these checks in a single bash call. The hub root is the current directory.
@@ -97,7 +120,7 @@ H → Write role workflows
 
 ### Phase A — Stand up the hub
 
-If there's no `brain.config.json`, this is a new hub. Confirm the hub is (or will be) **its own git repo** — it's the single source of truth and benefits from PR review and history.
+If there's no `brain.config.json`, this is a new hub. The hub should be **its own git repo** — the single source of truth, with history and review. If the user isn't comfortable with git or hosting, don't block on it: create the hub as a local folder and `git init` it for them now, and note that connecting it to a shared host (GitHub/GitLab) is a one-time step a teammate can do later. Run any `git` commands yourself.
 
 Copy `brain.config.template.json` to `brain.config.json` and fill it in by asking:
 1. "What's the hub name?"
@@ -107,6 +130,10 @@ Copy `brain.config.template.json` to `brain.config.json` and fill it in by askin
 Create `docs/<type>/` for each registered type, plus `graph/` and a `.gitignore` ignoring `.work/`.
 
 ### Phase B — Install graphify
+
+Run this **for** the user (don't ask them to). First confirm Python/pip exist
+(`command -v python3 pip3`); if they don't, tell the user in one sentence what to install or that a
+teammate can, and continue with steps that don't need it.
 
 ```bash
 pip install graphifyy --break-system-packages && graphify --version
@@ -137,6 +164,12 @@ Confirm the doc types in `brain.config.json`. Offer the shipped templates (`spec
 ```
 
 If a `pb` CLI isn't available yet, perform the steps directly: clone/pull each repo into `.work/repos/<id>`, then run graphify over the assembled paths into `graph/`. Report node/edge counts, communities, and thin areas. Keep `.work/` so `source_file` chunk lookups keep working.
+
+**Re-syncs are cheap.** graphify fingerprints every file by content hash and caches results under
+`graph/cache/`, so a later `pb sync` only re-reads what changed — never delete `graph/cache/`
+between runs. The first sync costs the most; routine refreshes are fast. Use `pb sync --rebuild`
+only when you deliberately want a full rebuild. Run `pb sync` yourself for the user, and suggest
+scheduling it (e.g. nightly) so the graph stays fresh with no one having to remember.
 
 ### Phase F — Map domains (recommended, graph-assisted)
 
