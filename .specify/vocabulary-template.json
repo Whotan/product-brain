@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "updated": "",
+  "terms": [
+    {
+      "canonical": "ExampleEntity",
+      "aliases": ["example entity", "example", "thing"],
+      "context": "Brief description of what this entity represents in the domain",
+      "source": "app/Models/ExampleEntity.php"
+    }
+  ]
+}
