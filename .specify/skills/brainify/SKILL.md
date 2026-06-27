@@ -71,6 +71,9 @@ fi
 
 # 9. CLAUDE.md has framework section?
 grep -l "Product Brain" CLAUDE.md 2>/dev/null | wc -l | tr -d ' '
+
+# 10. Domain map present?
+test -f .specify/memory/domains.md && wc -l < .specify/memory/domains.md | tr -d ' ' || echo "MISSING"
 ```
 
 ---
@@ -89,6 +92,7 @@ Render as a table. Be concise. Use ✅ / ⚠️ / ❌ with a one-line note per i
 | 4 — Spec templates | `spec-template.md` | ✅/❌ | |
 | 5 — Feature specs | Spec count | ✅/⚠️/❌ | Show count |
 | 6 — Claude config | CLAUDE.md framework section | ✅/❌ | |
+| 7 — Domain map | `.specify/memory/domains.md` | ✅/⚠️/❌ | Show line count; ⚠️ if < 30 lines |
 
 Rules:
 - ✅ = present and healthy
@@ -121,6 +125,7 @@ Phase D → Write the constitution
 Phase E → Build the vocabulary map
 Phase F → Add framework section to CLAUDE.md
 Phase G → Create the first feature spec
+Phase H → Detect domains & spec core features
 ```
 
 ---
@@ -404,7 +409,138 @@ If no specs exist yet, offer to start one. This is the highest-value first actio
 > 
 > Want to start with domain discovery?"
 
-If yes → run graphify query to list communities → present as candidate domains → ask user to pick one → use speckit-specify skill.
+If yes → proceed to Phase H (domain detection & specification).
+
+---
+
+
+---
+
+## Phase H: Domain Detection & Core Feature Specification
+
+This phase maps the product's functional domains from the knowledge graph, documents each one, and guides the user to write a core feature spec per domain.
+
+### Step H1 — Detect domains from the graph
+
+If `graphify-out/graph.json` exists, run:
+
+```bash
+python3 -c "
+import json, sys
+data = json.load(open('graphify-out/graph.json'))
+communities = data.get('communities', [])
+if not communities:
+    # fall back to node-type clustering
+    nodes = data.get('nodes', [])
+    types = {}
+    for n in nodes:
+        t = n.get('type', 'unknown')
+        types.setdefault(t, []).append(n.get('id', ''))
+    for t, members in sorted(types.items(), key=lambda x: -len(x[1]))[:10]:
+        print(f'{t} ({len(members)} entities): {members[:4]}')
+    sys.exit()
+for i, c in enumerate(communities[:15]):
+    name = c.get('label', c.get('name', f'Community {i+1}'))
+    members = c.get('members', c.get('nodes', []))
+    print(f'Domain {i+1}: {name} ({len(members)} entities)')
+    for m in (members[:5] if isinstance(members[0], str) else [n.get('id','') for n in members[:5]]):
+        print(f'  - {m}')
+    if len(members) > 5:
+        print(f'  ... and {len(members)-5} more')
+"
+```
+
+Present the results as a numbered list of candidate domains. If the graph isn't available, ask the user:
+> "No knowledge graph found. Can you list the main functional areas of this product? (e.g., Scheduling, Billing, Identity, Notifications)"
+
+### Step H2 — Confirm and name domains
+
+Show the candidate list and ask:
+> "These look like the main domains — does this match how you think about the product? Add, remove, or rename any before we document them."
+
+Wait for confirmation. Work from the agreed list.
+
+### Step H3 — Interview per domain
+
+For each domain, ask these questions **one at a time**, then move to the next domain. Tag answers H3a–H3f.
+
+**H3a — Product name**
+> "What's the business/product name for this domain? (e.g., code says `Appointment`, product calls it 'Sessions')"
+
+**H3b — Responsibility**
+> "In one sentence: what is [domain] responsible for?"
+
+**H3c — Core features**
+> "What are the 3–5 core features this domain provides to end users?"
+
+**H3d — Boundaries**
+> "What does this domain NOT do — what's explicitly out of scope?"
+
+**H3e — Owner**
+> "Who owns this domain? (team name, squad, or person)"
+
+**H3f — Status**
+> "Is this domain: stable / actively evolving / partially built / planned?"
+
+Collect all answers for a domain before moving on. Do not write anything until all domains are interviewed.
+
+### Step H4 — Write the domain map
+
+Write `.specify/memory/domains.md`:
+
+```markdown
+# Domain Map
+
+**Version**: 1.0.0
+**Last Updated**: [date]
+
+---
+
+## [Domain Name]
+
+**Responsibility**: [H3b]
+**Owner**: [H3e]
+**Status**: [H3f]
+
+**Core Features**:
+- [feature from H3c]
+- ...
+
+**Out of scope**: [H3d]
+
+**Key entities** (from graph): [top 5 node names from the detected community]
+
+---
+
+## [Next Domain]
+...
+```
+
+After saving:
+> "Domain map written to `.specify/memory/domains.md`. I'll use this as a reference when you ask about what different parts of the product do."
+
+### Step H5 — Offer core feature specs
+
+After the domain map is saved:
+
+> "You've documented [N] domains. The highest-value next step is to write a spec for the most important core feature in each domain — this gives Claude and your team a shared reference for what each domain is supposed to do.
+>
+> Which domain should we start with?"
+
+For the chosen domain, list the core features named in H3c. Ask which one to spec first. Then invoke the `speckit-specify` skill for that feature.
+
+After each spec is drafted: "Want to continue to the next domain, or stop here for now?"
+
+Repeat until the user stops or all domains have a spec.
+
+### Domain map checklist
+
+Before marking Phase H complete, verify:
+
+- [ ] All agreed domains have an entry in `domains.md`
+- [ ] Each entry has responsibility, owner, status, and core features filled
+- [ ] At least one core feature spec exists (or is in progress) per domain
+- [ ] Domain names in `domains.md` match the vocabulary in `vocabulary.json` (update vocabulary if not)
 
 ---
 
@@ -420,7 +556,8 @@ Layer              Status
 Knowledge graph    ✅ Built (NNN nodes, NNN edges)
 Governance         ✅ Constitution v1.0.0
 Vocabulary         ✅ NN terms mapped
-Spec coverage      NN specs
+Domain map         ✅ NN domains documented
+Spec coverage      NN specs (NN domains)
 Claude config      ✅ CLAUDE.md updated
 
 Next recommended action: [highest-value next step]
@@ -441,7 +578,11 @@ When the user asks this at any point after setup, run a lightweight re-audit (ju
 | Constitution missing | "Write the constitution — it prevents misaligned specs and code" |
 | Constitution < 20 lines | "The constitution looks thin — let's flesh out the principles" |
 | Vocabulary missing | "Build the vocabulary map — it bridges code and product language" |
-| No specs, has graph | "Start documenting domains — query the graph for top communities and write the first spec" |
+| Domain map missing, has graph | "Map your product domains — I'll query the graph for communities and guide you through Phase H" |
+| Domain map missing, no graph | "Name your product's main functional areas — I'll document them as domains in `.specify/memory/domains.md`" |
+| Domain map thin (< 30 lines) | "The domain map looks incomplete — let's finish documenting the remaining domains" |
+| Domains documented, no specs | "Start speccing core features — pick a domain and I'll open speckit-specify for its top feature" |
+| No specs, has graph | "Start documenting domains — run Phase H to detect communities and write the first specs" |
 | Has specs, no plan | "Run speckit-plan on spec [name]" |
 | Has plan, no tasks | "Run speckit-tasks to generate the implementation task list" |
 | Everything green | "Run speckit-converge on your last completed spec to check for drift" |
