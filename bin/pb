@@ -8,10 +8,11 @@ Usage:
 
 `pb sync` builds one knowledge graph over your hub's docs + the code repos it tracks:
   1. read brain.config.json
-  2. clone/pull each repo into .work/repos/<id>
-  3. assemble a workspace (core docs + docs/ + each repo's source dirs)
-  4. run graphify over the workspace into the graph/ folder
-  5. write graph/sync-report.md
+  2. pull the hub's own latest changes (safe: only if git repo + upstream + clean tree)
+  3. clone/pull each tracked repo into .work/repos/<id>
+  4. assemble a workspace (core docs + docs/ + each repo's source dirs)
+  5. run graphify over the workspace into the graph/ folder (incremental via cache)
+  6. write graph/sync-report.md
 
 No third-party Python packages required. Needs `git` and `graphify` on PATH
 (`pip install graphifyy`).
@@ -49,6 +50,26 @@ def have(tool: str) -> bool:
 
 def run(cmd, **kw):
     return subprocess.run(cmd, check=True, **kw)
+
+
+def pull_hub(hub: Path, dry: bool):
+    """Pull the hub's own latest changes first — but only when it's safe."""
+    if not (hub / ".git").exists():
+        log("hub pull: skipped (hub is not a git repo)")
+        return
+    up = subprocess.run(["git", "-C", str(hub), "rev-parse", "--abbrev-ref",
+                         "--symbolic-full-name", "@{u}"], capture_output=True, text=True)
+    if up.returncode != 0:
+        log("hub pull: skipped (no upstream/remote configured)")
+        return
+    dirty = subprocess.run(["git", "-C", str(hub), "status", "--porcelain"],
+                           capture_output=True, text=True).stdout.strip()
+    if dirty:
+        log("hub pull: skipped (you have uncommitted changes — commit or stash to enable)")
+        return
+    log("hub pull: fetching teammates' latest hub changes…")
+    if not dry:
+        run(["git", "-C", str(hub), "pull", "--ff-only", "--quiet"])
 
 
 def pull_repos(hub: Path, repos: list, dry: bool):
@@ -164,7 +185,7 @@ def write_report(hub: Path, cfg: dict, out: Path, dry: bool):
     log(f"wrote {report.relative_to(hub)}")
 
 
-def cmd_sync(hub: Path, dry: bool, rebuild: bool):
+def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool):
     cfg = load_config(hub)
     repos = cfg.get("repos", [])
     out = hub / cfg.get("graph", {}).get("out", "graph/")
@@ -172,6 +193,8 @@ def cmd_sync(hub: Path, dry: bool, rebuild: bool):
     log(f"{len(repos)} repo(s): {', '.join(r['id'] for r in repos) or '(none)'}")
     if not have("git"):
         die("git not found on PATH.")
+    if hub_pull:
+        pull_hub(hub, dry)
     pull_repos(hub, repos, dry)
     log("assembling workspace…")
     ws = assemble_workspace(hub, repos, dry)
@@ -204,6 +227,7 @@ def main():
     s = sub.add_parser("sync", help="pull repos and (re)build the graph (incremental by default)")
     s.add_argument("--dry-run", action="store_true", help="show the plan without writing or running graphify")
     s.add_argument("--rebuild", action="store_true", help="clear the graphify cache and rebuild everything from scratch")
+    s.add_argument("--no-hub-pull", action="store_true", help="don't pull the hub's own latest changes first")
     sub.add_parser("status", help="show hub health at a glance")
     args = p.parse_args()
 
@@ -211,7 +235,7 @@ def main():
     if not hub.exists():
         die(f"hub path does not exist: {hub}")
     if args.cmd == "sync":
-        cmd_sync(hub, args.dry_run, args.rebuild)
+        cmd_sync(hub, args.dry_run, args.rebuild, not args.no_hub_pull)
     elif args.cmd == "status":
         cmd_status(hub)
 

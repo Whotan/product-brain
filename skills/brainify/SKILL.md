@@ -1,6 +1,6 @@
 ---
 name: brainify
-description: Set up and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", or "what should I do next" in a Product Brain context.
+description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
 ---
 
 # Skill: Brainify
@@ -27,6 +27,23 @@ and meeting recordings) are welcome as source material too.
 One sentence: "Auditing this Product Brain hub — checking the required core, config, doc types, and graph freshness." Don't lecture about the framework.
 
 Determine whether you're operating **on an existing hub** (a `brain.config.json` is present) or **creating a new one**.
+
+---
+
+## Quick action — refresh / update the brain
+
+If the user just wants to **update or refresh** (phrases like "update me", "update the brain",
+"refresh", "sync the graph", "pull the latest"), don't run the whole setup flow — just do the
+refresh **for them** and report the result:
+
+1. Run `pb sync` from the hub (use `bin/pb --hub <hub> sync`). It (a) pulls the hub's own latest
+   changes, (b) pulls each tracked app repo, and (c) rebuilds the graph incrementally using the
+   graphify cache, so it's fast.
+2. If `pb` isn't on PATH, run it via its path in the framework repo, or perform the steps directly.
+3. Report in plain language: what was pulled, and the new graph stats (nodes/edges) from
+   `graph/sync-report.md`. Then invite the next question.
+
+Use `pb sync --rebuild` only if the user explicitly wants a full rebuild from scratch.
 
 ---
 
@@ -158,9 +175,10 @@ Confirm the doc types in `brain.config.json`. Offer the shipped templates (`spec
 `pb sync` builds one graph over the hub docs + the pulled code repos:
 
 ```bash
-# 1. pull/refresh each repo from brain.config.json into .work/repos/<id>
-# 2. run graphify over a workspace = { constitution.md, vocabulary.md, domains.md, docs/**, .work/repos/** }
-# 3. write graph/graph.json + graph/GRAPH_REPORT.md
+# 1. pull the hub's own latest changes (safe: only if git repo + upstream + clean tree)
+# 2. pull/refresh each tracked repo from brain.config.json into .work/repos/<id>
+# 3. run graphify over a workspace = { constitution.md, vocabulary.md, domains.md, docs/**, .work/repos/** }
+# 4. write graph/graph.json + graph/GRAPH_REPORT.md
 ```
 
 If a `pb` CLI isn't available yet, perform the steps directly: clone/pull each repo into `.work/repos/<id>`, then run graphify over the assembled paths into `graph/`. Report node/edge counts, communities, and thin areas. Keep `.work/` so `source_file` chunk lookups keep working.

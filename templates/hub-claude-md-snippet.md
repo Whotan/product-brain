@@ -35,7 +35,8 @@ Use `vocabulary.md` terms when answering. When code uses a different word than t
 ### Recognized commands
 
 - "Set up product brain" / "audit our setup" → run the `brainify` skill.
-- "Sync the graph" / "rebuild the graph" → run `pb sync`.
+- "Update me" / "update the brain" / "refresh" / "sync the graph" / "pull the latest" → run `pb sync` (it pulls the hub's latest changes, pulls the tracked app repos, and rebuilds the graph incrementally), then report what changed.
+- "Rebuild the graph from scratch" → `pb sync --rebuild`.
 - "What domains do we have?" → read `domains.md` / query graph communities.
 - "Write a spec for X" → copy `templates/spec-template.md` (or our chosen format) into `docs/specs/`.
 

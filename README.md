@@ -104,10 +104,15 @@ Make a new git repo for your hub and run Claude in it:
 The `pb` CLI ships in this repo under `bin/pb`. Run it from your hub:
 
 ```bash
-/path/to/product-brain/bin/pb --hub . sync     # pull repos, build one graph over docs + code
+/path/to/product-brain/bin/pb --hub . sync     # pull the hub + tracked repos, rebuild the graph
 /path/to/product-brain/bin/pb --hub . status   # quick health check
 pb sync --dry-run                               # preview the plan without running graphify
+pb sync --rebuild                               # ignore the cache and rebuild from scratch
 ```
+
+`pb sync` first pulls the hub's own latest changes (only when it's a clean git repo with an upstream),
+then pulls each tracked app repo, then rebuilds the graph **incrementally** — graphify caches by
+content hash, so only changed files are re-read. Use `--no-hub-pull` to skip the hub pull.
 
 Tip: add `bin/` to your `PATH` (or symlink `bin/pb` into `/usr/local/bin`) so you can just type `pb sync`.
 

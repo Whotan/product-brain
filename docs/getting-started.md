@@ -52,8 +52,9 @@ key words, your product's main areas — and writes the files for you. You revie
 is final until you say so.
 
 ### 5. Refresh
-Ask Claude: **"Refresh the brain."** It pulls your apps and builds the map. The first time takes a
-minute or two; after that it's quick, because it only re-reads what changed.
+Ask Claude: **"Update me"** or **"Refresh the brain."** It pulls everyone's latest hub changes and
+your apps' latest code, then rebuilds the map. The first time takes a minute or two; after that it's
+quick, because it only re-reads what changed.
 
 ### 6. Ask anything
 That's it. From now on, you and your teammates just ask questions:
@@ -65,6 +66,7 @@ That's it. From now on, you and your teammates just ask questions:
 
 ## Handy things to say to Claude
 
+- "Update me" / "Refresh the brain." (pulls the latest and rebuilds the map)
 - "Add a new doc type called `retros`."
 - "Add a term to the glossary: a 'Reminder' is a scheduled nudge; in code it's `NotificationJob`."
 - "Write a spec for password reset using our template."
