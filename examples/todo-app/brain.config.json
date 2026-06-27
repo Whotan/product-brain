@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "hub_name": "todo-brain",
+  "repos": [
+    { "id": "todo-api", "url": "git@github.com:example/todo-api.git", "src": ["app/"] },
+    { "id": "todo-web", "url": "git@github.com:example/todo-web.git", "src": ["src/"] }
+  ],
+  "doc_types": ["specs", "decisions", "meeting-notes"],
+  "graph": { "out": "graph/" }
+}

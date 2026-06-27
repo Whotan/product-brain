@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Product Brain</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --sidebar-bg: #1e293b;
-    --sidebar-width: 260px;
+    --sidebar-width: 270px;
     --accent: #6366f1;
     --accent-light: #818cf8;
     --accent-bg: #eef2ff;
@@ -19,2399 +19,414 @@
     --card-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
     --code-bg: #0f172a;
     --code-color: #e2e8f0;
+    --ok: #16a34a; --warn: #d97706; --no: #dc2626;
   }
-  html { font-family: 'Inter', sans-serif; font-size: 16px; color: var(--text); }
+  html { font-family: 'Inter', sans-serif; font-size: 16px; color: var(--text); scroll-behavior: smooth; }
   body { display: flex; min-height: 100vh; background: #f8fafc; }
 
-  /* ── SIDEBAR ── */
-  #sidebar {
-    position: fixed; top: 0; left: 0; width: var(--sidebar-width);
-    height: 100vh; background: var(--sidebar-bg); color: #fff;
-    display: flex; flex-direction: column; z-index: 100; overflow-y: auto;
-    transition: transform .3s ease;
-  }
-  #sidebar-header {
-    padding: 24px 20px 16px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
-  }
-  #sidebar-header .logo {
-    font-size: 13px; font-weight: 600; letter-spacing: .05em;
-    text-transform: uppercase; color: var(--accent-light);
-    margin-bottom: 4px;
-  }
-  #sidebar-header h2 { font-size: 15px; font-weight: 600; line-height: 1.4; color: #f1f5f9; }
+  /* Sidebar */
+  #sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh;
+    background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+  #sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  #sidebar-header .logo { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-light); }
+  #sidebar-header h2 { font-size: 18px; font-weight: 700; margin-top: 4px; color: #f1f5f9; }
+  #sidebar-header .ver { font-size: 11px; color: #64748b; margin-top: 6px; }
   nav { padding: 12px 0; flex: 1; }
-  nav a {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 20px; color: #94a3b8; font-size: 14px; font-weight: 500;
-    text-decoration: none; cursor: pointer; transition: all .15s;
-    border-left: 3px solid transparent;
-  }
+  nav a { display: flex; align-items: center; gap: 10px; padding: 9px 20px; color: #94a3b8; font-size: 14px; font-weight: 500;
+    text-decoration: none; cursor: pointer; transition: all .15s; border-left: 3px solid transparent; }
   nav a:hover { color: #fff; background: rgba(255,255,255,.05); }
   nav a.active { color: #fff; background: rgba(99,102,241,.18); border-left-color: var(--accent); }
-  nav a .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-  nav a .nav-num {
-    font-size: 11px; font-weight: 700; color: #475569;
-    background: rgba(255,255,255,.06); border-radius: 4px;
-    padding: 1px 5px; margin-left: auto; flex-shrink: 0;
-  }
+  nav a .nav-num { font-size: 11px; font-weight: 700; color: #475569; background: rgba(255,255,255,.06);
+    border-radius: 4px; padding: 1px 6px; margin-left: auto; }
   nav a.active .nav-num { color: var(--accent-light); background: rgba(99,102,241,.25); }
-  #sidebar-footer {
-    padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.08);
-    font-size: 12px; color: #475569;
-  }
-  #sidebar-footer span { color: #64748b; }
+  #sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.08); font-size: 12px; color: #64748b; }
 
-  /* mobile toggle */
-  #sidebar-toggle {
-    display: none; position: fixed; top: 14px; left: 14px; z-index: 200;
-    background: var(--sidebar-bg); border: none; color: #fff; border-radius: 8px;
-    padding: 8px 10px; cursor: pointer; font-size: 18px;
-  }
-  #sidebar-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90;
-  }
+  #sidebar-toggle { display: none; position: fixed; top: 14px; left: 14px; z-index: 200; background: var(--sidebar-bg);
+    border: none; color: #fff; border-radius: 8px; padding: 8px 11px; cursor: pointer; font-size: 18px; }
+  #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90; }
 
-  /* ── MAIN ── */
-  #main {
-    margin-left: var(--sidebar-width); flex: 1; min-height: 100vh;
-    padding: 48px 40px; display: flex; justify-content: center;
-  }
-  .content-wrap { width: 100%; max-width: 900px; }
-
-  /* ── SECTIONS ── */
+  /* Main */
+  #main { margin-left: var(--sidebar-width); flex: 1; min-height: 100vh; padding: 48px 40px; display: flex; justify-content: center; }
+  .content-wrap { width: 100%; max-width: 880px; }
   .section { display: none; animation: fadeIn .25s ease; }
   .section.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ── TYPOGRAPHY ── */
-  h1 { font-size: 2.25rem; font-weight: 700; line-height: 1.2; color: var(--text); }
-  h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
-  h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-  h4 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  h1 { font-size: 2.1rem; font-weight: 800; line-height: 1.2; margin-bottom: 10px; }
+  h2 { font-size: 1.4rem; font-weight: 700; margin: 34px 0 12px; }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 22px 0 8px; }
   p { line-height: 1.7; color: #334155; margin-bottom: 14px; }
-  p:last-child { margin-bottom: 0; }
-  ul, ol { padding-left: 20px; }
-  li { line-height: 1.7; color: #334155; margin-bottom: 4px; }
+  ul, ol { padding-left: 22px; margin-bottom: 14px; }
+  li { line-height: 1.7; color: #334155; margin-bottom: 5px; }
   strong { font-weight: 600; color: var(--text); }
+  a.inline { color: var(--accent); text-decoration: none; font-weight: 500; }
+  a.inline:hover { text-decoration: underline; }
+  .lead { font-size: 1.12rem; color: #475569; margin-bottom: 8px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em;
+    background: #eef2ff; color: #4338ca; padding: 1px 6px; border-radius: 5px; }
+  pre { background: var(--code-bg); color: var(--code-color); border-radius: 12px; padding: 18px 20px;
+    overflow-x: auto; margin: 14px 0; font-size: 13px; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: 13px; }
 
-  /* ── HERO ── */
-  .hero {
-    background: linear-gradient(135deg, #1e293b 0%, #312e81 100%);
-    border-radius: 16px; padding: 56px 48px; margin-bottom: 40px; color: #fff;
-  }
-  .hero .hero-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(99,102,241,.3); border: 1px solid rgba(99,102,241,.5);
-    border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600;
-    color: #a5b4fc; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 20px;
-  }
-  .hero h1 { color: #fff; margin-bottom: 16px; font-size: 2.5rem; }
-  .hero p { color: #cbd5e1; font-size: 1.125rem; max-width: 520px; margin-bottom: 28px; }
-  .hero-cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
-    text-decoration: none; cursor: pointer; transition: all .15s; border: none;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #4f46e5; }
-  .btn-ghost { background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.2); }
-  .btn-ghost:hover { background: rgba(255,255,255,.18); }
+  /* Hero */
+  .hero { background: linear-gradient(135deg, #1e293b 0%, #312e81 100%); border-radius: 18px; padding: 52px 44px; margin-bottom: 36px; color: #fff; }
+  .hero-badge { display: inline-flex; gap: 6px; background: rgba(99,102,241,.3); border: 1px solid rgba(99,102,241,.5);
+    border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; color: #a5b4fc; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 18px; }
+  .hero h1 { color: #fff; font-size: 2.4rem; }
+  .hero p { color: #cbd5e1; font-size: 1.12rem; max-width: 600px; margin-top: 14px; }
 
-  /* ── SECTION HEADER ── */
-  .section-header { margin-bottom: 32px; }
-  .section-header .breadcrumb {
-    font-size: 12px; font-weight: 600; color: var(--accent);
-    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px;
-  }
-  .section-header p { font-size: 1.0625rem; color: var(--text-muted); margin-top: 8px; }
+  /* Cards & layout helpers */
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; box-shadow: var(--card-shadow); margin-bottom: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .card h3 { margin-top: 0; }
+  .card .ico { font-size: 22px; margin-bottom: 6px; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .04em; }
+  .pill.core { background: #dcfce7; color: #166534; }
+  .pill.ext { background: #e0e7ff; color: #3730a3; }
+  .pill.def { background: #fef3c7; color: #92400e; }
 
-  /* ── CARDS ── */
-  .card {
-    background: #fff; border: 1px solid var(--border); border-radius: 12px;
-    padding: 24px; box-shadow: var(--card-shadow);
-  }
-  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 40px; }
-  .problem-card { position: relative; overflow: hidden; }
-  .problem-card::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-    width: 4px; border-radius: 4px 0 0 4px;
-  }
-  .problem-card.c1::before { background: #f59e0b; }
-  .problem-card.c2::before { background: #8b5cf6; }
-  .problem-card.c3::before { background: #06b6d4; }
-  .problem-card.c4::before { background: #ec4899; }
-  .problem-card.c5::before { background: #ef4444; }
-  .problem-card.c6::before { background: #10b981; }
-  .problem-card .icon { font-size: 28px; margin-bottom: 10px; }
-  .problem-card h3 { font-size: 15px; }
-  .problem-card p { font-size: 13px; color: var(--text-muted); }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; background: #fff;
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: #f8fafc; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-muted); }
+  tr:last-child td { border-bottom: none; }
 
-  /* ── HOW IT WORKS ── */
-  .how-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-bottom: 40px; }
-  .how-step {
-    text-align: center; padding: 32px 24px;
-    background: #fff; border: 1px solid var(--border);
-    position: relative;
-  }
-  .how-step:first-child { border-radius: 12px 0 0 12px; }
-  .how-step:last-child { border-radius: 0 12px 12px 0; }
-  .how-step + .how-step { border-left: none; }
-  .how-step .step-num {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 700; margin: 0 auto 14px;
-  }
-  .how-step h3 { font-size: 16px; margin-bottom: 8px; }
-  .how-step p { font-size: 13px; color: var(--text-muted); margin: 0; }
-  .arrow {
-    position: absolute; right: -18px; top: 50%; transform: translateY(-50%);
-    z-index: 1; color: var(--accent); font-size: 22px;
-  }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-bg); border-radius: 0 10px 10px 0; padding: 14px 18px; margin: 16px 0; }
+  .callout.warn { border-left-color: var(--warn); background: #fffbeb; }
+  .callout p { margin: 0; color: #3730a3; }
+  .callout.warn p { color: #92400e; }
 
-  /* ── ROLE QUICK START ── */
-  .role-links { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 40px; }
-  .role-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--accent-bg); color: var(--accent);
-    border: 1px solid #c7d2fe; border-radius: 20px;
-    padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: all .15s;
-  }
-  .role-chip:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .step { display: flex; gap: 16px; margin-bottom: 18px; }
+  .step .num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .step .body { flex: 1; }
+  .step .body h3 { margin-top: 3px; }
 
-  /* ── PROBLEM DETAIL ── */
-  .problem-detail { margin-bottom: 40px; }
-  .problem-detail-header {
-    display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
-  }
-  .problem-detail-header .icon-big {
-    width: 52px; height: 52px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; flex-shrink: 0;
-  }
-  .symptom-box {
-    background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px;
-    padding: 16px 20px; margin: 16px 0;
-  }
-  .symptom-box .label { font-size: 11px; font-weight: 700; color: #c2410c; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-  .cost-box {
-    background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;
-    padding: 16px 20px; margin: 16px 0;
-  }
-  .cost-box .label { font-size: 11px; font-weight: 700; color: #b91c1c; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-  .example-box {
-    background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px;
-    padding: 16px 20px; margin: 16px 0;
-  }
-  .example-box .label { font-size: 11px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .diagram { background: #0f172a; color: #cbd5e1; border-radius: 14px; padding: 26px; font-family: ui-monospace, monospace;
+    font-size: 12.5px; line-height: 1.65; white-space: pre; overflow-x: auto; margin: 16px 0; }
 
-  /* ── SOLUTION STACK ── */
-  .solution-components { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
-  .solution-component { padding: 24px; }
-  .solution-component .comp-num {
-    width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
-    color: #fff; font-size: 13px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
-  }
-  .solution-component h3 { font-size: 16px; margin-bottom: 6px; }
-  .solution-component .install-badge {
-    display: inline-block; background: var(--code-bg); color: #a5f3fc;
-    font-family: monospace; font-size: 12px; border-radius: 6px;
-    padding: 3px 10px; margin-bottom: 10px;
-  }
-  .solution-component p { font-size: 13px; color: var(--text-muted); margin: 0; }
-
-  /* arch diagram */
-  .arch-diagram {
-    background: #fff; border: 1px solid var(--border); border-radius: 12px;
-    padding: 32px; margin-bottom: 32px; text-align: center;
-  }
-  .arch-diagram h3 { margin-bottom: 24px; }
-  .arch-row { display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: wrap; }
-  .arch-box {
-    background: var(--accent-bg); border: 2px solid var(--accent);
-    border-radius: 10px; padding: 14px 20px; min-width: 130px;
-    text-align: center;
-  }
-  .arch-box .ab-icon { font-size: 22px; margin-bottom: 4px; }
-  .arch-box .ab-name { font-size: 13px; font-weight: 700; color: var(--accent); }
-  .arch-box .ab-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .arch-arrow { font-size: 24px; color: #94a3b8; padding: 0 8px; }
-  .arch-center {
-    background: #1e293b; border: 2px solid #475569;
-    border-radius: 10px; padding: 14px 24px;
-    color: #fff; margin: 0 12px;
-  }
-  .arch-center .ab-icon { font-size: 22px; margin-bottom: 4px; }
-  .arch-center .ab-name { font-size: 13px; font-weight: 700; color: #a5b4fc; }
-  .arch-center .ab-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
-
-  /* matrix table */
-  .matrix-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-size: 14px; }
-  .matrix-table th {
-    background: #f8fafc; border: 1px solid var(--border);
-    padding: 10px 14px; font-weight: 600; text-align: left; font-size: 13px;
-  }
-  .matrix-table td { border: 1px solid var(--border); padding: 10px 14px; }
-  .matrix-table tr:hover td { background: #f8fafc; }
-  .check { color: var(--accent); font-size: 18px; font-weight: 700; text-align: center; }
-  .dash { color: #cbd5e1; text-align: center; }
-  .partial { color: #f59e0b; text-align: center; font-size: 14px; }
-
-  /* principle box */
-  .principle-box {
-    background: linear-gradient(135deg, var(--accent-bg), #f0f9ff);
-    border: 1px solid #c7d2fe; border-radius: 12px;
-    padding: 20px 24px; margin-bottom: 24px;
-  }
-  .principle-box .p-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
-  .principle-box p { font-size: 1.0625rem; font-weight: 600; color: var(--text); font-style: italic; margin: 0; }
-
-  /* ── SETUP GUIDE ── */
-  .phase {
-    background: #fff; border: 1px solid var(--border); border-radius: 12px;
-    margin-bottom: 24px; overflow: hidden;
-  }
-  .phase-header {
-    display: flex; align-items: center; gap: 16px;
-    padding: 20px 24px; background: #f8fafc; border-bottom: 1px solid var(--border);
-  }
-  .phase-num {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 700; flex-shrink: 0;
-  }
-  .phase-header h3 { margin: 0; font-size: 16px; }
-  .phase-header .time-badge {
-    margin-left: auto; background: #dcfce7; color: #15803d;
-    font-size: 12px; font-weight: 600; border-radius: 12px;
-    padding: 3px 10px; flex-shrink: 0;
-  }
-  .phase-body { padding: 24px; }
-  .phase-body p { margin-bottom: 12px; }
-
-  /* code block */
-  pre {
-    background: var(--code-bg); color: var(--code-color);
-    border-radius: 8px; padding: 16px 20px; overflow-x: auto;
-    font-family: 'Menlo', 'Monaco', 'Consolas', monospace; font-size: 13px;
-    line-height: 1.6; margin: 12px 0;
-  }
-  code {
-    font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
-    font-size: .875em;
-  }
-  p code, li code {
-    background: #f1f5f9; color: #6366f1; border-radius: 4px;
-    padding: 1px 6px; font-size: .875em;
-  }
-  .code-comment { color: #64748b; }
-  .code-key { color: #38bdf8; }
-  .code-str { color: #86efac; }
-  .code-num { color: #fb923c; }
-  .code-bash-cmd { color: #fbbf24; }
-
-  /* dir tree */
-  .dir-tree {
-    background: var(--code-bg); color: var(--code-color);
-    border-radius: 8px; padding: 16px 20px; font-family: monospace;
-    font-size: 13px; line-height: 1.8; margin: 12px 0;
-  }
-  .dir-tree .dt-dir { color: #38bdf8; }
-  .dir-tree .dt-file { color: #e2e8f0; }
-  .dir-tree .dt-comment { color: #64748b; }
-
-  /* info note */
-  .note {
-    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
-    padding: 12px 16px; font-size: 13px; color: #1e40af; margin: 12px 0;
-    display: flex; gap: 10px;
-  }
-  .note .note-icon { flex-shrink: 0; }
-
-  /* ── ROLE TABS ── */
-  .tab-bar { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 28px; overflow-x: auto; }
-  .tab-btn {
-    padding: 10px 18px; font-size: 14px; font-weight: 500; color: var(--text-muted);
-    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
-    white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none;
-    transition: all .15s;
-  }
-  .tab-btn:hover { color: var(--accent); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; animation: fadeIn .2s ease; }
-  .role-section { margin-bottom: 28px; }
-  .role-section h4 {
-    font-size: 13px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .06em; color: var(--accent); margin-bottom: 10px;
-  }
-  .checklist { list-style: none; padding: 0; }
-  .checklist li {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px;
-  }
-  .checklist li:last-child { border-bottom: none; }
-  .checklist li::before {
-    content: '→'; color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 1px;
-  }
-
-  /* ── WORKFLOWS ── */
-  .workflow { margin-bottom: 40px; }
-  .workflow-header {
-    display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
-  }
-  .workflow-num {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 700; flex-shrink: 0;
-  }
-  .workflow-title { font-size: 1.125rem; font-weight: 700; font-family: inherit; }
-  .workflow-steps { list-style: none; padding: 0; counter-reset: wf; }
-  .workflow-steps li {
-    display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start;
-  }
-  .workflow-steps li::before {
-    counter-increment: wf;
-    content: counter(wf);
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--accent-bg); color: var(--accent);
-    font-size: 12px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
-  }
-  .workflow-steps li .step-content { flex: 1; }
-  .workflow-steps li .step-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-  .workflow-steps li .step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-  .wf-example {
-    background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;
-    padding: 12px 16px; margin-top: 8px; font-size: 13px; color: #166534;
-  }
-
-  /* ── HYGIENE ── */
-  .hygiene-section { margin-bottom: 32px; }
-  .hygiene-section h3 {
-    font-size: 14px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .06em; color: var(--text-muted); margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .hygiene-section h3::before {
-    content: ''; display: block; width: 3px; height: 16px;
-    background: var(--accent); border-radius: 2px;
-  }
-  .hygiene-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  .hygiene-table td { border: 1px solid var(--border); padding: 10px 14px; vertical-align: top; }
-  .hygiene-table tr:nth-child(even) td { background: #f8fafc; }
-  .hygiene-table .cb { width: 32px; text-align: center; color: var(--accent); }
-  .trigger-list { list-style: none; padding: 0; }
-  .trigger-list li {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 14px; border-bottom: 1px solid var(--border);
-    font-size: 14px;
-  }
-  .trigger-list li:last-child { border-bottom: none; }
-  .trigger-list li::before { content: '⚡'; }
-
-  /* ── FAQ ── */
-  .faq-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
-  .faq-q {
-    width: 100%; display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px; background: #fff; cursor: pointer;
-    font-size: 15px; font-weight: 600; color: var(--text);
-    text-align: left; border: none; gap: 12px;
-  }
-  .faq-q:hover { background: #f8fafc; }
-  .faq-q .faq-arrow { color: var(--accent); font-size: 18px; flex-shrink: 0; transition: transform .25s; }
-  .faq-item.open .faq-q .faq-arrow { transform: rotate(180deg); }
-  .faq-a {
-    max-height: 0; overflow: hidden;
-    transition: max-height .3s ease, padding .3s ease;
-    background: #fafafa; border-top: 0 solid var(--border);
-  }
-  .faq-item.open .faq-a {
-    max-height: 400px; padding: 16px 20px;
-    border-top: 1px solid var(--border);
-  }
-  .faq-a p { font-size: 14px; margin: 0; }
-
-  /* ── WHY THIS ── */
-  .why-section { margin-bottom: 36px; }
-  .why-section h3 { margin-bottom: 12px; font-size: 1.125rem; }
-  .alt-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
-  .alt-table th {
-    background: #f8fafc; border: 1px solid var(--border);
-    padding: 8px 12px; font-weight: 600; text-align: left;
-  }
-  .alt-table td { border: 1px solid var(--border); padding: 8px 12px; vertical-align: top; }
-  .alt-table .verdict-no { color: #ef4444; }
-  .verdict-yes { color: #10b981; font-weight: 600; }
-  .timeline { list-style: none; padding: 0; position: relative; }
-  .timeline::before {
-    content: ''; position: absolute; left: 15px; top: 0; bottom: 0;
-    width: 2px; background: var(--border);
-  }
-  .timeline li {
-    position: relative; padding: 0 0 20px 44px; margin: 0;
-  }
-  .timeline li::before {
-    content: ''; position: absolute; left: 8px; top: 6px;
-    width: 16px; height: 16px; border-radius: 50%;
-    background: var(--accent); border: 3px solid #fff;
-    box-shadow: 0 0 0 2px var(--accent);
-  }
-  .timeline li .tl-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-  .timeline li .tl-desc { font-size: 13px; color: var(--text-muted); }
-  .honest-box {
-    background: #fefce8; border: 1px solid #fde68a; border-radius: 10px;
-    padding: 20px 24px;
-  }
-  .honest-box h4 { color: #92400e; margin-bottom: 10px; }
-  .honest-box li { color: #78350f; font-size: 14px; }
-
-  /* divider */
-  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
-
-  /* badge */
-  .badge {
-    display: inline-block; border-radius: 12px; padding: 3px 10px;
-    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
-  }
-  .badge-indigo { background: var(--accent-bg); color: var(--accent); }
-  .badge-green { background: #dcfce7; color: #15803d; }
-  .badge-amber { background: #fef3c7; color: #92400e; }
-  .badge-red { background: #fee2e2; color: #b91c1c; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
-    #sidebar { transform: translateX(-100%); }
+  @media (max-width: 860px) {
+    #sidebar { transform: translateX(-100%); transition: transform .3s ease; }
     #sidebar.open { transform: translateX(0); }
-    #sidebar-overlay.open { display: block; }
     #sidebar-toggle { display: block; }
-    #main { margin-left: 0; padding: 60px 20px 32px; }
-    .hero { padding: 32px 24px; }
-    .hero h1 { font-size: 1.75rem; }
-    .how-steps { grid-template-columns: 1fr; }
-    .how-step { border-radius: 0 !important; }
-    .how-step:first-child { border-radius: 12px 12px 0 0 !important; border-bottom: none; }
-    .how-step:last-child { border-radius: 0 0 12px 12px !important; border-top: none; }
-    .how-step + .how-step { border-left: 1px solid var(--border); border-top: none; }
-    .solution-components { grid-template-columns: 1fr; }
-    .card-grid { grid-template-columns: 1fr; }
-    .arch-row { flex-direction: column; }
-    .arch-arrow { transform: rotate(90deg); }
+    #sidebar.open ~ #sidebar-overlay { display: block; }
+    #main { margin-left: 0; padding: 70px 20px 40px; }
+    .grid2, .grid3 { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<button id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation">☰</button>
-<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<button id="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
 
 <aside id="sidebar">
   <div id="sidebar-header">
-    <div class="logo">Framework Docs</div>
-    <h2>Product Brain</h2>
+    <div class="logo">🧠 Product Brain</div>
+    <h2>Documentation</h2>
+    <div class="ver">Architecture v0.2 · method-agnostic</div>
   </div>
-  <nav>
-    <a class="active" onclick="showSection('home')">
-      <span class="nav-icon">🏠</span> Home <span class="nav-num">1</span>
-    </a>
-    <a onclick="showSection('problems')">
-      <span class="nav-icon">⚠️</span> The Problems <span class="nav-num">2</span>
-    </a>
-    <a onclick="showSection('solution')">
-      <span class="nav-icon">🧩</span> Solution Stack <span class="nav-num">3</span>
-    </a>
-    <a onclick="showSection('setup')">
-      <span class="nav-icon">⚙️</span> Setup Guide <span class="nav-num">4</span>
-    </a>
-    <a onclick="showSection('roles')">
-      <span class="nav-icon">👥</span> Role Guides <span class="nav-num">5</span>
-    </a>
-    <a onclick="showSection('workflows')">
-      <span class="nav-icon">🔄</span> Workflows <span class="nav-num">6</span>
-    </a>
-    <a onclick="showSection('hygiene')">
-      <span class="nav-icon">🧹</span> Hygiene &amp; Maintenance <span class="nav-num">7</span>
-    </a>
-    <a onclick="showSection('faq')">
-      <span class="nav-icon">❓</span> FAQ <span class="nav-num">8</span>
-    </a>
-    <a onclick="showSection('why')">
-      <span class="nav-icon">💡</span> Why This Approach <span class="nav-num">9</span>
-    </a>
-    <a onclick="showSection('contribute')">
-      <span class="nav-icon">🤝</span> Contribute <span class="nav-num">10</span>
-    </a>
-    <a onclick="showSection('open-problems')">
-      <span class="nav-icon">🚧</span> Open Problems <span class="nav-num">11</span>
-    </a>
+  <nav id="nav">
+    <a data-sec="overview" class="active"><span>Overview</span><span class="nav-num">01</span></a>
+    <a data-sec="problems"><span>Problems it solves</span><span class="nav-num">02</span></a>
+    <a data-sec="how"><span>How it works</span><span class="nav-num">03</span></a>
+    <a data-sec="hub"><span>Anatomy of a hub</span><span class="nav-num">04</span></a>
+    <a data-sec="agnostic"><span>Method-agnostic</span><span class="nav-num">05</span></a>
+    <a data-sec="graph"><span>Graph &amp; formats</span><span class="nav-num">06</span></a>
+    <a data-sec="roles"><span>Roles &amp; lenses</span><span class="nav-num">07</span></a>
+    <a data-sec="setup"><span>Setup guide</span><span class="nav-num">08</span></a>
+    <a data-sec="example"><span>Example: a to-do app</span><span class="nav-num">09</span></a>
+    <a data-sec="open"><span>Open problems</span><span class="nav-num">10</span></a>
+    <a data-sec="faq"><span>FAQ</span><span class="nav-num">11</span></a>
   </nav>
-  <div id="sidebar-footer">
-    
-    <span>v1.0 · 2025</span>
-  </div>
+  <div id="sidebar-footer">Open framework · Markdown-first · multi-repo</div>
 </aside>
+<div id="sidebar-overlay" onclick="document.getElementById('sidebar').classList.remove('open')"></div>
 
-<main id="main">
-<div class="content-wrap">
+<main id="main"><div class="content-wrap">
 
-<!-- ══════════════════════════════════════════ 1. HOME ══ -->
-<section id="home" class="section active">
-  <div class="hero">
-    <div class="hero-badge">🧠 Framework</div>
-    <h1>Product Brain</h1>
-    <p>Stop losing knowledge. Start shipping with confidence.</p>
-    <div class="hero-cta-row">
-      <button class="btn btn-primary" onclick="showSection('setup')">Get Started →</button>
-      <button class="btn btn-ghost" onclick="showSection('problems')">See the Problems</button>
+  <!-- 01 OVERVIEW -->
+  <section class="section active" id="overview">
+    <div class="hero">
+      <span class="hero-badge">🧠 Single source of truth</span>
+      <h1>One brain for your whole product.</h1>
+      <p>Product Brain keeps specs, vocabulary, domains, and decisions in one place — connected to your code across every repo, answerable by Claude, and authored in whatever method your team already uses.</p>
     </div>
-  </div>
 
-  <div class="section-header">
-    <div class="breadcrumb">The Six Problems</div>
-    <h2>What breaks without this system</h2>
-    <p>Every team hits these walls. Most just absorb the pain indefinitely.</p>
-  </div>
+    <p class="lead">Knowledge stops being a guest inside each code repo. It becomes its own product: a <strong>hub</strong> that holds what your team knows, pulls in your code repos, and builds a single knowledge graph you can ask anything.</p>
 
-  <div class="card-grid">
-    <div class="card problem-card c1">
-      <div class="icon">📄</div>
-      <h3>Documentation Gap</h3>
-      <p>Specs don't exist or were written two product iterations ago. No one trusts them.</p>
-    </div>
-    <div class="card problem-card c2">
-      <div class="icon">🧠</div>
-      <h3>Institutional Knowledge</h3>
-      <p>The engineer who built the auth system left six months ago. Why does it work this way?</p>
-    </div>
-    <div class="card problem-card c3">
-      <div class="icon">🔍</div>
-      <h3>Codebase Understanding</h3>
-      <p>500 files. Where do you start? What's important? What's dead code?</p>
-    </div>
-    <div class="card problem-card c4">
-      <div class="icon">🔤</div>
-      <h3>Vocabulary Mismatch</h3>
-      <p>"Session" in the clinical docs. "Appointment" in the database. Same thing. Different world.</p>
-    </div>
-    <div class="card problem-card c5">
-      <div class="icon">🌊</div>
-      <h3>Ripple Effect</h3>
-      <p>One change, unknown blast radius. Which specs, services, and test cases does it touch?</p>
-    </div>
-    <div class="card problem-card c6">
-      <div class="icon">🔗</div>
-      <h3>Multi-App Queries</h3>
-      <p>Mobile app + API + web dashboard — three repos, disconnected knowledge, one question.</p>
-    </div>
-  </div>
+    <div class="diagram">                 ┌────────────────────────────────────┐
+                 │            your hub repo           │   ← single source of truth
+                 │ constitution · vocabulary · domains│
+                 │ docs/ (specs, decisions, notes, …) │
+                 │ graph/ (built over docs + code)    │
+                 └───────────────┬────────────────────┘
+                       pb sync   │  pulls code, builds one graph
+                 ┌───────────────┴───────────────┐
+                 ▼                                ▼
+          ┌─────────────┐                 ┌──────────────┐
+          │   web-app   │                 │  backend-api │   ← your code repos
+          │ (untouched) │                 │  (untouched) │      (nothing added)
+          └─────────────┘                 └──────────────┘</div>
 
-  <div class="section-header">
-    <div class="breadcrumb">The Method</div>
-    <h2>How it works in three steps</h2>
-  </div>
-
-  <div class="how-steps">
-    <div class="how-step" style="position:relative">
-      <div class="step-num">1</div>
-      <h3>Graph</h3>
-      <p>Build a structural knowledge graph of your entire codebase with AST-based parsing. No LLM required for code.</p>
-      <span class="arrow">→</span>
-    </div>
-    <div class="how-step" style="position:relative">
-      <div class="step-num">2</div>
-      <h3>Govern</h3>
-      <p>Structure your specs, vocabulary, and constitution with Speckit. Enforce principles and canonical terms.</p>
-      <span class="arrow">→</span>
-    </div>
-    <div class="how-step">
-      <div class="step-num">3</div>
-      <h3>Query</h3>
-      <p>Ask Claude anything about your product. It navigates the graph, reads targeted files, reasons across the whole system.</p>
-    </div>
-  </div>
-
-  <div class="section-header">
-    <div class="breadcrumb">Quick Start by Role</div>
-    <h2>Jump to your guide</h2>
-  </div>
-
-  <div class="role-links">
-    <span class="role-chip" onclick="showSection('roles'); switchTab('tab-pm')">📋 Product Manager</span>
-    <span class="role-chip" onclick="showSection('roles'); switchTab('tab-tl')">🏗️ Tech Lead</span>
-    <span class="role-chip" onclick="showSection('roles'); switchTab('tab-dev')">💻 Developer</span>
-    <span class="role-chip" onclick="showSection('roles'); switchTab('tab-design')">🎨 Designer</span>
-    <span class="role-chip" onclick="showSection('roles'); switchTab('tab-qa')">🧪 QA / Tester</span>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════ 2. PROBLEMS ══ -->
-<section id="problems" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 2</div>
-    <h2>The Problems — In Depth</h2>
-    <p>Each of these problems is chronic, costly, and solvable. Here's how each one manifests and what it actually costs.</p>
-  </div>
-
-  <!-- P1 -->
-  <div class="problem-detail card">
-    <div class="problem-detail-header">
-      <div class="icon-big" style="background:#fff7ed">📄</div>
-      <div>
-        <span class="badge badge-amber">Problem 1</span>
-        <h2 style="margin:6px 0 0">Documentation Gap</h2>
+    <h2>Two things, kept separate</h2>
+    <div class="grid2">
+      <div class="card">
+        <div class="ico">🛠️</div>
+        <h3>Product Brain — the framework</h3>
+        <p>The open-source tooling: the <code>brainify</code> skill, hub templates, and these docs. It operates <em>on</em> a hub; it never lives inside one.</p>
+      </div>
+      <div class="card">
+        <div class="ico">📚</div>
+        <h3>Your hub — an instance</h3>
+        <p>Your team's actual knowledge, in its own git repo. Contains constitution, vocabulary, domains, docs, and the graph — and <strong>no skills</strong>.</p>
       </div>
     </div>
-    <p>Specs don't exist, or they were written during an early sprint and never updated. The product has shipped four major features since then, and the document still describes the initial prototype. Nobody trusts it — so nobody reads it — so nobody updates it. A vicious cycle.</p>
-    <p>This isn't a discipline problem; it's a tooling problem. Writing specs in a vacuum, disconnected from the actual code, means the spec decays the moment the first line is merged. There's no mechanism to surface drift, no prompt to update, no connection between the spec and the thing it describes.</p>
-    <div class="symptom-box">
-      <div class="label">🔍 You know this is happening when...</div>
-      <p style="margin:0;font-size:14px">A new developer asks "where's the spec for patient authentication?" and the answer is "there isn't one" or "there was one but it's wrong." Onboarding takes weeks instead of days. Every new hire has to read the code from scratch.</p>
-    </div>
-    <div class="cost-box">
-      <div class="label">💸 Cost of not solving it</div>
-      <p style="margin:0;font-size:14px">Onboarding time 3–6x longer than it should be. Feature regressions because requirements were never formally captured. PMs writing specs based on assumptions rather than ground truth. Engineers building the wrong thing because no one aligned on what "done" means.</p>
-    </div>
-    <div class="example-box">
-      <div class="label">🔬 Real example</div>
-      <p style="margin:0;font-size:14px">The supervision feature — assigning supervisors to therapists — had no spec. We reverse-engineered it from code and discovered rules that lived only in the original developer's head: a therapist can only have one active supervisor, reassignment creates an audit trail, and the old supervisor relationship isn't deleted but archived. None of this was documented anywhere.</p>
-    </div>
-  </div>
+    <p>This separation is what keeps the framework method-neutral and your hub clean and diffable.</p>
+  </section>
 
-  <!-- P2 -->
-  <div class="problem-detail card" style="margin-top:20px">
-    <div class="problem-detail-header">
-      <div class="icon-big" style="background:#f5f3ff">🧠</div>
-      <div>
-        <span class="badge badge-indigo">Problem 2</span>
-        <h2 style="margin:6px 0 0">Institutional Knowledge Loss</h2>
-      </div>
-    </div>
-    <p>The engineer who built the authentication system left. The PM who defined the initial clinical workflows is now at a different company. The design decisions that shaped the data model were made in a two-hour whiteboard session that nobody photographed. That knowledge is gone.</p>
-    <p>What remains is archaeology. Future engineers reverse-engineer intent from code. They guess at why a particular constraint exists. They remove it because they don't understand it — and something breaks in production six weeks later for a reason no one can immediately explain.</p>
-    <div class="symptom-box">
-      <div class="label">🔍 You know this is happening when...</div>
-      <p style="margin:0;font-size:14px">Engineers regularly say "I don't know why this works this way" or "let me check with [person who has left]." PRs introduce changes that break undocumented invariants. Postmortems frequently conclude with "we didn't know that constraint existed."</p>
-    </div>
-    <div class="cost-box">
-      <div class="label">💸 Cost of not solving it</div>
-      <p style="margin:0;font-size:14px">Production bugs caused by violating implicit business rules. Incorrect decisions due to missing context. Slow delivery because engineers are afraid to change code they don't understand. Every team member departure is a knowledge loss event.</p>
-    </div>
-    <div class="example-box">
-      <div class="label">🔬 Real example</div>
-      <p style="margin:0;font-size:14px">The <code>TreatmentPlanStatus::COMPLETED</code> enum value was defined in the code — it existed as a valid state — but no business logic ever transitioned a plan to that state. The state had been planned, the code stub was written, but the implementation was never completed. It sat there for months. No one knew. The graph query surfaced it in 30 seconds.</p>
-    </div>
-  </div>
-
-  <!-- P3 -->
-  <div class="problem-detail card" style="margin-top:20px">
-    <div class="problem-detail-header">
-      <div class="icon-big" style="background:#ecfeff">🔍</div>
-      <div>
-        <span class="badge" style="background:#cffafe;color:#0e7490">Problem 3</span>
-        <h2 style="margin:6px 0 0">Codebase Understanding</h2>
-      </div>
-    </div>
-    <p>A new developer joins and faces 500 files. Or an existing developer needs to implement a feature in a domain they've never touched. Where do they start? Which files are central to the domain? Which are utilities? Which are legacy cruft that everything depends on but nobody understands?</p>
-    <p>The standard answer — "read the code" — doesn't scale past about 50 files. At 500 files, reading top-to-bottom is weeks of work. Code search helps but returns isolated snippets without structural context. You find the class but not why it exists or what it connects to.</p>
-    <div class="symptom-box">
-      <div class="label">🔍 You know this is happening when...</div>
-      <p style="margin:0;font-size:14px">Developers take 2–3 days to understand the blast radius of a change. PRs regularly miss touching all the relevant files. New feature implementation accidentally duplicates existing logic because the developer didn't know it existed.</p>
-    </div>
-    <div class="cost-box">
-      <div class="label">💸 Cost of not solving it</div>
-      <p style="margin:0;font-size:14px">Slow feature delivery. Duplicated code. Bugs caused by incomplete implementations. Senior engineers spending 30% of their time answering "where does X work?" questions that should be self-serve.</p>
-    </div>
-    <div class="example-box">
-      <div class="label">🔬 Real example</div>
-      <p style="margin:0;font-size:14px">The graphify god-node analysis of a healthcare scheduling API immediately identified <code>Appointment</code>, <code>User</code>, and <code>TreatmentPlan</code> as central nodes with 30+ connections each. A new developer can see in 30 seconds that these three models are the core of the system — and which services, actions, and policies touch them.</p>
-    </div>
-  </div>
-
-  <!-- P4 -->
-  <div class="problem-detail card" style="margin-top:20px">
-    <div class="problem-detail-header">
-      <div class="icon-big" style="background:#fdf2f8">🔤</div>
-      <div>
-        <span class="badge badge-red">Problem 4</span>
-        <h2 style="margin:6px 0 0">Vocabulary Mismatch</h2>
-      </div>
-    </div>
-    <p>The clinical team calls it a "session." The database model is <code>Appointment</code>. The mobile app displays "Visit." The API response key is <code>meeting_id</code>. These are all the same concept — but a new developer reading the docs and the code simultaneously has to manually build this translation table in their head.</p>
-    <p>When vocabulary fragments across apps, documentation, and stakeholders, communication breaks down. A PM writing a spec uses "session." The developer implements it as a new model because they didn't realize <code>Appointment</code> was the same thing. A bug is introduced not from bad code but from a vocabulary gap.</p>
-    <div class="symptom-box">
-      <div class="label">🔍 You know this is happening when...</div>
-      <p style="margin:0;font-size:14px">PRs are regularly accompanied by Slack threads clarifying "what do you mean by X." Spec reviews take twice as long because participants are using different words for the same thing. New models get created that duplicate existing ones under a different name.</p>
-    </div>
-    <div class="cost-box">
-      <div class="label">💸 Cost of not solving it</div>
-      <p style="margin:0;font-size:14px">Misimplemented features. Duplicated data models. UI copy inconsistency. Hours of clarification meetings that should never need to happen. Cross-team communication overhead that grows with every new stakeholder.</p>
-    </div>
-    <div class="example-box">
-      <div class="label">🔬 Real example</div>
-      <p style="margin:0;font-size:14px">In a healthcare platform, clinical staff consistently use "session" when referring to therapy appointments. The codebase uses <code>Appointment</code>. Without a vocabulary map, every new developer and every PM writing a spec has to independently discover this mapping — usually at the cost of at least one misunderstanding along the way.</p>
-    </div>
-  </div>
-
-  <!-- P5 -->
-  <div class="problem-detail card" style="margin-top:20px">
-    <div class="problem-detail-header">
-      <div class="icon-big" style="background:#fef2f2">🌊</div>
-      <div>
-        <span class="badge badge-red">Problem 5</span>
-        <h2 style="margin:6px 0 0">Ripple Effect</h2>
-      </div>
-    </div>
-    <p>A product decision changes. The "Supervision" workflow is being redesigned. Which other specs does this touch? Which code areas are affected? Which test cases need to be updated? In a disconnected system, the answer to each question requires a separate investigation.</p>
-    <p>The dangerous assumption is that a change is local when it isn't. A vocabulary change cascades through every spec that uses that term. A core model change cascades through every service that references it. Without structural mapping, these cascades are invisible until something breaks.</p>
-    <div class="symptom-box">
-      <div class="label">🔍 You know this is happening when...</div>
-      <p style="margin:0;font-size:14px">Features shipped without updating related specs. Integration bugs because two teams changed interconnected behavior independently. Post-release bug reports for features that "weren't changed" but depended on something that was.</p>
-    </div>
-    <div class="cost-box">
-      <div class="label">💸 Cost of not solving it</div>
-      <p style="margin:0;font-size:14px">Silent regressions. Incomplete migrations. Stale test cases that pass but no longer test the right thing. Cross-team coordination failures that surface only after release.</p>
-    </div>
-    <div class="example-box">
-      <div class="label">🔬 Real example</div>
-      <p style="margin:0;font-size:14px">If the supervision assignment model changes — say, allowing multiple supervisors instead of one — the ripple touches: the Supervision spec, the Patient Access spec (which controls what a supervisor can see), the Appointment spec (supervisor visibility of sessions), and every API endpoint that returns supervisor data. The graph surfaces all of these connections immediately.</p>
-    </div>
-  </div>
-
-  <!-- P6 -->
-  <div class="problem-detail card" style="margin-top:20px">
-    <div class="problem-detail-header">
-      <div class="icon-big" style="background:#f0fdf4">🔗</div>
-      <div>
-        <span class="badge badge-green">Problem 6</span>
-        <h2 style="margin:6px 0 0">Multi-App Queries</h2>
-      </div>
-    </div>
-    <p>Your product is three apps: a Laravel API, a React Native mobile app, and a React web dashboard. A question like "when a therapist cancels an appointment, what happens across all three apps?" spans all three codebases. Without a unified knowledge layer, answering it requires three separate investigations and manual synthesis.</p>
-    <p>Teams work around this by having app-specific experts — "ask Sarah about the mobile app, ask Ahmed about the API." This creates knowledge silos that slow down cross-functional work and create single points of failure when those people are unavailable.</p>
-    <div class="symptom-box">
-      <div class="label">🔍 You know this is happening when...</div>
-      <p style="margin:0;font-size:14px">Cross-app features require coordination calls just to understand the current state. Developers working on one app don't know what the other apps assume or depend on. Inconsistent behavior across apps that should be synchronized.</p>
-    </div>
-    <div class="cost-box">
-      <div class="label">💸 Cost of not solving it</div>
-      <p style="margin:0;font-size:14px">Cross-app bugs. Integration failures. Slow delivery of cross-cutting features. Over-dependence on specific engineers who know a specific app. API contract violations discovered in QA instead of design.</p>
-    </div>
-    <div class="example-box">
-      <div class="label">🔬 Real example</div>
-      <p style="margin:0;font-size:14px">A merged graph of the API backend + the mobile app reveals which mobile screens use which API endpoints, which shared <code>status</code> enum values must stay in sync, and which shared business terms (like <code>Appointment</code>) appear in both codebases. Cross-app questions become single queries instead of multi-day investigations.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════ 3. SOLUTION STACK ══ -->
-<section id="solution" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 3</div>
-    <h2>The Solution Stack</h2>
-    <p>Four components, each solving a distinct class of problem. Together, they form a complete product intelligence layer.</p>
-  </div>
-
-  <div class="principle-box">
-    <div class="p-label">Core Principle</div>
-    <p>"Graph navigates, Claude reasons."</p>
-  </div>
-
-  <div class="solution-components">
-    <div class="card solution-component">
-      <div class="comp-num">1</div>
-      <h3>Graphify</h3>
-      <span class="install-badge">pip install graphifyy</span>
-      <p>AST-based knowledge graph builder. Parses your codebase with Tree-sitter — no LLM needed for code files. Produces an interactive graph.html and machine-readable graph.json. Identifies god nodes, community clusters, surprising cross-domain connections, and dead code patterns.</p>
-    </div>
-    <div class="card solution-component">
-      <div class="comp-num">2</div>
-      <h3>Speckit</h3>
-      <span class="install-badge">.specify/ convention</span>
-      <p>Structured spec framework. A directory convention + markdown templates + governance rules. The constitution enforces consistency. Templates enforce completeness. Speckit skills in Claude Cowork automate the spec-writing workflow — grounded in your actual code, not invented from thin air.</p>
-    </div>
-    <div class="card solution-component">
-      <div class="comp-num">3</div>
-      <h3>Vocabulary Map</h3>
-      <span class="install-badge">.specify/vocabulary.json</span>
-      <p>Machine-readable synonym dictionary. Maps business terms to code terms to UI terms. Single source of truth for the entire team. Processed by graphify as synonym edges — so a query for "session" returns results for <code>Appointment</code>. PM-owned, developer-readable, machine-queryable.</p>
-    </div>
-    <div class="card solution-component">
-      <div class="comp-num">4</div>
-      <h3>Claude</h3>
-      <span class="install-badge">Reasoning Layer</span>
-      <p>The reasoning layer that ties everything together. Claude uses BFS traversal of the graph to find relevant nodes, reads 2–5 targeted files, applies vocabulary translation, and synthesizes answers grounded in real code. It doesn't hallucinate structure it can't verify — it navigates structure that actually exists.</p>
-    </div>
-  </div>
-
-  <div class="arch-diagram">
-    <h3>Architecture Overview</h3>
-    <div class="arch-row">
-      <div class="arch-box">
-        <div class="ab-icon">📁</div>
-        <div class="ab-name">Codebase</div>
-        <div class="ab-sub">PHP / TS / etc.</div>
-      </div>
-      <span class="arch-arrow">→</span>
-      <div class="arch-box">
-        <div class="ab-icon">🕸️</div>
-        <div class="ab-name">Graphify</div>
-        <div class="ab-sub">AST → graph.json</div>
-      </div>
-      <span class="arch-arrow">→</span>
-      <div class="arch-center">
-        <div class="ab-icon">🤖</div>
-        <div class="ab-name">Claude</div>
-        <div class="ab-sub">BFS + Reasoning</div>
-      </div>
-      <span class="arch-arrow">←</span>
-      <div class="arch-box">
-        <div class="ab-icon">📋</div>
-        <div class="ab-name">Speckit</div>
-        <div class="ab-sub">constitution + specs</div>
-      </div>
-    </div>
-    <div style="margin-top:16px;font-size:13px;color:var(--text-muted)">
-      vocabulary.json bridges all components as a shared synonym layer
-    </div>
-  </div>
-
-  <h2 style="margin-bottom:16px">Problem → Solution Matrix</h2>
-  <table class="matrix-table">
-    <thead>
-      <tr>
-        <th>Problem</th>
-        <th style="text-align:center">Graphify</th>
-        <th style="text-align:center">Speckit</th>
-        <th style="text-align:center">Vocab Map</th>
-        <th style="text-align:center">Claude</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>📄 Documentation Gap</td>
-        <td class="partial">◑</td>
-        <td class="check">✓</td>
-        <td class="partial">◑</td>
-        <td class="check">✓</td>
-      </tr>
-      <tr>
-        <td>🧠 Institutional Knowledge</td>
-        <td class="check">✓</td>
-        <td class="check">✓</td>
-        <td class="dash">–</td>
-        <td class="check">✓</td>
-      </tr>
-      <tr>
-        <td>🔍 Codebase Understanding</td>
-        <td class="check">✓</td>
-        <td class="partial">◑</td>
-        <td class="dash">–</td>
-        <td class="check">✓</td>
-      </tr>
-      <tr>
-        <td>🔤 Vocabulary Mismatch</td>
-        <td class="partial">◑</td>
-        <td class="partial">◑</td>
-        <td class="check">✓</td>
-        <td class="check">✓</td>
-      </tr>
-      <tr>
-        <td>🌊 Ripple Effect</td>
-        <td class="check">✓</td>
-        <td class="check">✓</td>
-        <td class="partial">◑</td>
-        <td class="check">✓</td>
-      </tr>
-      <tr>
-        <td>🔗 Multi-App Queries</td>
-        <td class="check">✓</td>
-        <td class="partial">◑</td>
-        <td class="check">✓</td>
-        <td class="check">✓</td>
-      </tr>
-    </tbody>
-  </table>
-  <p style="font-size:13px;color:var(--text-muted)">✓ Primary solver &nbsp;·&nbsp; ◑ Partial contributor &nbsp;·&nbsp; – Not applicable</p>
-</section>
-
-<!-- ══════════════════════════════════════════ 4. SETUP ══ -->
-<section id="setup" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 4</div>
-    <h2>Setup Guide</h2>
-    <p>Five phases. Total time from zero to fully operational: approximately half a day for a single repo, one day for multi-repo.</p>
-  </div>
-
-  <!-- Phase 1 -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">1</div>
-      <div>
-        <h3>Graph Your Codebase</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">AST-based parsing — no LLM needed</p>
-      </div>
-      <span class="time-badge">~30 min</span>
-    </div>
-    <div class="phase-body">
-      <p>Install graphify and run it against your source directory. For a Laravel project, point it at the <code>app/</code> directory. The <code>--no-label</code> flag skips semantic labeling (which requires an LLM key) and uses structural analysis only — perfectly sufficient for codebase navigation.</p>
-      <pre><span class="code-bash-cmd">pip</span> install graphifyy
-<span class="code-bash-cmd">cd</span> your-project/
-<span class="code-bash-cmd">graphify</span> app/ --out graphify-out --no-label
-<span class="code-comment"># Opens graph.html in your browser for interactive exploration</span>
-<span class="code-comment"># Also produces: graphify-out/graph.json, GRAPH_REPORT.md</span></pre>
-      <div class="note">
-        <span class="note-icon">ℹ️</span>
-        <div>
-          <strong>LLM key not required for code files.</strong> Tree-sitter parses source code locally — zero data leaves your machine. An LLM API key is only needed if you want graphify to semantically extract content from docs, PDFs, or images in a <code>/docs</code> folder.
-        </div>
-      </div>
-      <p style="margin-top:12px">After running, open <code>graph.html</code> in your browser. Look for:</p>
-      <ul style="font-size:14px;color:#334155;margin-top:8px">
-        <li><strong>God nodes</strong> — large nodes with many connections. These are your core domain models.</li>
-        <li><strong>Community clusters</strong> — groups of closely connected nodes. These are your feature domains.</li>
-        <li><strong>Isolated nodes</strong> — small components with few connections. May be dead code or utilities.</li>
-        <li><strong>Surprising bridges</strong> — nodes that connect otherwise separate clusters. Often architectural seams.</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- Phase 2 -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">2</div>
-      <div>
-        <h3>Initialize Speckit Governance</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">Directory structure + constitution + templates</p>
-      </div>
-      <span class="time-badge">~1 hour</span>
-    </div>
-    <div class="phase-body">
-      <p>Create the <code>.specify/</code> directory structure at the root of your project. This is the governance layer — it defines your project's principles, canonical vocabulary, and spec templates.</p>
-      <div class="dir-tree">
-<span class="dt-dir">.specify/</span>
-  <span class="dt-dir">memory/</span>
-    <span class="dt-file">constitution.md</span>     <span class="dt-comment">← project principles &amp; canonical vocabulary</span>
-    <span class="dt-file">domains.md</span>          <span class="dt-comment">← product domain map (added in Phase 5)</span>
-  <span class="dt-dir">templates/</span>
-    <span class="dt-file">spec-template.md</span>     <span class="dt-comment">← feature spec structure</span>
-    <span class="dt-file">plan-template.md</span>     <span class="dt-comment">← implementation plan structure</span>
-    <span class="dt-file">tasks-template.md</span>    <span class="dt-comment">← task breakdown structure</span>
-  <span class="dt-file">init-options.json</span>     <span class="dt-comment">← {"feature_numbering": "sequential"}</span>
-  <span class="dt-file">feature.json</span>          <span class="dt-comment">← tracks currently active feature</span>
-<span class="dt-dir">specs/</span>                   <span class="dt-comment">← all feature specs live here</span></div>
-      <p>The <strong>constitution</strong> is the most important file. It must define:</p>
-      <ul style="font-size:14px;margin:8px 0 12px">
-        <li><strong>Project identity</strong> — what this system does and who it serves</li>
-        <li><strong>4–6 architectural principles</strong> — non-negotiable rules that every spec and implementation must follow</li>
-        <li><strong>Canonical vocabulary section</strong> — official terms and their aliases (before vocabulary.json exists)</li>
-        <li><strong>Governance rules</strong> — how specs are written, reviewed, and amended</li>
-      </ul>
-      <div class="example-box">
-        <div class="label">Example principle</div>
-        <p style="margin:0;font-size:14px;font-family:monospace">"Every HTTP endpoint MUST be implemented as a single-purpose Action class. No logic in controllers. No logic in route files."</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Phase 3 -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">3</div>
-      <div>
-        <h3>Build the Vocabulary Map</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">Machine-readable synonym dictionary</p>
-      </div>
-      <span class="time-badge">~30 min</span>
-    </div>
-    <div class="phase-body">
-      <p>Create <code>.specify/vocabulary.json</code>. This bridges the gap between business language, UI copy, and code terms. The PM owns it; the developer reads it; graphify processes it as synonym edges.</p>
-      <pre><span class="code-comment">// .specify/vocabulary.json</span>
-{
-  <span class="code-key">"terms"</span>: [
-    {
-      <span class="code-key">"canonical"</span>: <span class="code-str">"Appointment"</span>,
-      <span class="code-key">"code_terms"</span>: [<span class="code-str">"Appointment"</span>, <span class="code-str">"AppointmentModel"</span>],
-      <span class="code-key">"business_terms"</span>: [<span class="code-str">"session"</span>, <span class="code-str">"visit"</span>, <span class="code-str">"meeting"</span>],
-      <span class="code-key">"ui_terms"</span>: [<span class="code-str">"Session"</span>, <span class="code-str">"Visit"</span>],
-      <span class="code-key">"notes"</span>: <span class="code-str">"Always 'session' in clinical context. 'Appointment' in API."</span>
-    },
-    {
-      <span class="code-key">"canonical"</span>: <span class="code-str">"TreatmentPlan"</span>,
-      <span class="code-key">"code_terms"</span>: [<span class="code-str">"TreatmentPlan"</span>],
-      <span class="code-key">"business_terms"</span>: [<span class="code-str">"care plan"</span>, <span class="code-str">"therapy plan"</span>, <span class="code-str">"program"</span>],
-      <span class="code-key">"notes"</span>: <span class="code-str">"Clinical teams say 'care plan'. Code uses TreatmentPlan."</span>
-    }
-  ]
-}</pre>
-      <div class="note">
-        <span class="note-icon">💡</span>
-        <div><strong>Auto-extract draft:</strong> Ask Claude to scan the graph god nodes + any existing documentation and produce a draft vocabulary.json for PM review. Takes 5 minutes to generate a starting point you can then refine.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Phase 4 -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">4</div>
-      <div>
-        <h3>Write Your First Spec</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">AI-grounded spec generation from real code</p>
-      </div>
-      <span class="time-badge">~1 hour</span>
-    </div>
-    <div class="phase-body">
-      <p>Use the <code>speckit-specify</code> skill in Claude Cowork. This workflow produces a spec that is grounded in your actual codebase — not invented from thin air.</p>
-      <pre><span class="code-comment"># In Claude Cowork, say:</span>
-<span class="code-str">"I want to add supervisor assignment to therapist profiles.
-A clinic admin should be able to assign a supervisor to a therapist,
-and the supervisor should be able to see all sessions for their assigned
-therapists."</span>
-
-<span class="code-comment"># Claude will:</span>
-<span class="code-comment"># 1. Query the graph for relevant nodes (User, Therapist, Appointment, etc.)</span>
-<span class="code-comment"># 2. Ask 4-5 clarifying questions based on what it finds</span>
-<span class="code-comment"># 3. Write a grounded spec referencing actual classes and methods</span>
-<span class="code-comment"># 4. Generate a checklist for the implementation</span></pre>
-      <p>The spec will reference real class names, existing patterns, and actual data models — because Claude queried the graph before writing it.</p>
-    </div>
-  </div>
-
-  <!-- Phase 5 -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">5</div>
-      <div>
-        <h3>Map Your Domains</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">Domain detection + core feature specs</p>
-      </div>
-      <span class="time-badge">~2 hours</span>
-    </div>
-    <div class="phase-body">
-      <p>With the graph built and governance in place, use the community clusters you already detected to formally document the product's functional domains. This is the bridge between "we have a codebase" and "we understand what our product does."</p>
-
-      <div class="note" style="margin-bottom:16px">
-        <span class="note-icon">🤖</span>
-        <div><strong>brainify handles this end-to-end.</strong> Say <code>"set up product brain"</code> in Claude Cowork — Phase H of the skill walks you through detection, interviews, and spec creation automatically.</div>
-      </div>
-
-      <p><strong>Step 1 — Detect candidate domains from the graph</strong></p>
-      <p>Ask Claude: <em>"What domains does this product have?"</em> It will query <code>graph.json</code> community clusters and return a list like: Scheduling, Identity, Billing, Notifications, Reporting. Confirm, rename, or add any that are missing.</p>
-
-      <p style="margin-top:14px"><strong>Step 2 — Interview per domain</strong></p>
-      <p>For each domain, answer 6 questions (brainify asks them one at a time):</p>
-      <ul style="font-size:14px;color:#334155;margin:8px 0 14px">
-        <li><strong>Product name</strong> — what do stakeholders call this domain?</li>
-        <li><strong>Responsibility</strong> — one sentence: what does it do?</li>
-        <li><strong>Core features</strong> — 3–5 features end users care about</li>
-        <li><strong>Boundaries</strong> — what is explicitly out of scope?</li>
-        <li><strong>Owner</strong> — which team or person is accountable?</li>
-        <li><strong>Status</strong> — stable / evolving / planned?</li>
-      </ul>
-
-      <p><strong>Step 3 — Write <code>.specify/memory/domains.md</code></strong></p>
-      <p>Claude writes the domain map from your answers. This becomes a permanent reference — Claude reads it automatically when answering domain-level questions.</p>
-
-      <div class="example-box">
-        <div class="label">Example domain entry</div>
-        <pre style="margin:0;font-size:13px">## Scheduling
-
-<b>Responsibility</b>: Manages appointment creation, modification, and cancellation between patients and clinicians.
-<b>Owner</b>: Backend team
-<b>Status</b>: Stable
-
-<b>Core Features</b>:
-- Book an appointment
-- Reschedule with conflict detection
-- Cancel and preserve record (no hard delete)
-- Waitlist management
-
-<b>Out of scope</b>: Payment processing, clinical notes
-<b>Key entities</b>: Appointment, Schedule, Slot, Waitlist</pre>
-      </div>
-
-      <p style="margin-top:16px"><strong>Step 4 — Spec one core feature per domain</strong></p>
-      <p>For each domain, pick its most important core feature and run <code>speckit-specify</code>. By the end of this phase, you have:</p>
-      <ul style="font-size:14px;color:#334155;margin:8px 0">
-        <li>A domain map that explains the product's structure</li>
-        <li>At least one grounded spec per domain</li>
-        <li>A foundation for new-joiner onboarding that doesn't require tribal knowledge</li>
-      </ul>
-
-      <div class="note">
-        <span class="note-icon">💡</span>
-        <div><strong>Recurring value:</strong> When a new feature lands in a domain, Claude checks <code>domains.md</code> first — it knows the boundaries, the owner, and what's already specced. This prevents scope creep silently sneaking into a domain it doesn't belong in.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Phase 6 (was 5) -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">6</div>
-      <div>
-        <h3>Multi-Repo Setup (if needed)</h3>
-        <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">Merge graphs for cross-app queries</p>
-      </div>
-      <span class="time-badge">~15 min</span>
-    </div>
-    <div class="phase-body">
-      <p>If your product spans multiple repositories (API + mobile + web), graph each separately and then merge them. This lets you query across all apps while still being able to rebuild individual graphs independently when one app changes.</p>
-      <pre><span class="code-bash-cmd">graphify</span> merge-graphs \
-  api/graphify-out/graph.json \
-  mobile/graphify-out/graph.json \
-  --out merged/graph.json
-
-<span class="code-comment"># Rebuild strategy: only rebuild the app that changed
-# Then re-run the merge with the updated graph</span>
-<span class="code-bash-cmd">graphify</span> app/ --out api/graphify-out --no-label  <span class="code-comment"># after API changes</span>
-<span class="code-bash-cmd">graphify</span> merge-graphs api/graphify-out/graph.json mobile/graphify-out/graph.json --out merged/graph.json</pre>
-      <div class="note">
-        <span class="note-icon">ℹ️</span>
-        <div>Point Claude to <code>merged/graph.json</code> for cross-app questions. Point it to individual graphs for app-specific questions. The vocabulary.json is shared — keep it in a central location accessible to both repos.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════ 5. ROLES ══ -->
-<section id="roles" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 5</div>
-    <h2>Role Guides</h2>
-    <p>Each role interacts with the stack differently. Here's what each person owns, does daily, and is responsible for maintaining.</p>
-  </div>
-
-  <div class="tab-bar">
-    <button class="tab-btn active" id="tab-pm" onclick="switchTab('tab-pm')">📋 Product Manager</button>
-    <button class="tab-btn" id="tab-tl" onclick="switchTab('tab-tl')">🏗️ Tech Lead</button>
-    <button class="tab-btn" id="tab-dev" onclick="switchTab('tab-dev')">💻 Developer</button>
-    <button class="tab-btn" id="tab-design" onclick="switchTab('tab-design')">🎨 Designer</button>
-    <button class="tab-btn" id="tab-qa" onclick="switchTab('tab-qa')">🧪 QA / Tester</button>
-  </div>
-
-  <div class="tab-panel active" id="panel-pm">
-    <div class="role-section">
-      <h4>Daily</h4>
-      <ul class="checklist">
-        <li>Ask questions about the product in Claude Cowork: "how does X work?", "what does Y do?", "where does Z happen?"</li>
-        <li>Use vocabulary.json terms when writing tickets, specs, or user stories — always use canonical terms</li>
-        <li>When a feature doesn't match expectations, query the graph before assuming it's a bug</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>Weekly</h4>
-      <ul class="checklist">
-        <li>Review speckit-converge output for any active features — check for spec drift from implementation</li>
-        <li>Review open [NEEDS CLARIFICATION] markers in specs and resolve them before the sprint ends</li>
-        <li>Verify that shipped features match their spec's success criteria</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>Per Feature</h4>
-      <ul class="checklist">
-        <li>Run speckit-specify workflow before development begins — never write spec after implementation</li>
-        <li>Use speckit-clarify to resolve ambiguities before the developer picks up the ticket</li>
-        <li>After implementation: run speckit-converge to validate the spec matches what was built</li>
-        <li>Add new vocabulary terms discovered during spec writing to vocabulary.json</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>Reverse-Engineering an Existing Product</h4>
-      <ul class="checklist">
-        <li>Ask Claude to extract feature domains from graph community clusters and god nodes</li>
-        <li>For each domain: Claude reads the code, prepares 5 WHY questions, PM answers in 10 min</li>
-        <li>Claude writes the spec combining code evidence with PM answers — PM reviews and signs off</li>
-        <li>Work domain by domain: Authentication → Appointments → TreatmentPlans → Supervision → etc.</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="tab-panel" id="panel-tl">
-    <div class="role-section">
-      <h4>Ownership</h4>
-      <ul class="checklist">
-        <li>Own the constitution — you are its author, gatekeeper, and primary amender</li>
-        <li>Version-control the constitution: every amendment is a PR, reviewed before merging</li>
-        <li>Own vocabulary.json alongside the PM — you validate that code terms are correct</li>
-        <li>Own the graph rebuild schedule and tooling integration (CI hooks if applicable)</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>After Significant Code Changes</h4>
-      <ul class="checklist">
-        <li>Trigger a graph rebuild when: model renamed, major feature added, directory restructured, new repo added</li>
-        <li>Review GRAPH_REPORT.md after rebuild — check for unexpected new god nodes or broken community structure</li>
-        <li>Run speckit-analyze before major releases to surface spec/implementation gaps</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>Quarterly</h4>
-      <ul class="checklist">
-        <li>Constitution review: do the principles still reflect how we build? Amend and bump version if needed</li>
-        <li>Vocabulary audit: any new code terms that have no business equivalent? Any deprecated terms still in the map?</li>
-        <li>Full graph rebuild from scratch (purges stale cache, re-parses everything)</li>
-        <li>Archive completed feature specs — keep specs/ clean and current</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>During PRs</h4>
-      <ul class="checklist">
-        <li>Check that PRs introducing new domain models also update vocabulary.json</li>
-        <li>Verify that PRs implementing specced features don't deviate from spec without explicit amendment</li>
-        <li>Flag PRs that add new architectural patterns not covered by the constitution — potential amendment trigger</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="tab-panel" id="panel-dev">
-    <div class="role-section">
-      <h4>Before Starting a Feature</h4>
-      <ul class="checklist">
-        <li>Read the spec. If there's no spec, ask for one before writing a line of code</li>
-        <li>Query the graph to understand existing code in the feature's domain</li>
-        <li>Ask Claude: "what classes and services are involved in [domain]?" to get a map before diving in</li>
-        <li>Check vocabulary.json for canonical terms in the domain — use them in your code and comments</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>During Implementation</h4>
-      <ul class="checklist">
-        <li>When you discover something that contradicts the spec, flag it immediately — don't silently deviate</li>
-        <li>When adding a new domain concept, add it to vocabulary.json alongside the implementation</li>
-        <li>Use the constitution's architectural principles as a checklist — every new endpoint needs an Action class</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>After Implementation</h4>
-      <ul class="checklist">
-        <li>Run speckit-converge to validate your implementation against the spec</li>
-        <li>Review the converge output — gaps are decisions, not failures. Resolve each one explicitly</li>
-        <li>Trigger a graph rebuild if you renamed models, added major new files, or restructured directories</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="tab-panel" id="panel-design">
-    <div class="role-section">
-      <h4>UI Copy and Terminology</h4>
-      <ul class="checklist">
-        <li>Use vocabulary.json as the single source of truth for UI copy — always use the canonical business term in UIs</li>
-        <li>Before finalizing UI copy, verify the term exists in vocabulary.json (or add it with PM approval)</li>
-        <li>When clinical/domain experts use a different term than what's in the UI, escalate to vocabulary.json — don't decide alone</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>Flow Changes</h4>
-      <ul class="checklist">
-        <li>When changing a user flow, review the spec for that feature before finalizing designs</li>
-        <li>Use speckit-converge to understand what the current implementation does — designs should reflect reality or explicitly override it</li>
-        <li>Flag designs that require behavior changes — those need spec amendments, not just design changes</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>New Features</h4>
-      <ul class="checklist">
-        <li>Query the graph (via Claude) for what data and concepts exist before designing new flows</li>
-        <li>Review the vocabulary map before designing new UI labels — don't invent terms that conflict with existing canonical ones</li>
-        <li>Contribute to spec writing for features you're designing — the UX insight belongs in the spec's "context" section</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="tab-panel" id="panel-qa">
-    <div class="role-section">
-      <h4>Test Scenario Generation</h4>
-      <ul class="checklist">
-        <li>Ask Claude: "generate test scenarios for [feature name] based on its spec" — point to the spec and graph</li>
-        <li>Claude will use actual class names and method signatures from the graph — not invented ones</li>
-        <li>Use the spec's success criteria section as your acceptance test checklist, item by item</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>After Spec Changes</h4>
-      <ul class="checklist">
-        <li>Query the merged graph for areas affected by the changed spec — don't test only the obvious paths</li>
-        <li>Review vocabulary.json if a spec change involved renaming or redefining a canonical term</li>
-        <li>Re-run speckit-converge after spec changes to identify implementation gaps that may be missed by tests</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>Edge Case Discovery</h4>
-      <ul class="checklist">
-        <li>Ask Claude: "what are the edge cases for [feature]?" — Claude can reason from graph structure + spec constraints</li>
-        <li>Use god-node analysis to find high-risk areas: models with many connections fail in unexpected ways when changed</li>
-        <li>Use the graph to identify integration points between features — these are the highest-risk test areas</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════ 6. WORKFLOWS ══ -->
-<section id="workflows" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 6</div>
-    <h2>Workflows — How-Tos</h2>
-    <p>Step-by-step recipes for the six most common tasks this system enables.</p>
-  </div>
-
-  <!-- WF1 -->
-  <div class="workflow card">
-    <div class="workflow-header">
-      <div class="workflow-num">1</div>
-      <div class="workflow-title">"How does feature X work?"</div>
-    </div>
-    <ol class="workflow-steps">
-      <li>
-        <div class="step-content">
-          <div class="step-title">Ask Claude in natural language</div>
-          <div class="step-desc">No need for technical framing. "How does appointment cancellation work?" or "When is a treatment plan marked complete?" work perfectly.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Claude queries graphify</div>
-          <div class="step-desc">Claude uses BFS traversal from the relevant concept node — following edges to find the classes, services, events, and policies involved.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Claude reads 2–5 targeted files</div>
-          <div class="step-desc">Rather than reading 500 files, Claude reads only the files identified by the graph traversal as directly relevant. Precise, not exhaustive.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Synthesized answer with file references</div>
-          <div class="step-desc">The answer includes the actual class names, method names, and file paths involved — grounded in reality, not guesswork.</div>
-        </div>
-      </li>
-    </ol>
-    <div class="wf-example">
-      <strong>Real example:</strong> "When is TreatmentPlan status changed to COMPLETED?" → Graph traversal revealed no transition logic to COMPLETED state existed. The enum value was defined but never triggered. Found in 3 queries, 30 seconds.
-    </div>
-  </div>
-
-  <!-- WF2 -->
-  <div class="workflow card" style="margin-top:16px">
-    <div class="workflow-header">
-      <div class="workflow-num">2</div>
-      <div class="workflow-title">"Write a spec for a new feature"</div>
-    </div>
-    <ol class="workflow-steps">
-      <li>
-        <div class="step-content">
-          <div class="step-title">Describe the problem context to Claude</div>
-          <div class="step-desc">Tell Claude what you want to accomplish and why. Include any known constraints. Don't worry about technical detail — that's what the graph is for.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Claude queries the graph for relevant existing code</div>
-          <div class="step-desc">Before asking any questions, Claude maps the relevant domain in the codebase — understanding what models, services, and patterns already exist.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Claude asks 4–5 clarifying questions</div>
-          <div class="step-desc">Questions are grounded in what the graph revealed. Examples: "The graph shows Therapist and User are separate models — should supervisor assignment go on the User or Therapist model?", "Cardinality: can one therapist have multiple supervisors simultaneously, or only one?"</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">speckit-specify generates grounded spec + checklist</div>
-          <div class="step-desc">The spec references real class names, uses canonical vocabulary terms, follows constitution principles, and includes a task checklist grounded in actual files that need changing.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">speckit-clarify for remaining gaps</div>
-          <div class="step-desc">Any open questions or [NEEDS CLARIFICATION] markers are resolved in a second pass before development begins.</div>
-        </div>
-      </li>
-    </ol>
-  </div>
-
-  <!-- WF3 -->
-  <div class="workflow card" style="margin-top:16px">
-    <div class="workflow-header">
-      <div class="workflow-num">3</div>
-      <div class="workflow-title">"Reverse-engineer specs for an existing product"</div>
-    </div>
-    <ol class="workflow-steps">
-      <li>
-        <div class="step-content">
-          <div class="step-title">Extract feature domains from graph structure</div>
-          <div class="step-desc">Claude analyzes the graph's community clusters and god nodes to produce a domain list: Authentication, Appointments, TreatmentPlans, Supervision, Billing, etc.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">For each domain: code read → WHY questions</div>
-          <div class="step-desc">Claude reads the code for a single domain, then prepares 5 WHY questions that only the PM or business owner can answer. "Why can a therapist only have one active supervisor?" "Why does cancellation preserve the record instead of deleting it?"</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">PM answers (10 min per domain)</div>
-          <div class="step-desc">A focused conversation, not a marathon. Claude has already done the code analysis — the PM just supplies business rationale.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Claude writes spec combining code evidence + PM answers</div>
-          <div class="step-desc">The resulting spec captures both WHAT the code does and WHY — the institutional knowledge that would otherwise live only in the original developer's memory.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Architecture Decision Record (ADR) created alongside spec</div>
-          <div class="step-desc">Key design decisions are captured in a companion ADR — preserving the reasoning so future developers understand why the code is the way it is.</div>
-        </div>
-      </li>
-    </ol>
-  </div>
-
-  <!-- WF4 -->
-  <div class="workflow card" style="margin-top:16px">
-    <div class="workflow-header">
-      <div class="workflow-num">4</div>
-      <div class="workflow-title">"A spec changed — what's affected?"</div>
-    </div>
-    <ol class="workflow-steps">
-      <li>
-        <div class="step-content">
-          <div class="step-title">Describe the change to Claude</div>
-          <div class="step-desc">"We're changing supervision to allow multiple active supervisors per therapist instead of one." That's enough context to start the analysis.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Claude queries merged spec graph for shared concept nodes</div>
-          <div class="step-desc">Traversal from the changed concept finds all other specs that reference the same concept — surfacing the full ripple before any code changes.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Impact list: specs, code areas, test cases</div>
-          <div class="step-desc">Three-category output: which specs need updating, which code areas need changing, which test cases are now invalid or need extension.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Review constitution for vocabulary changes</div>
-          <div class="step-desc">If the change involves a term rename or redefinition, update vocabulary.json and check if the constitution needs amendment.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Update affected artifacts</div>
-          <div class="step-desc">Update specs, then code, then tests — in that order. Use speckit-converge to verify alignment after each update.</div>
-        </div>
-      </li>
-    </ol>
-  </div>
-
-  <!-- WF5 -->
-  <div class="workflow card" style="margin-top:16px">
-    <div class="workflow-header">
-      <div class="workflow-num">5</div>
-      <div class="workflow-title">"Generate test scenarios for a feature"</div>
-    </div>
-    <ol class="workflow-steps">
-      <li>
-        <div class="step-content">
-          <div class="step-title">Point Claude to the spec's success criteria</div>
-          <div class="step-desc">The success criteria section of a well-written spec is a direct source of acceptance test cases. Claude reads it first.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Claude cross-references with code graph</div>
-          <div class="step-desc">For each scenario, Claude finds the actual class names, method signatures, and data models involved — so tests reference real code, not imagined APIs.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Test scenarios generated with real signatures</div>
-          <div class="step-desc">Output includes: scenario name, preconditions, action, expected outcome, and the specific class/method being tested — grounded in the actual implementation.</div>
-        </div>
-      </li>
-    </ol>
-    <div class="wf-example">
-      <strong>Why this matters:</strong> AI-generated test scenarios without graph context invent class names that don't exist. With graph context, every scenario references <code>AppointmentCancellationAction</code>, not a hallucinated <code>CancelAppointmentService</code>.
-    </div>
-  </div>
-
-  <!-- WF6 -->
-  <div class="workflow card" style="margin-top:16px">
-    <div class="workflow-header">
-      <div class="workflow-num">6</div>
-      <div class="workflow-title">"Multi-app question"</div>
-    </div>
-    <ol class="workflow-steps">
-      <li>
-        <div class="step-content">
-          <div class="step-title">Ensure merged graph exists</div>
-          <div class="step-desc">Run <code>graphify merge-graphs</code> to produce <code>merged/graph.json</code>. Point Claude's context at the merged graph.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Ask the question normally</div>
-          <div class="step-desc">"When a therapist cancels a session in the mobile app, what happens in the API and what does the web dashboard show?" Claude routes to the right sub-graph for each part.</div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <div class="step-title">Cross-app connections surface via shared concept names</div>
-          <div class="step-desc">The merged graph links the mobile <code>SessionCard</code> component to the API's <code>AppointmentController</code> via shared concept nodes — connections that would be invisible looking at either repo alone.</div>
-        </div>
-      </li>
-    </ol>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════ 7. HYGIENE ══ -->
-<section id="hygiene" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 7</div>
-    <h2>Hygiene &amp; Maintenance</h2>
-    <p>A system that isn't maintained decays. Here's the minimum viable maintenance schedule to keep the stack accurate and useful.</p>
-  </div>
-
-  <div class="hygiene-section">
-    <h3>Per Code Change</h3>
-    <table class="hygiene-table">
-      <tbody>
-        <tr><td class="cb">☐</td><td>Rebuild affected app's graph (incremental via cache — seconds, not minutes)</td></tr>
-        <tr><td class="cb">☐</td><td>Run <code>speckit-converge</code> if a spec exists for the changed area</td></tr>
-        <tr><td class="cb">☐</td><td>Add new domain terms introduced in this change to <code>vocabulary.json</code></td></tr>
-      </tbody>
+  <!-- 02 PROBLEMS -->
+  <section class="section" id="problems">
+    <h1>Problems it solves</h1>
+    <p class="lead">Five recurring failures of product knowledge in a multi-repo team.</p>
+    <table>
+      <tr><th>#</th><th>Problem</th><th>Without Product Brain</th></tr>
+      <tr><td>1</td><td><strong>Codebase questions</strong></td><td>Read every file by hand, or ask the one person who knows.</td></tr>
+      <tr><td>2</td><td><strong>Missing context</strong></td><td>The code exists; nobody wrote down why it works the way it does.</td></tr>
+      <tr><td>3</td><td><strong>Vocabulary mismatch</strong></td><td>"Session" in the meeting, <code>Appointment</code> in the code — nobody bridges them.</td></tr>
+      <tr><td>4</td><td><strong>Multi-repo knowledge</strong></td><td>A question spans the web and API repos and takes days.</td></tr>
+      <tr><td>5</td><td><strong>Institutional knowledge</strong></td><td>Lives in people's heads, and walks out the door when they leave.</td></tr>
     </table>
-  </div>
+    <div class="callout warn">
+      <p><strong>Honest scope:</strong> precise cross-repo <em>impact analysis</em> — "change this model and exactly these web files break" — is <strong>not</strong> solved yet. It's a tracked open problem (see section 09). What works today is grounded querying and soft cross-repo grouping.</p>
+    </div>
+  </section>
 
-  <div class="hygiene-section">
-    <h3>Per Feature</h3>
-    <table class="hygiene-table">
-      <tbody>
-        <tr><td class="cb">☐</td><td>Run <code>speckit-specify</code> before implementation begins — spec first, code second</td></tr>
-        <tr><td class="cb">☐</td><td>Run <code>speckit-clarify</code> to resolve open questions before development picks up the ticket</td></tr>
-        <tr><td class="cb">☐</td><td>Run <code>speckit-converge</code> after implementation to validate spec/code alignment</td></tr>
-        <tr><td class="cb">☐</td><td>Update vocabulary.json with any new canonical terms introduced by the feature</td></tr>
-      </tbody>
+  <!-- 03 HOW -->
+  <section class="section" id="how">
+    <h1>How it works</h1>
+    <p class="lead">One command assembles everything and builds a single graph.</p>
+
+    <h2>The reframe</h2>
+    <div class="grid2">
+      <div class="card"><h3>A. Knowledge is the product</h3><p>It lives in a dedicated hub repo — the single source of truth. Code repos are just <em>sources</em> the hub reads.</p></div>
+      <div class="card"><h3>B. The framework ≠ the hub</h3><p>Tooling ships separately from any team's knowledge. The framework operates on a hub from the outside.</p></div>
+    </div>
+
+    <h2><code>pb sync</code> — one graph over one workspace</h2>
+    <p>Because the hub pulls and builds centrally, there's no per-repo merging to manage. One graphify run spans your docs and all your code:</p>
+    <pre><code>pb sync
+  1. pull / refresh each repo from brain.config.json → .work/repos/&lt;id&gt;
+  2. run graphify over a workspace =
+       { constitution.md, vocabulary.md, domains.md, docs/**, .work/repos/** }
+  3. write graph/graph.json + graph/GRAPH_REPORT.md</code></pre>
+    <p>In the resulting graph: code structure comes free from tree-sitter; and graphify's semantic edges plus Leiden communities <strong>softly co-locate</strong> related code and docs across repos — so the booking spec, the <code>Appointment</code> model, and the <code>SessionCard</code> component tend to land together, with no manual linking.</p>
+
+    <div class="callout"><p><strong>App repos stay untouched.</strong> Registration lives only in the hub's <code>brain.config.json</code>. No files are added to your web or API repos — zero adoption friction.</p></div>
+  </section>
+
+  <!-- 04 HUB -->
+  <section class="section" id="hub">
+    <h1>Anatomy of a hub</h1>
+    <p class="lead">A required core, an extensible <code>docs/</code> tree, and the graph. The hub is its own git repo.</p>
+
+    <div class="diagram">acme-brain/                    ← the hub: its own git repo
+  brain.config.json            repos to pull · doc types · graph settings
+  constitution.md              principles / non-negotiables        [REQUIRED]
+  vocabulary.md                glossary: product ↔ code            [REQUIRED]
+  domains.md                   area → owner, status, repos         [recommended]
+  docs/                        extensible knowledge (Markdown-first)
+    specs/   decisions/   meeting-notes/   research/   &lt;your-type&gt;/
+  workflows/                   role lenses: pm, backend, frontend, qa…
+  graph/                       graph.json + GRAPH_REPORT.md (pb sync)
+  .work/                       gitignored: pulled code, sync-time only</div>
+
+    <h2>Required core <span class="pill core">required</span></h2>
+    <p>Two files are what make a directory a "brain" — the knowledge that can't be derived from code:</p>
+    <div class="grid2">
+      <div class="card"><h3>constitution.md</h3><p>The non-negotiable principles every change must respect. Optional per-repo notes where a repo legitimately differs.</p></div>
+      <div class="card"><h3>vocabulary.md</h3><p>The glossary tying product language to code in each repo — the bridge between "Session" in a meeting and <code>Appointment</code> in the code.</p></div>
+    </div>
+
+    <h2>Domains <span class="pill ext">recommended · graph-assisted</span></h2>
+    <p><code>domains.md</code> maps functional areas to owners, status, and repos. It's recommended rather than required because it's largely derivable: after a sync, the graph's communities are good candidate domains, so you curate names and owners instead of authoring from scratch.</p>
+
+    <h2>Extensible docs <span class="pill ext">your choice</span></h2>
+    <p>Register any doc types you want in <code>brain.config.json</code> and drop knowledge into <code>docs/&lt;type&gt;/</code>. Ship with <code>specs</code>, <code>decisions</code>, <code>meeting-notes</code>, <code>research</code>, <code>runbooks</code> — or invent your own. graphify connects it all automatically through inferred edges and communities — no manual cross-linking needed.</p>
+    <pre><code>{
+  "repos": [
+    { "id": "backend-api", "url": "…", "src": ["app/"] },
+    { "id": "web-app",     "url": "…", "src": ["src/"] }
+  ],
+  "doc_types": ["specs", "decisions", "meeting-notes", "research"],
+  "graph": { "out": "graph/" }
+}</code></pre>
+  </section>
+
+  <!-- 05 AGNOSTIC -->
+  <section class="section" id="agnostic">
+    <h1>Method-agnostic by design</h1>
+    <p class="lead">Product Brain prescribes <strong>structure</strong>, not <strong>methodology</strong>.</p>
+    <p>There is no required way to write a spec. Use plain Markdown, RFCs, Shape Up pitches, Spec Kit, or paste an export from Notion. The only requirement is that a spec is a Markdown file under <code>docs/specs/</code> that links to the domain and terms it touches. Bring the tool your team already likes.</p>
+
+    <div class="grid2">
+      <div class="card"><h3>What the framework asks of you</h3>
+        <ul><li>Keep the required core current.</li><li>Put knowledge under <code>docs/</code> (Markdown preferred).</li><li>Run <code>pb sync</code> so the graph stays fresh.</li></ul>
+      </div>
+      <div class="card"><h3>What it never dictates</h3>
+        <ul><li>Your spec format or process.</li><li>Your approval ceremony.</li><li>Which doc types you must keep.</li></ul>
+      </div>
+    </div>
+    <div class="callout"><p>The shipped <code>spec-template.md</code> is a convenience, not a mandate — delete it and use your own.</p></div>
+  </section>
+
+  <!-- 06 GRAPH -->
+  <section class="section" id="graph">
+    <h1>Graph &amp; formats</h1>
+    <p class="lead">The graph is built by <a class="inline" href="https://pypi.org/project/graphifyy/" target="_blank">graphify</a>. What you can graph drives the format choices.</p>
+
+    <h2>Markdown-first, JSON only for config</h2>
+    <p>Prefer Markdown for knowledge you author and maintain — it's diffable and free to ingest. JSON is used only for machine config (<code>brain.config.json</code>), which Claude reads directly and never needs in the graph. There are no manual links to keep up: graphify infers edges and clusters related docs and code into communities on its own. (Native artifacts like PDFs and recordings are also supported — see below.)</p>
+
+    <h2>Why a graph outside the repo still answers questions</h2>
+    <p>Every graph node stores a <code>source_file</code> pointer. When Claude answers, it traverses the graph and opens only the few chunks that matter — it doesn't re-read the codebase. So the graph can sit in the hub, away from the code, and still return precise chunks; the only requirement is that the pulled source in <code>.work/</code> is present (it is, until the next sync). graphify reports a ~70× token reduction per query versus reading raw files on a mixed corpus.</p>
+
+    <h2>It's multi-modal — drop in recordings, PDFs, designs</h2>
+    <p>You don't have to convert everything to Markdown. graphify ingests far more than text, in three passes over one assembled workspace:</p>
+    <table>
+      <tr><th>Pass</th><th>Handles</th><th>How</th><th>Cost</th></tr>
+      <tr><td>1 — Code</td><td>25 languages + SQL schemas</td><td>tree-sitter AST, on your machine</td><td style="color:var(--ok)">Free, local</td></tr>
+      <tr><td>2 — Voice / video</td><td>meeting recordings, calls (<code>.mp3 .wav .mp4 .mov</code>)</td><td>transcribed locally with faster-whisper, seeded with your top concepts for domain focus</td><td style="color:var(--ok)">Free, local</td></tr>
+      <tr><td>3 — Docs / images</td><td>Markdown, PDF, <code>.docx</code>/<code>.xlsx</code>, images</td><td>read by Claude subagents into graph nodes</td><td style="color:var(--warn)">Costs tokens (first build)</td></tr>
     </table>
-  </div>
+    <p>So a recorded kickoff call or a PDF brief can live in the hub and become queryable knowledge — the meeting's decisions end up in the same graph as the code they affect. Markdown stays the preferred format for knowledge you actively <em>author and maintain</em> (it's diffable and free of token cost), but native artifacts are first-class inputs.</p>
 
-  <div class="hygiene-section">
-    <h3>Per Sprint</h3>
-    <table class="hygiene-table">
-      <tbody>
-        <tr><td class="cb">☐</td><td>Review all open <code>[NEEDS CLARIFICATION]</code> markers in active specs — resolve or defer explicitly</td></tr>
-        <tr><td class="cb">☐</td><td>Check for spec drift: run <code>speckit-converge</code> across all active specs, not just the most recent one</td></tr>
-        <tr><td class="cb">☐</td><td>Update CHANGELOG with major product decisions made during the sprint</td></tr>
-      </tbody>
+    <h2>Performance</h2>
+    <p>The first <code>pb sync</code> pays the extraction cost (code is free; docs/images cost tokens; audio/video is local). Every file is fingerprinted by content hash, so later syncs skip everything unchanged and only re-process what moved. There is no separate merge step — it's a single graph from a single run over the assembled workspace.</p>
+  </section>
+
+  <!-- 07 ROLES -->
+  <section class="section" id="roles">
+    <h1>Roles &amp; lenses</h1>
+    <p class="lead">One source, never duplicated. Each role gets a view — a saved set of reads and queries — documented in <code>workflows/&lt;role&gt;.md</code>.</p>
+    <table>
+      <tr><th>Role</th><th>Lens</th><th>Backed by</th></tr>
+      <tr><td><strong>PM</strong></td><td>Domains + specs + glossary, no code noise</td><td><code>domains.md</code>, <code>docs/specs/</code>, <code>vocabulary.md</code></td></tr>
+      <tr><td><strong>Backend dev</strong></td><td>Spec + API code slice + constitution</td><td><code>docs/specs/</code>, <code>graph/</code>, <code>constitution.md</code></td></tr>
+      <tr><td><strong>Frontend dev</strong></td><td>Spec + web code slice + constitution</td><td><code>docs/specs/</code>, <code>graph/</code>, <code>constitution.md</code></td></tr>
+      <tr><td><strong>QA</strong></td><td>Acceptance criteria + relevant graph slices</td><td><code>docs/specs/</code>, <code>graph/</code></td></tr>
+      <tr><td><strong>Designer</strong></td><td>Domains + specs + research</td><td><code>domains.md</code>, <code>docs/research/</code></td></tr>
+      <tr><td><strong>New hire</strong></td><td>Guided path through the one source</td><td><code>workflows/onboarding.md</code></td></tr>
     </table>
-  </div>
+    <p>Every lens reads the same files — the lens only decides what to surface and how.</p>
+  </section>
 
-  <div class="hygiene-section">
-    <h3>Per Quarter</h3>
-    <table class="hygiene-table">
-      <tbody>
-        <tr><td class="cb">☐</td><td>Constitution review: do the principles still reflect how we build? Amend and version-bump if needed</td></tr>
-        <tr><td class="cb">☐</td><td>Vocabulary audit: find new code terms with no business equivalent; find deprecated terms still in the map</td></tr>
-        <tr><td class="cb">☐</td><td>Rebuild all graphs from scratch — purges stale incremental cache, ensures full accuracy</td></tr>
-        <tr><td class="cb">☐</td><td>Archive completed feature specs — move to <code>specs/archive/</code> to keep active specs/ clean</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- 08 SETUP -->
+  <section class="section" id="setup">
+    <h1>Setup guide</h1>
+    <p class="lead">From nothing to a queryable brain in a few steps.</p>
 
-  <div class="hygiene-section">
-    <h3>Graph Rebuild Triggers (Mandatory)</h3>
-    <p style="font-size:14px;color:var(--text-muted);margin-bottom:12px">These events invalidate the existing graph and require a rebuild before the graph is queried again.</p>
-    <ul class="trigger-list card">
-      <li>Model class renamed or moved to a different directory</li>
-      <li>New major feature area added (new directory under <code>app/</code>)</li>
-      <li>Significant directory restructure or namespace change</li>
-      <li>New app or repository added to the multi-repo family</li>
-      <li>Major refactor that changes inter-class dependency structure</li>
+    <div class="step"><div class="num">1</div><div class="body"><h3>Install graphify</h3>
+      <pre><code>pip install graphifyy      # CLI is `graphify`; no LLM key needed for code
+graphify --version</code></pre></div></div>
+
+    <div class="step"><div class="num">2</div><div class="body"><h3>Create the hub repo</h3>
+      <p>Make a new git repo for the hub — it's your single source of truth and benefits from PR review and history.</p></div></div>
+
+    <div class="step"><div class="num">3</div><div class="body"><h3>Run brainify</h3>
+      <p>Open the hub in Claude (Cowork or Claude Code) and say <strong>"Set up product brain."</strong> It audits what's present, then walks you through declaring repos, writing the required core, mapping domains, registering doc types, and building the graph — one step at a time.</p></div></div>
+
+    <div class="step"><div class="num">4</div><div class="body"><h3>Sync</h3>
+      <pre><code>pb sync     # pulls your repos, builds one graph over docs + code</code></pre>
+      <p>Now ask Claude about your product, your code, or your decisions.</p></div></div>
+
+    <div class="callout"><p>Your application repos require <strong>no structural changes</strong> — registration lives only in the hub's <code>brain.config.json</code>.</p></div>
+
+    <h2>Optional: make an app repo hub-aware</h2>
+    <p>If you want a Claude session running <em>inside</em> <code>todo-api</code> or <code>todo-web</code> to benefit from the hub automatically, paste the <strong>app-repo snippet</strong> (<code>templates/app-repo-claude-md-snippet.md</code>) into that repo's <code>CLAUDE.md</code>. It's the only thing you ever add to an app repo, it's pure guidance (no config, no dependency), and it tells Claude to:</p>
+    <ul>
+      <li>check the hub's <code>vocabulary.md</code> so it uses the product's real names;</li>
+      <li>read the relevant spec and domain before answering "what should this do / why";</li>
+      <li>respect the hub's <code>constitution.md</code>;</li>
+      <li>prefer the hub's graph for cross-repo questions, and suggest <code>pb sync</code> if it's stale.</li>
     </ul>
-  </div>
+    <p>The result: in-repo Claude answers get more accurate and efficient, without duplicating any knowledge into the code repo.</p>
+  </section>
 
-  <div class="note" style="margin-top:8px">
-    <span class="note-icon">⚡</span>
-    <div><strong>Incremental rebuilds are fast.</strong> The graphify cache makes re-runs on unchanged files nearly instant. Only changed files are re-parsed. A full rebuild of a 500-file project takes ~60 seconds. An incremental rebuild after a typical PR takes under 10 seconds.</div>
-  </div>
-</section>
+  <!-- 09 EXAMPLE -->
+  <section class="section" id="example">
+    <h1>Example: a to-do app</h1>
+    <p class="lead">A complete, tiny hub for a two-repo product — <code>todo-api</code> and <code>todo-web</code>. It ships in this framework under <code>examples/todo-app/</code>.</p>
 
-<!-- ══════════════════════════════════════════ 8. FAQ ══ -->
-<section id="faq" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 8</div>
-    <h2>Frequently Asked Questions</h2>
-    <p>Common questions from teams adopting the Product Brain.</p>
-  </div>
+    <div class="diagram">todo-brain/
+  brain.config.json            todo-api + todo-web · doc types
+  constitution.md              per-user scoping · validate at edge · soft delete · tests gate merge
+  vocabulary.md                Task · List · Due date  (product ↔ code)
+  domains.md                   Tasks · Lists
+  docs/
+    specs/001-create-task.md
+    decisions/ADR-001-soft-delete.md
+    meeting-notes/2026-06-17-kickoff.md</div>
 
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">Does graphify send my source code to an LLM? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>No. For code files, graphify uses Tree-sitter (local AST parsing) — zero LLM calls, zero data leaves your machine. An LLM API key is only needed for semantic extraction of doc, PDF, or image files, and even then only semantic <em>descriptions</em> are sent, never raw source code. Your code never leaves your environment.</p></div>
-  </div>
+    <h2>The glossary bridges product and code</h2>
+    <p>One vocabulary entry ties the product word to what each repo calls it:</p>
+    <pre><code>## Task
+A single thing the user wants to get done.
+- Also called: todo, item, card
+- In code: `Task` (todo-api model), `TaskItem` (todo-web component)</code></pre>
 
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">How long does graphify take to build a graph? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>For a 500-file PHP project: approximately 60 seconds on the first run, then seconds on subsequent runs due to incremental caching. A 50-file project takes under 10 seconds on first run. Only changed files are re-parsed on subsequent runs, so a typical post-PR rebuild is nearly instant.</p></div>
-  </div>
+    <h2>One spec, both repos</h2>
+    <p>The create-task spec declares the repos it touches and tags each acceptance criterion by layer, so backend, frontend, and QA all read the same source:</p>
+    <pre><code>ID: 001-create-task   Domain: Tasks   Repos: todo-api, todo-web
 
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">What programming languages does graphify support? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>PHP, Python, TypeScript, JavaScript, Go, Rust, Java, C#, Swift, Kotlin, Ruby, C/C++, Scala, Lua, Julia, R, Elixir, Dart, SQL, and more — 19+ languages via Tree-sitter grammars. Tree-sitter handles multiple languages in a single pass, so polyglot monorepos work without any special configuration.</p></div>
-  </div>
+Acceptance
+  (api)  POST /tasks with a title → 201, scoped to the current user
+  (api)  empty title → 422 field error
+  (web)  Enter in quick-add adds the task to the top, no reload
+  (web)  failed create shows an inline error, keeps the typed text</code></pre>
 
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">What if our documentation is in Confluence or Notion? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>Export to Markdown or PDF and add to a <code>/docs</code> folder in your project. Graphify processes both formats (an LLM key is required for semantic extraction of doc content). The <code>vocabulary.json</code> bridges any terminology gaps between those docs and your code, so queries using business terms from the docs still resolve to the right code concepts.</p></div>
-  </div>
+    <h2>Decisions and meetings are knowledge too</h2>
+    <p>The "soft delete" decision (<code>ADR-001</code>) and the kickoff meeting note live in the same hub and graph as the code — so "why can't we hard-delete?" has a documented answer, and the reasoning from the kickoff isn't lost. Ask Claude <em>"how does creating a task work across both apps?"</em> and it answers from the spec, the vocabulary, and both codebases at once.</p>
+  </section>
 
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">Do we need Claude specifically, or does this work with other LLMs? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>Graphify itself is LLM-agnostic — it supports OpenAI, Gemini, Deepseek, Ollama, Kimi, and others for the semantic extraction step. The speckit skills are currently optimized for Claude Cowork. The graph navigation and reasoning layer can be any capable LLM; Claude is the recommended choice for the reasoning quality needed in complex spec generation and impact analysis tasks.</p></div>
-  </div>
+  <!-- 10 OPEN -->
+  <section class="section" id="open">
+    <h1>Open problems</h1>
+    <p class="lead">Deliberately deferred — tracked, not yet built. <span class="pill def">deferred</span></p>
+    <div class="card"><h3>Cross-repo linking adapters</h3><p>Wiring the web graph to the API graph via the contract between them (OpenAPI / GraphQL / tRPC / path heuristics). Hard because the contract style varies per product and heuristic matching is error-prone.</p></div>
+    <div class="card"><h3>Ripple / impact analysis</h3><p>Precise "change X here → these things break there," especially across repos. Depends on the linking above. Soft co-location via graph communities is the interim answer.</p></div>
+    <div class="card"><h3>Freshness via CI-push</h3><p>Moving graph builds from central pull into each repo's CI so the hub is always current. An optimization, not required for v1.</p></div>
+    <div class="card"><h3>Vocabulary ↔ graph linter</h3><p>Auto-verify that each glossary "in code" reference still resolves to a real node after a sync.</p></div>
+    <div class="card"><h3>Non-git knowledge sources</h3><p>Pulling docs from Notion / Drive into the hub as exported Markdown.</p></div>
+  </section>
 
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">How do we handle a monorepo? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>Graph the entire monorepo as one unit — Tree-sitter handles multiple languages in one pass, and community detection will naturally cluster related modules. No need to graph separately and merge. If you want to query a specific service in isolation, use graphify's <code>--filter</code> options to subset by directory. Save the full monorepo graph for cross-service questions.</p></div>
-  </div>
+  <!-- 11 FAQ -->
+  <section class="section" id="faq">
+    <h1>FAQ</h1>
+    <div class="card"><h3>Do I have to use Spec Kit?</h3><p>No. Product Brain is method-agnostic. Spec Kit is one option among many; use any spec format that produces Markdown under <code>docs/specs/</code>.</p></div>
+    <div class="card"><h3>Is the hub a separate repo?</h3><p>Yes — its own git repo. That gives version history, PR review of knowledge, access control, and a clean directory for graphify to build over.</p></div>
+    <div class="card"><h3>Does anything get added to my app repos?</h3><p>No. The hub pulls them and registers them centrally in <code>brain.config.json</code>. An optional one-line CLAUDE pointer is the only thing you might add, and nothing depends on it.</p></div>
+    <div class="card"><h3>Can the graph answer if it lives outside the code repo?</h3><p>Yes. Nodes carry <code>source_file</code> pointers, so the agent traverses the graph and opens just the relevant chunks. The graph's location is irrelevant as long as the pulled source is present.</p></div>
+    <div class="card"><h3>Do I have to link documents together manually?</h3><p>No. graphify infers semantic edges and clusters related docs and code into communities on its own, so there are no wikilinks to author or maintain. Just write clear Markdown and let the graph connect it.</p></div>
+    <div class="card"><h3>Can it tell me what breaks across repos if I change something?</h3><p>Not precisely yet — that's the deferred ripple/adapter work. Today you get grounded querying and soft cross-repo grouping via graph communities.</p></div>
+    <div class="card"><h3>Can I add my own doc types, like meeting notes?</h3><p>Yes — that's a first-class feature. Add the type to <code>brain.config.json</code> and drop Markdown into <code>docs/&lt;type&gt;/</code>.</p></div>
+  </section>
 
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">How do we onboard a new team member with this setup? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>Point them to <code>graph.html</code> (interactive visualization) and <code>GRAPH_REPORT.md</code> (god nodes + surprising connections). They get a visual map of the entire codebase architecture in 10 minutes — which classes are central, which domains are clustered together, and where the major cross-cutting seams are. Add the <code>specs/</code> folder for product context, and <code>vocabulary.json</code> for terminology alignment. That's a complete onboarding kit for a new engineer or PM.</p></div>
-  </div>
-
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">What if a spec conflicts with what's actually built? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>That's a feature, not a bug. <code>speckit-converge</code> surfaces exactly these gaps as open tasks. Each gap is a decision: update the spec (the code was right), update the code (the spec was right), or create a new ticket to address it in a future sprint. The system makes invisible drift visible — without it, that gap would silently persist and cause confusion or bugs later.</p></div>
-  </div>
-
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">Can we use this without Claude Cowork — just the CLI? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>Yes. Graphify CLI works standalone — just install and run. Speckit is just a folder convention and markdown templates — any editor works, any LLM can process them. You lose the AI-assisted spec generation and automated converge/clarify workflows, but you keep the structural benefits: graph navigation, vocabulary map, and spec governance. A partial adoption is still valuable.</p></div>
-  </div>
-
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">How granular should feature specs be? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>One spec per meaningful user-facing capability, not per endpoint. "Patient Authentication" is one spec. "Request OTP" and "Verify OTP" are requirements <em>within</em> it, not separate specs. If two things always ship together and depend on each other, they belong in one spec. If two things can be independently shipped, designed, or changed, they deserve separate specs. When in doubt: one spec per feature, not per endpoint or use case.</p></div>
-  </div>
-
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">Should vocabulary.json be in the same repo as the code? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>Yes, if you have a single-repo product. For multi-repo teams, keep it in a shared <code>/specs</code> or <code>/docs</code> repository that all projects reference, so the same canonical vocabulary applies across all apps. The mobile app, API, and web dashboard should all draw from the same vocabulary.json — inconsistency here is exactly the problem the map is designed to prevent.</p></div>
-  </div>
-
-  <div class="faq-item" onclick="toggleFaq(this)">
-    <button class="faq-q">How do we get leadership buy-in for this investment? <span class="faq-arrow">▾</span></button>
-    <div class="faq-a"><p>The first value is immediate: ask one question about your codebase ("how does X work?") and get a grounded answer in 30 seconds instead of 2 hours of reading code. Run that demo in front of your lead — pick a question you know nobody can answer quickly. The graph pays for the setup cost in the first week. After that, the recurring value is in preventing the regressions, the onboarding delays, and the cross-team miscommunications that were previously invisible and uncosted.</p></div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════ 9. WHY ══ -->
-<section id="why" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 9</div>
-    <h2>Why This Approach</h2>
-    <p>Every tool choice in this stack was preceded by at least one alternative that didn't work well enough. Here's the honest reasoning.</p>
-  </div>
-
-  <div class="why-section card">
-    <h3>Our Starting Point</h3>
-    <p>We started with a running API serving a clinical team. The product had been in production for months. No specs existed. No vocabulary alignment between the clinical language used by the team and the code terms used by the developers. No documentation of why design decisions were made. The only source of truth was the code itself, and the code had no narrative.</p>
-    <p>The question was: how do you close that gap without rewriting everything, without a six-month documentation project, and without disrupting the current development pace?</p>
-  </div>
-
-  <hr class="divider">
-
-  <div class="why-section">
-    <h3>Problem 1 — Codebase Understanding</h3>
-    <table class="alt-table">
-      <thead><tr><th>Alternative</th><th>Why it fell short</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><strong>Vector embeddings / RAG</strong> (Cursor, GitHub Copilot)</td>
-          <td class="alt-table">Good for autocomplete and finding similar code. Poor for "explain the whole system" — returns chunks without connected structure. Can't answer "what are all the services that touch Appointment?"</td>
-        </tr>
-        <tr>
-          <td><strong>Manual code reading</strong></td>
-          <td>Doesn't scale past ~50 files. At 500 files, reading top-to-bottom takes weeks. No persistent artifact — every new team member starts from scratch.</td>
-        </tr>
-        <tr>
-          <td><strong>README-driven docs</strong></td>
-          <td>Outdated within weeks. Requires ongoing human discipline to maintain. Still doesn't show structural connections between components.</td>
-        </tr>
-      </tbody>
-    </table>
-    <p><span class="verdict-yes">Why graph:</span> BFS traversal gives precise, connected answers. The graph knows which classes depend on which. It doesn't just find a class — it shows you the neighborhood. We found the COMPLETED state gap in 3 queries, 30 seconds. Manual reading would have taken hours, if the gap was ever found at all.</p>
-  </div>
-
-  <div class="why-section">
-    <h3>Problem 2 — Documentation</h3>
-    <table class="alt-table">
-      <thead><tr><th>Alternative</th><th>Why it fell short</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><strong>Confluence/Notion templates</strong></td>
-          <td>Require sustained discipline to fill out and keep current. Not connected to code — no mechanism to surface drift. Work well for process docs, not feature specs.</td>
-        </tr>
-        <tr>
-          <td><strong>Auto-generated API docs (Swagger)</strong></td>
-          <td>Covers endpoint signatures, not product intent. "POST /appointments" doesn't tell you why certain appointment types require supervisor approval. Covers WHAT, not WHY.</td>
-        </tr>
-        <tr>
-          <td><strong>AI doc generation</strong> (dump code → ask GPT)</td>
-          <td>Produces shallow summaries. Without business context from the PM, it documents implementation details without product rationale. Misses institutional knowledge.</td>
-        </tr>
-      </tbody>
-    </table>
-    <p><span class="verdict-yes">Why speckit:</span> Structured templates enforce completeness. The constitution enforces consistency. The PM interview workflow captures WHY — not just WHAT the code does. The result is a spec that a developer, a PM, and a new engineer can all read and trust.</p>
-  </div>
-
-  <div class="why-section">
-    <h3>Problem 3 — Vocabulary Mismatch</h3>
-    <table class="alt-table">
-      <thead><tr><th>Alternative</th><th>Why it fell short</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><strong>DDD Ubiquitous Language</strong></td>
-          <td>Ideal in greenfield. In running production code, renaming models is high-risk database migration territory. Not practical without a freeze and a migration sprint.</td>
-        </tr>
-        <tr>
-          <td><strong>Flat glossary markdown</strong></td>
-          <td>Human-readable but not machine-queryable. Decays as fast as any other doc. Can't be processed by graphify as synonym edges.</td>
-        </tr>
-        <tr>
-          <td><strong>Inline spec definitions</strong></td>
-          <td>Fragmented. Every spec defines terms locally. No single source of truth. Definitions drift across specs over time.</td>
-        </tr>
-      </tbody>
-    </table>
-    <p><span class="verdict-yes">Why vocabulary.json:</span> Machine-readable. Processed by graphify as synonym edges — so a query for "session" resolves to <code>Appointment</code>. Single source of truth owned by the PM. Low maintenance overhead. Survives model renaming without code changes.</p>
-  </div>
-
-  <div class="why-section">
-    <h3>Problem 4 — Ripple Effect</h3>
-    <table class="alt-table">
-      <thead><tr><th>Alternative</th><th>Why it fell short</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><strong>Change management tickets</strong></td>
-          <td>Manual process. Misses implicit structural dependencies. Depends on the developer knowing what to check. Works for known dependencies, fails for unknown ones.</td>
-        </tr>
-        <tr>
-          <td><strong>Full test coverage</strong></td>
-          <td>Catches behavioral regressions but not spec-level changes. A test can pass while a spec constraint is violated. Complementary, not sufficient.</td>
-        </tr>
-        <tr>
-          <td><strong>Architecture diagrams</strong></td>
-          <td>Static. Outdated within a sprint if not manually maintained. Show intended architecture, not actual code structure.</td>
-        </tr>
-      </tbody>
-    </table>
-    <p><span class="verdict-yes">Why merged graph + speckit-converge:</span> Structural ripple is detected automatically via shared concept nodes in the graph. Behavioral gaps are caught by tests. Together, they cover both structural and behavioral impact — each layer doing what it does best.</p>
-  </div>
-
-  <div class="why-section">
-    <h3>Problem 5 — Multi-App Queries</h3>
-    <table class="alt-table">
-      <thead><tr><th>Alternative</th><th>Why it fell short</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><strong>Shared Confluence space</strong></td>
-          <td>Still siloed by app in practice. No code connections — just human-written descriptions that may or may not reference each other correctly.</td>
-        </tr>
-        <tr>
-          <td><strong>Super-folder graphify</strong> (clone all repos into one dir)</td>
-          <td>Produces the same result as merge but loses per-app query isolation. Rebuilding one app requires re-running on all of them.</td>
-        </tr>
-      </tbody>
-    </table>
-    <p><span class="verdict-yes">Why separate + merge:</span> Graph each app independently so you can rebuild only what changed. Query individual graphs for app-specific questions. Query the merged graph for cross-cutting questions. The merge step is cheap; the rebuild isolation is valuable.</p>
-  </div>
-
-  <hr class="divider">
-
-  <div class="honest-box">
-    <h4>What We Didn't Solve (Honest)</h4>
-    <ul style="padding-left:16px">
-      <li style="margin-bottom:8px"><strong>Behavioral correctness</strong> — whether logic <em>inside</em> a function is correct. The graph shows structure, not semantics. Unit tests are still necessary and complementary.</li>
-      <li style="margin-bottom:8px"><strong>Semantic vocabulary drift</strong> — same word, different meaning across two specs. The constitution and human review process catch this, but the system doesn't automate it.</li>
-      <li style="margin-bottom:8px"><strong>Automated test generation</strong> — the system generates test scenarios, but a human still needs to validate that those scenarios are correct and cover the right edge cases.</li>
-    </ul>
-  </div>
-
-  <hr class="divider">
-
-  <div class="why-section">
-    <h3>Timeline of Conclusions</h3>
-    <p style="font-size:14px;color:var(--text-muted);margin-bottom:20px">How the framework emerged from a real session on a production product.</p>
-    <ul class="timeline">
-      <li>
-        <div class="tl-title">Built the first graph</div>
-        <div class="tl-desc">Ran graphify on the API codebase. Immediately identified Appointment, User, and TreatmentPlan as god nodes with 30+ connections each. Community clustering revealed the feature domains without any prior knowledge.</div>
-      </li>
-      <li>
-        <div class="tl-title">First query — OTP authentication</div>
-        <div class="tl-desc">"How does OTP authentication work?" — Claude traversed the graph from the User node to find the OTP model, the verification action, and the token expiry logic. Answer in 30 seconds, grounded in real file paths.</div>
-      </li>
-      <li>
-        <div class="tl-title">Found the COMPLETED state gap</div>
-        <div class="tl-desc">"When is TreatmentPlanStatus changed to COMPLETED?" — Graph traversal found the enum definition, found all the places status was set, and found no transition to COMPLETED. A stub state with no business logic. Had been in the codebase for months unnoticed.</div>
-      </li>
-      <li>
-        <div class="tl-title">Built speckit</div>
-        <div class="tl-desc">Recognized that the graph answers WHAT but not WHY. Designed the speckit convention to capture business rationale alongside code structure. Constitution, templates, and the PM interview workflow emerged from this need.</div>
-      </li>
-      <li>
-        <div class="tl-title">Wrote the supervision spec</div>
-        <div class="tl-desc">Used the speckit-specify workflow to write the first full grounded spec for supervisor assignment. Graph-grounded clarifying questions surfaced the cardinality ambiguity (one supervisor vs. many) before a line of code was written.</div>
-      </li>
-      <li>
-        <div class="tl-title">Vocabulary discussion</div>
-        <div class="tl-desc">Realized "session" and "Appointment" were causing miscommunication between the clinical team and developers. Designed vocabulary.json as a machine-readable bridge. Extended graphify to process synonym edges.</div>
-      </li>
-      <li>
-        <div class="tl-title">Ripple framework</div>
-        <div class="tl-desc">Asked "if we change supervision rules, what else is affected?" — discovered three other specs touched the same concept. Formalized the merged-graph + speckit-converge pattern for ripple analysis.</div>
-      </li>
-    </ul>
-  </div>
-</section>
-
-</div><!-- /content-wrap -->
-</main>
-
-<!-- ══════════════════════════════════════════ 10. CONTRIBUTE ══ -->
-<section id="contribute" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 10</div>
-    <h2>Contribute to Product Brain</h2>
-    <p>Product Brain is a living framework. The more teams use it on real products — across different stacks, languages, and org sizes — the better it gets. Pick a role, set a goal, and open a PR.</p>
-  </div>
-
-  <div class="tab-bar">
-    <button class="tab-btn active" id="ctab-dev-tester" onclick="switchContribTab('ctab-dev-tester')">🧪 Dev Tester</button>
-    <button class="tab-btn" id="ctab-pm-tester" onclick="switchContribTab('ctab-pm-tester')">📋 PM Tester</button>
-    <button class="tab-btn" id="ctab-researcher" onclick="switchContribTab('ctab-researcher')">🔬 Researcher</button>
-    <button class="tab-btn" id="ctab-champion" onclick="switchContribTab('ctab-champion')">🏗️ Stack Champion</button>
-    <button class="tab-btn" id="ctab-integrator" onclick="switchContribTab('ctab-integrator')">🔗 Integration Builder</button>
-    <button class="tab-btn" id="ctab-mapper" onclick="switchContribTab('ctab-mapper')">🗺️ Lifecycle Mapper</button>
-  </div>
-
-  <!-- DEV TESTER -->
-  <div class="tab-panel active" id="cpanel-dev-tester">
-    <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;">
-      <h3 style="color:#15803d">Goal</h3>
-      <p style="color:#166534;margin:0">Validate that the full Product Brain workflow (brainify audit → graphify build → speckit spec/plan/tasks) runs correctly on real codebases across different tech stacks. Surface what breaks, what's confusing, and what's missing for non-PHP projects.</p>
-    </div>
-    <div class="role-section">
-      <h4>What you'll test</h4>
-      <ul class="checklist">
-        <li>Run <code>graphify [src/] --out graphify-out</code> on your actual project. Does the graph build? Are node counts reasonable? Do communities make sense?</li>
-        <li>Say "set up product brain" in Claude Cowork on your project. Follow every step of the brainify skill. Note where guidance breaks down or assumes a specific stack.</li>
-        <li>Run speckit-specify for one real feature in your codebase. Does the template fit? What sections feel wrong for your domain?</li>
-        <li>Run speckit-converge on a finished feature. Does it find the right gaps? Any false positives or missed drift?</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>How to get started</h4>
-      <ul class="checklist">
-        <li><strong>Step 1:</strong> Fork this repo. Copy <code>.specify/</code> to your project root. Add the CLAUDE.md section.</li>
-        <li><strong>Step 2:</strong> Run the full setup on your project. Document every friction point — screenshot errors, copy confusing Claude responses, note what you had to Google.</li>
-        <li><strong>Step 3:</strong> Open a PR with a file <code>contributions/dev-test-[your-stack].md</code> — stack name, what worked, what broke, suggested fixes.</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>What to deliver</h4>
-      <ul class="checklist">
-        <li>A test report: <code>contributions/dev-test-[stack].md</code> (stack, outcome per step, error screenshots/logs)</li>
-        <li>PRs to <code>.specify/skills/brainify/SKILL.md</code> fixing steps that broke or assumed the wrong stack</li>
-        <li>PRs to the templates if they were too PHP/Laravel-specific</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>Good first targets</h4>
-      <ul class="checklist">
-        <li>Python / Django or FastAPI</li>
-        <li>Node.js / Express or NestJS</li>
-        <li>Ruby on Rails</li>
-        <li>Go (any framework)</li>
-        <li>React / Next.js frontend repos</li>
-        <li>Mobile: React Native, Flutter, Swift</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- PM TESTER -->
-  <div class="tab-panel" id="cpanel-pm-tester">
-    <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-color:#93c5fd;">
-      <h3 style="color:#1d4ed8">Goal</h3>
-      <p style="color:#1e40af;margin:0">Validate the spec and governance workflow from a non-technical PM perspective. You shouldn't need to read code to use Product Brain. If you do, that's a bug — report it.</p>
-    </div>
-    <div class="role-section">
-      <h4>What you'll test</h4>
-      <ul class="checklist">
-        <li>Use the brainify skill to write a project constitution. Does the interview cover everything you need? Does the resulting constitution make sense to your dev team?</li>
-        <li>Write a real feature spec using speckit-specify. Is the template clear? Are the prompts asking the right questions?</li>
-        <li>Run speckit-clarify on your spec. Does Claude ask useful questions? Are there important questions it misses?</li>
-        <li>Use speckit-converge after a feature ships. Can you understand the output without reading code?</li>
-        <li>Ask Claude: "what domains does this product have?" — are the results meaningful to a PM?</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>How to get started</h4>
-      <ul class="checklist">
-        <li><strong>Step 1:</strong> Set up Product Brain on a project you manage (or use a demo project). You don't need to write any code.</li>
-        <li><strong>Step 2:</strong> Write your constitution and one spec using only the Claude skill — don't manually edit templates.</li>
-        <li><strong>Step 3:</strong> Share the resulting spec with a developer on your team. Ask them: "is this useful? would you code from this?"</li>
-        <li><strong>Step 4:</strong> Document every moment where you got confused, had to ask a follow-up question, or produced something your dev found unclear.</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>What to deliver</h4>
-      <ul class="checklist">
-        <li>A friction report: <code>contributions/pm-test-[product-type].md</code> (B2B SaaS, marketplace, healthcare, etc.)</li>
-        <li>Improved question sequences for the brainify constitution interview</li>
-        <li>Improvements to spec-template.md sections that don't fit non-technical PM workflows</li>
-        <li>Feedback on vocabulary map interview — what questions help PMs map business language to code terms?</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- RESEARCHER -->
-  <div class="tab-panel" id="cpanel-researcher">
-    <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,#faf5ff,#f3e8ff);border-color:#d8b4fe;">
-      <h3 style="color:#7e22ce">Goal</h3>
-      <p style="color:#6b21a8;margin:0">For each problem in the stack, investigate whether graphify, speckit, and Claude are truly the best available tools — or whether something better exists. Document your findings and propose replacements or upgrades where warranted.</p>
-    </div>
-    <div class="role-section">
-      <h4>Open research questions</h4>
-      <ul class="checklist">
-        <li><strong>Knowledge graphs:</strong> How does graphify compare to CodeGraph, tree-sitter-based LSP indexes, or GitHub Copilot's codebase context? When does each win?</li>
-        <li><strong>Spec formats:</strong> Are there structured spec formats (RFC templates, ADRs, C4 model) that compose better with LLM-assisted generation than our current markdown templates?</li>
-        <li><strong>Drift detection:</strong> Are there static analysis tools that detect spec drift better than LLM-based converge? How do they compare on precision and recall?</li>
-        <li><strong>Vocabulary management:</strong> How do enterprise glossary tools (Atlan, Collibra) handle the code↔business vocabulary problem? Can we learn from their data models?</li>
-        <li><strong>Multi-repo knowledge:</strong> How do tools like Sourcegraph, CodeScene, or Backstage handle cross-repo questions? What do they do that graphify merge can't?</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>How to get started</h4>
-      <ul class="checklist">
-        <li>Pick one open research question. It should take 2–4 hours of focused research.</li>
-        <li>Use Claude deep research or web search to gather current state of the art.</li>
-        <li>Try at least one alternative tool hands-on — don't write a comparison from docs alone.</li>
-        <li>Write a structured comparison covering: what it does better, what Product Brain does better, when to use each, and if it should replace or complement the current approach.</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>What to deliver</h4>
-      <ul class="checklist">
-        <li>A research brief: <code>contributions/research-[topic].md</code></li>
-        <li>Structured format: Problem → Current tool → Alternative → Comparison matrix → Recommendation</li>
-        <li>If you recommend replacing a tool: include a migration path</li>
-        <li>If you recommend keeping the current tool: include why the alternative falls short</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- STACK CHAMPION -->
-  <div class="tab-panel" id="cpanel-champion">
-    <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,#fff7ed,#fed7aa);border-color:#fb923c;">
-      <h3 style="color:#c2410c">Goal</h3>
-      <p style="color:#9a3412;margin:0">Own the Product Brain experience for a specific language or framework. The current templates, brainify skill, and examples skew toward Laravel/PHP. Every major stack deserves a stack-specific guide — you write it.</p>
-    </div>
-    <div class="role-section">
-      <h4>What a Stack Champion does</h4>
-      <ul class="checklist">
-        <li>Run the full Product Brain setup on your stack and identify every place where the generic guidance breaks down</li>
-        <li>Write a stack-specific constitution template that captures the idioms of your stack (e.g., Django's apps/models/views pattern, Rails' convention-over-configuration, NestJS's modules/providers)</li>
-        <li>Adapt spec-template.md and plan-template.md with stack-specific examples (real route names, real class patterns)</li>
-        <li>Write a stack guide: a short how-to page for other developers on your stack</li>
-        <li>Become the reviewer for PRs that touch your stack's guide</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>How to get started</h4>
-      <ul class="checklist">
-        <li>Open an issue or PR claiming your stack: "Stack Champion: Python / FastAPI"</li>
-        <li>Start with the constitution template — this is the highest-leverage document for stack specificity</li>
-        <li>Create <code>contributions/stack-[name]/</code> with constitution-template.md and a brief guide.md</li>
-        <li>Submit a PR. Other users on your stack will find it and help refine it.</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>Stacks with no champion yet</h4>
-      <ul class="checklist">
-        <li>Python: Django, FastAPI, Flask</li>
-        <li>Node.js: Express, NestJS, Fastify</li>
-        <li>Ruby on Rails</li>
-        <li>Go (standard library or Gin/Echo/Chi)</li>
-        <li>Java / Spring Boot</li>
-        <li>C# / .NET / ASP.NET Core</li>
-        <li>Frontend: React/Next.js, Vue/Nuxt, Angular</li>
-        <li>Mobile: React Native, Flutter, Swift/SwiftUI, Kotlin/Jetpack Compose</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- INTEGRATION BUILDER -->
-  <div class="tab-panel" id="cpanel-integrator">
-    <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);border-color:#6ee7b7;">
-      <h3 style="color:#065f46">Goal</h3>
-      <p style="color:#047857;margin:0">Connect Product Brain to the tools teams already use — issue trackers, CI/CD pipelines, wikis, and communication tools. A spec that lives only in a markdown file is less useful than one that's wired to your Jira ticket and your GitHub PR.</p>
-    </div>
-    <div class="role-section">
-      <h4>Integration ideas (pick one)</h4>
-      <ul class="checklist">
-        <li><strong>Linear / Jira / Asana:</strong> Sync a spec.md to a project management issue. Auto-create tasks from tasks.md as sub-issues. Update issue status when speckit-converge detects drift.</li>
-        <li><strong>GitHub Actions:</strong> A CI workflow that runs speckit-converge on every PR and posts a comment showing spec coverage for the touched features.</li>
-        <li><strong>Slack / Teams:</strong> Post a summary when a spec is created, a plan is approved, or drift is detected — notify the right channel automatically.</li>
-        <li><strong>Notion / Confluence:</strong> Publish a rendered version of spec.md to the team wiki automatically. Keep it in sync with the repo.</li>
-        <li><strong>Graph refresh hook:</strong> A git post-commit hook or CI step that rebuilds graphify-out when specific file patterns change (app/, src/, models/).</li>
-        <li><strong>Vocabulary sync:</strong> A script that detects new class/model names in a PR and checks whether they're in vocabulary.json — comments if they're missing.</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>How to get started</h4>
-      <ul class="checklist">
-        <li>Pick one integration. Start with the simplest version that's actually useful — e.g., a GitHub Action that runs converge and posts a comment.</li>
-        <li>Build it, test it on a real project, and write a short setup guide.</li>
-        <li>Submit to <code>contributions/integrations/[tool-name]/</code> with code + README.</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>What to deliver</h4>
-      <ul class="checklist">
-        <li>The integration code (script, workflow file, MCP connector, etc.)</li>
-        <li>A one-page setup guide: prerequisites, installation, what it does, how to customize</li>
-        <li>A brief test report: what project you tested it on, edge cases you hit</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- LIFECYCLE MAPPER -->
-  <div class="tab-panel" id="cpanel-mapper">
-    <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,#fff1f2,#ffe4e6);border-color:#fca5a5;">
-      <h3 style="color:#be123c">Goal</h3>
-      <p style="color:#9f1239;margin:0">Product Brain covers spec writing, planning, and drift detection — but the full feature lifecycle has many more stages. This role focuses on the gaps: from the moment a stakeholder has an idea, to the moment it's live and being measured. Each unsolved stage is an open problem waiting for a solution.</p>
-    </div>
-    <div class="role-section">
-      <h4>The unsolved stages</h4>
-      <ul class="checklist">
-        <li><strong>Intake:</strong> Stakeholder ideas arrive as Slack messages. No structured format. No triage. No way to know if an idea is already specced or in-flight.</li>
-        <li><strong>Prioritization:</strong> Which spec gets built next? No framework connects business value, dev effort, and spec readiness into a decision.</li>
-        <li><strong>Discovery:</strong> User interviews and research sessions produce notes — not inputs to speckit. The bridge from discovery to spec doesn't exist yet.</li>
-        <li><strong>Spec sign-off:</strong> PMs write specs, but stakeholder approval is a Slack emoji. No audit trail. No explicit gate.</li>
-        <li><strong>UAT:</strong> Stakeholders test features ad-hoc. No checklist from spec success criteria. No sign-off record.</li>
-        <li><strong>Post-launch:</strong> Specs have success criteria. Production has metrics. Nobody connects them after launch.</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>How to contribute</h4>
-      <ul class="checklist">
-        <li>Pick one unsolved stage. Read its open problem card in the Open Problems section.</li>
-        <li>Propose a solution: a new template, a new skill step, a new workflow, or a new integration.</li>
-        <li>Build a minimal version — even just a template and a how-to is enough to start.</li>
-        <li>Test it on a real product with a real PM and a real developer. Document what happened.</li>
-        <li>Submit to <code>contributions/lifecycle/[stage-name]/</code>.</li>
-      </ul>
-    </div>
-    <div class="role-section">
-      <h4>What to deliver</h4>
-      <ul class="checklist">
-        <li>A proposal doc: problem statement, proposed solution, open questions</li>
-        <li>A first artifact: template, skill step, or workflow</li>
-        <li>A test report: what happened when you used it on a real product</li>
-        <li>A PR that adds the artifact to <code>.specify/templates/</code> or <code>.specify/skills/brainify/SKILL.md</code></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:32px;background:var(--accent-bg);border-color:#c7d2fe;text-align:center;padding:32px;">
-    <p style="font-size:18px;font-weight:700;color:var(--accent);margin-bottom:8px">All contributions follow the same PR format</p>
-    <p style="color:var(--text-muted);max-width:560px;margin:0 auto 16px">In your PR description: (1) which role you're contributing as, (2) which product/stack you tested on, (3) what changed and why, (4) what you're unsure about and want feedback on.</p>
-    <code style="background:#fff;padding:6px 14px;border-radius:6px;font-size:13px;color:var(--accent)">contributions/[role]/[stack-or-topic]/[artifact.md]</code>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════ 11. OPEN PROBLEMS ══ -->
-<section id="open-problems" class="section">
-  <div class="section-header">
-    <div class="breadcrumb">Section 11</div>
-    <h2>Open Problems</h2>
-    <p>Product Brain solves the knowledge and spec layers. But a feature's journey from stakeholder idea to live production spans many more stages — and most of them are unsolved. These are the problems we've identified and haven't cracked yet.</p>
-  </div>
-
-  <div class="card" style="margin-bottom:40px;padding:32px;">
-    <h3 style="margin-bottom:20px">The full feature lifecycle</h3>
-    <p style="margin-bottom:24px;color:var(--text-muted);font-size:14px">Green = covered by Product Brain. Red = open problem. Each red stage is a contribution opportunity.</p>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;">
-      <div style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#15803d;text-align:center">📥 Intake<br><span style="font-weight:400;color:#4ade80">open</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#dc2626;text-align:center">⚖️ Prioritize<br><span style="font-weight:400;color:#f87171">open</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#dc2626;text-align:center">🔍 Discover<br><span style="font-weight:400;color:#f87171">open</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#1d4ed8;text-align:center">📄 Spec<br><span style="font-weight:400;color:#60a5fa">✅ covered</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#dc2626;text-align:center">✍️ Sign-off<br><span style="font-weight:400;color:#f87171">open</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#1d4ed8;text-align:center">🗺️ Plan<br><span style="font-weight:400;color:#60a5fa">✅ covered</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#1d4ed8;text-align:center">✅ Tasks<br><span style="font-weight:400;color:#60a5fa">✅ covered</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#1d4ed8;text-align:center">💻 Build<br><span style="font-weight:400;color:#60a5fa">✅ covered</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#dc2626;text-align:center">👁️ Code Review<br><span style="font-weight:400;color:#f87171">open</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#1d4ed8;text-align:center">🔍 Drift Check<br><span style="font-weight:400;color:#60a5fa">✅ covered</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#dc2626;text-align:center">🧑‍💼 UAT<br><span style="font-weight:400;color:#f87171">open</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#dc2626;text-align:center">🚀 Deploy<br><span style="font-weight:400;color:#f87171">open</span></div>
-      <div style="color:#94a3b8;font-size:18px">→</div>
-      <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#dc2626;text-align:center">📈 Monitor<br><span style="font-weight:400;color:#f87171">open</span></div>
-    </div>
-  </div>
-
-  <h3 style="margin-bottom:20px">Open problem cards</h3>
-  <p style="color:var(--text-muted);margin-bottom:28px">Each card is an invitation. If you have a solution — a template, a skill step, an integration, a workflow — open a PR. See the Contribute section for how.</p>
-
-  <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
-
-    <div class="card problem-card" style="border-left:4px solid #f59e0b">
-      <div class="icon">📥</div>
-      <h3>Unstructured feature intake</h3>
-      <p>Stakeholder ideas arrive as Slack messages, emails, and Notion pages with no consistent format. There's no way to know if an idea is already specced, in-flight, or was rejected last quarter. Product Brain starts at spec writing — but ideas need a home before that.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A lightweight intake template (idea title, problem statement, who asked, business case) that Claude can parse to check for existing specs and draft a pre-spec summary.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #8b5cf6">
-      <div class="icon">⚖️</div>
-      <h3>No prioritization layer</h3>
-      <p>Specs get written, but there's no framework connecting business value, dev effort, and technical readiness into a decision. Teams default to gut feel or HIPPO (highest-paid person's opinion). Specs pile up with no clear "build this next."</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A scoring template per spec (impact, effort, risk, dependency count) that Claude populates using graph analysis + spec content, producing a ranked backlog view.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #06b6d4">
-      <div class="icon">🔍</div>
-      <h3>Discovery gap</h3>
-      <p>User interviews, usability tests, and research sessions produce notes — but those notes never make it into speckit. The bridge from "we learned this about users" to "here's the requirement" is manual and lossy. Specs get written without the discovery that should drive them.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#0e7490;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A discovery-to-spec bridge: paste interview notes or research summaries, Claude synthesizes themes and maps them to spec sections (problem statement, scenarios, success criteria).</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #ec4899">
-      <div class="icon">💬</div>
-      <h3>Meeting decisions evaporate</h3>
-      <p>Design decisions get made in calls. Architecture choices get agreed in standups. Feature scope gets changed in reviews. None of it makes it into the spec or constitution. The only record is "someone remembers" — until they leave or forget.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#be185d;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A meeting-notes-to-spec extractor: paste or upload call notes, Claude identifies decisions that should amend the spec or constitution, and proposes the changes for review.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #ef4444">
-      <div class="icon">✍️</div>
-      <h3>Spec approval is informal</h3>
-      <p>A PM writes a spec. A developer reads it. A stakeholder glances at it. Approval is a Slack "👍" or an assumed silence. There's no audit trail, no explicit sign-off gate, and no way to know who approved what version. When something goes wrong, "the spec was approved" is unverifiable.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A spec status header (Draft → In Review → Approved) with a required approver list per spec, tracked in the spec file itself. Claude refuses to move to speckit-plan until approvers are listed.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #10b981">
-      <div class="icon">👁️</div>
-      <h3>Spec-blind code review</h3>
-      <p>Code reviewers evaluate PRs against style guides and tests — not against the spec. A PR can technically pass all checks while silently violating requirements REQ-004 and REQ-007. Nobody knows until UAT or production.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#047857;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A GitHub Action that posts the relevant spec's requirements as a checklist on every PR that touches a specced feature, so reviewers can tick off what they verified.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #f59e0b">
-      <div class="icon">🧑‍💼</div>
-      <h3>UAT without a template</h3>
-      <p>Stakeholder acceptance testing is ad-hoc. Testers click around. Issues get reported as "it feels wrong." There's no checklist derived from the spec's success criteria, no sign-off record, and no traceability from what was tested to what was required.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A UAT checklist auto-generated from spec success criteria and scenarios. Each item references the requirement ID. Stakeholders check items off, and Claude summarizes the sign-off status.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #8b5cf6">
-      <div class="icon">🚀</div>
-      <h3>Deployment disconnected from spec</h3>
-      <p>Deployment checklists are generic: "run migrations, check logs, notify team." They have no awareness of what spec is shipping. A feature with a critical payment flow gets the same pre-deploy checklist as a UI label rename.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A spec-aware deployment checklist generator: Claude reads the spec and generates a checklist specific to the feature's risk areas, dependencies, and constitution principles.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #06b6d4">
-      <div class="icon">📈</div>
-      <h3>Success criteria never measured</h3>
-      <p>Specs define success criteria: "100% of plans have a supervisor before going Active." But after launch, nobody checks. The spec lives in the repo. The metrics live in Amplitude. Nobody connects them. Features ship and succeed or fail silently.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#0e7490;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A post-launch review template that pairs each spec success criterion with a metric query. Claude reads the criteria and suggests what to measure and where to find it in your analytics tool.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #ec4899">
-      <div class="icon">🕸️</div>
-      <h3>No dependency map between specs</h3>
-      <p>Spec A introduces a new status enum. Spec B adds a workflow that depends on it. Neither spec references the other. When spec A changes, spec B is never updated. The dependency was implicit — it should be explicit.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#be185d;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A "Dependencies" section in each spec template that references other spec IDs. Claude uses the merged graph to suggest likely dependencies when writing a new spec.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #ef4444">
-      <div class="icon">⚠️</div>
-      <h3>Technical debt is undocumented</h3>
-      <p>Every team makes pragmatic shortcuts: "we'll do it properly next sprint." These shortcuts deviate from the spec but are intentional. Without a record, the shortcut becomes permanent — the next developer doesn't know it was a cut corner, not a design decision.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A debt-spec format: when speckit-converge finds a divergence that's intentional, Claude helps document it as a debt record with context, risk level, and a planned resolution date.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #10b981">
-      <div class="icon">🧑‍🎓</div>
-      <h3>No onboarding path for new team members</h3>
-      <p>A new developer joins. They have access to the repo, the graph, and the specs. But there's no guided path: "here's what this product does, here are the important domains, here are the non-negotiable principles, here's how we work." The institutional knowledge is present but not surfaced.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#047857;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A brainify onboarding mode: given a graph, constitution, vocabulary, and a set of specs, Claude generates a personalized onboarding guide for a new team member's specific role.</p>
-      </div>
-    </div>
-
-    <div class="card problem-card" style="border-left:4px solid #f59e0b">
-      <div class="icon">📝</div>
-      <h3>Release notes are manual</h3>
-      <p>CHANGELOG.md gets updated because the constitution requires it. Specs define what was built. But release notes for customers, stakeholders, or app stores are written from scratch every time — even though the spec and changelog contain everything needed.</p>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Proposed approach</div>
-        <p style="font-size:13px;margin:0">A release notes generator: Claude reads the CHANGELOG entries and linked specs for a release tag, and produces audience-appropriate release notes (technical, business, customer-facing) in one pass.</p>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="card" style="margin-top:32px;background:linear-gradient(135deg,#1e293b,#312e81);color:#fff;border:none;padding:40px;text-align:center">
-    <p style="font-size:22px;font-weight:700;color:#fff;margin-bottom:10px">Every open problem is a contribution opportunity</p>
-    <p style="color:#94a3b8;max-width:560px;margin:0 auto 24px">You don't need to solve a whole problem. A good template, a working skill step, or a tested workflow that covers one scenario is enough to move it forward. Small PRs welcome.</p>
-    <div style="display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center">
-      <span onclick="showSection('contribute')" style="background:var(--accent);color:#fff;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">See contributor roles →</span>
-      <span style="background:rgba(255,255,255,.1);color:#cbd5e1;border:1px solid rgba(255,255,255,.2);padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px">Open a PR on GitHub</span>
-    </div>
-  </div>
-</section>
-
+</div></main>
 
 <script>
-  // ── Section navigation ──
-  function showSection(id) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-    const sec = document.getElementById(id);
-    if (sec) sec.classList.add('active');
-    // match nav link by onclick
-    document.querySelectorAll('nav a').forEach(a => {
-      if (a.getAttribute('onclick') && a.getAttribute('onclick').includes("'" + id + "'")) {
-        a.classList.add('active');
-      }
-    });
-    // close mobile sidebar
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebar-overlay').classList.remove('open');
+  const nav = document.getElementById('nav');
+  const links = nav.querySelectorAll('a');
+  const sections = document.querySelectorAll('.section');
+  nav.addEventListener('click', e => {
+    const a = e.target.closest('a'); if (!a) return;
+    const id = a.dataset.sec;
+    links.forEach(l => l.classList.toggle('active', l === a));
+    sections.forEach(s => s.classList.toggle('active', s.id === id));
+    document.getElementById('main').scrollTo(0, 0);
     window.scrollTo(0, 0);
-  }
-
-  // ── Tab switching ──
-  function switchTab(tabId) {
-    const panels = {
-      'tab-pm': 'panel-pm',
-      'tab-tl': 'panel-tl',
-      'tab-dev': 'panel-dev',
-      'tab-design': 'panel-design',
-      'tab-qa': 'panel-qa'
-    };
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    const btn = document.getElementById(tabId);
-    if (btn) btn.classList.add('active');
-    const panelId = panels[tabId];
-    if (panelId) {
-      const panel = document.getElementById(panelId);
-      if (panel) panel.classList.add('active');
-    }
-  }
-
-  // ── FAQ accordion ──
-  function toggleFaq(item) {
-    const isOpen = item.classList.contains('open');
-    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
-    if (!isOpen) item.classList.add('open');
-  }
-
-  // ── Mobile sidebar ──
-  function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sidebar-overlay').classList.toggle('open');
-  }
-
-  // ── Contribute tab switching ──
-  function switchContribTab(tabId) {
-    const panels = {
-      'ctab-dev-tester': 'cpanel-dev-tester',
-      'ctab-pm-tester': 'cpanel-pm-tester',
-      'ctab-researcher': 'cpanel-researcher',
-      'ctab-champion': 'cpanel-champion',
-      'ctab-integrator': 'cpanel-integrator',
-      'ctab-mapper': 'cpanel-mapper',
-    };
-    // Scope to contribute section only
-    const section = document.getElementById('contribute');
-    if (!section) return;
-    section.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    section.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    const btn = document.getElementById(tabId);
-    if (btn) btn.classList.add('active');
-    const panelId = panels[tabId];
-    if (panelId) {
-      const panel = document.getElementById(panelId);
-      if (panel) panel.classList.add('active');
-    }
-  }
-
-  // ── Role chip navigation (roles section) ──
-  // Already handled by showSection + switchTab inline in HTML
+    document.getElementById('sidebar').classList.remove('open');
+  });
 </script>
 </body>
 </html>

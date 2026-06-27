@@ -1,41 +1,56 @@
 # 🧠 Product Brain
 
-> **Keep your product, code, and team knowledge in sync — no matter how fast you move or how many people work on it.**
+> **One source of truth for product knowledge — across every repo, for every role, in whatever method your team already uses.**
 
-Product Brain is an open framework that connects your codebase, specs, vocabulary, and team decisions into a single queryable layer. Ask Claude anything about your product. Get answers grounded in real code and real requirements — not hallucinated structure.
+Product Brain is an open framework for keeping product knowledge — specs, vocabulary, domains, decisions, meeting notes — in one place, connected to your code, and answerable by Claude. It works across multiple repositories, and it's **method-agnostic**: bring your own way of writing specs.
 
 ---
 
-## The problems it solves
+## The idea in one picture
+
+```
+                 ┌────────────────────────────────────┐
+                 │            your hub repo            │   ← single source of truth
+                 │  constitution · vocabulary · domains │
+                 │  docs/ (specs, decisions, notes, …) │
+                 │  graph/ (built over docs + code)    │
+                 └───────────────┬────────────────────┘
+                         pb sync  │  pulls code, builds one graph
+                 ┌───────────────┴───────────────┐
+                 ▼                                 ▼
+          ┌─────────────┐                  ┌──────────────┐
+          │   web-app   │                  │  backend-api │   ← your code repos
+          │ (untouched) │                  │  (untouched) │      (nothing added)
+          └─────────────┘                  └──────────────┘
+```
+
+The **hub** is its own git repo. Your application repos stay exactly as they are — the hub pulls them and builds a single knowledge graph over your docs *and* your code. Ask Claude anything; answers are grounded in real code and real decisions.
+
+---
+
+## Two things, kept separate
+
+| **Product Brain (this framework)** | **Your hub (an instance)** |
+|---|---|
+| The `brainify` skill + templates + docs | Your team's actual knowledge |
+| Tooling | Knowledge only — no skills inside |
+| Lives here | Its own git repo, created by running `brainify` |
+
+This separation is what keeps the framework method-neutral and your hub clean.
+
+---
+
+## What problems it solves
 
 | # | Problem | Without Product Brain |
-|---|---------|----------------------|
-| 1 | Codebase questions | Read every file manually, ask the "code person" |
-| 2 | Missing specs | Code exists, nobody documented why or what |
-| 3 | Vocabulary mismatch | "sessions" in the meeting, `Appointment` in the code |
-| 4 | Ripple effects | A spec changes, nobody knows what else breaks |
-| 5 | Multi-app knowledge | A question spans three repos and takes days |
-| 6 | Institutional knowledge | Lives in people's heads, leaves when they do |
+|---|---|---|
+| 1 | Codebase questions | Read every file, ask the "code person" |
+| 2 | Missing context | Code exists; nobody wrote down why |
+| 3 | Vocabulary mismatch | "Session" in the meeting, `Appointment` in the code |
+| 4 | Multi-repo knowledge | A question spans two repos and takes days |
+| 5 | Institutional knowledge | Lives in people's heads, leaves when they do |
 
----
-
-## How it works
-
-```
-Your codebase
-      │
-      ▼
-  graphify              AST-based knowledge graph (19+ languages, no LLM key needed)
-      │
-      ▼
-  graph.json            3,000+ nodes, communities, god-node analysis
-      │
-      ├──▶  Claude       Ask questions, get answers grounded in real code
-      │
-      ├──▶  speckit      Write specs, plans, and tasks from the graph context
-      │
-      └──▶  brainify     Interactive setup skill — audits what's missing, guides you through
-```
+> Precise cross-repo *impact analysis* ("change X here → exactly these files break there") is **not** solved yet — it's a tracked [open problem](docs/multi-repo-architecture.md#13-open-problems-deferred-not-solved-here).
 
 ---
 
@@ -43,131 +58,92 @@ Your codebase
 
 ```
 product-brain/
-  README.md                                   ← you are here
-  CLAUDE.md                                   ← copy this into your project's CLAUDE.md
+  README.md                         ← you are here
+  CLAUDE.md                         ← framework guidance for Claude
+  docs/
+    multi-repo-architecture.md      ← the full architecture proposal
+  skills/
+    brainify/SKILL.md               ← the setup & maintenance skill
+  templates/                        ← what a hub is made of (method-agnostic)
+    brain.config.template.json
+    constitution-template.md
+    vocabulary-template.md
+    domains-template.md
+    spec-template.md
+    doc-types/                      meeting-note, decision (ADR)
+    workflows/                      pm, backend, frontend, qa, onboarding
+    hub-claude-md-snippet.md        for a hub's CLAUDE.md
+    app-repo-claude-md-snippet.md   optional: makes an app repo hub-aware
+  examples/
+    todo-app/                       ← a complete tiny hub (todo-api + todo-web)
   website/
-    product-brain.html                        ← full documentation site (open in browser)
-  .specify/
-    skills/
-      brainify/
-        SKILL.md                              ← interactive Claude setup assistant
-    templates/
-      spec-template.md                        ← feature spec template
-      plan-template.md                        ← implementation plan template
-      tasks-template.md                       ← task list template
-      claude-md-snippet.md                    ← CLAUDE.md section to copy into any project
-    memory/
-      constitution-template.md               ← blank project constitution to fill in
-    vocabulary-template.json                 ← vocabulary map starter
-    init-options.json                        ← speckit config
-    feature.json                             ← active feature tracker
+    product-brain.html              ← documentation site (open in a browser)
 ```
 
 ---
 
-## Quick start — 5 steps
+## Quick start
 
 ### 1. Install graphify
 
 ```bash
-pip install graphifyy
+pip install graphifyy        # CLI is `graphify`; no LLM key needed for code
 graphify --version
 ```
 
-### 2. Copy `.specify/` to your project root
+### 2. Create your hub
 
-```bash
-cp -r .specify/ /path/to/your-project/
-```
-
-### 3. Add the CLAUDE.md section to your project
-
-Open `CLAUDE.md` in this repo. Copy everything from `## Product Brain` to the end.
-Paste it into the bottom of your project's `CLAUDE.md` (create one if it doesn't exist).
-
-### 4. Build your knowledge graph
-
-```bash
-cd /path/to/your-project
-graphify app/ --out graphify-out      # point at your source code directory
-open graphify-out/graph.html          # explore visually
-```
-
-> No LLM key needed for code-only directories. Only doc/PDF parsing requires a key.
-
-### 5. Let Claude guide you through the rest
-
-Open your project in Claude (Cowork or Claude Code) and say:
+Make a new git repo for your hub and run Claude in it:
 
 > **"Set up product brain"**
 
-Claude audits what's present, shows a status report, and walks you through each step interactively — writing your constitution, building your vocabulary map, and drafting your first spec.
+`brainify` audits what's there, then walks you through it one step at a time: declaring your repos in `brain.config.json`, writing the required core (constitution, vocabulary), mapping domains from the graph, registering the doc types you want, and building the graph.
 
----
+### 3. Sync
 
-## The five framework layers
-
-| Layer | Tool | What it gives you |
-|-------|------|-------------------|
-| 1. Knowledge graph | graphify | Ask questions of any codebase in seconds |
-| 2. Governance | constitution.md | Non-negotiable principles every spec must follow |
-| 3. Vocabulary | vocabulary.json | Bridge between product language and code terms |
-| 4. Feature specs | speckit | Structured, reviewable specs with clear requirements |
-| 5. Drift detection | speckit-converge | Find where implementation diverged from spec |
-
----
-
-## Hygiene — keep it healthy
-
-| Cadence | Action |
-|---------|--------|
-| Every PR | Run `speckit-converge` if the PR touches a spec'd feature |
-| Weekly | Rebuild the graph — `graphify app/ --out graphify-out` |
-| Per new feature | Write a spec with `speckit-specify` before coding starts |
-| Per new term | Add to `vocabulary.json` when a new domain concept appears |
-| Per architectural change | Amend `constitution.md`, bump version |
-
----
-
-## Language support
-
-graphify uses Tree-sitter grammars — works with any of the following out of the box:
-
-`PHP` · `Python` · `TypeScript` · `JavaScript` · `Go` · `Rust` · `Java` · `C#` · `Swift` · `Kotlin` · `Ruby` · `C` · `C++` · `Scala` · `Lua` · `Julia` · `R` · `Elixir` · `Dart` · `SQL`
-
----
-
-## Contributing
-
-We need testers, researchers, stack champions, and integration builders. Every role has a clear goal and a PR format. See the full guide at **Section 10 — Contribute** in `website/product-brain.html`.
-
-**Quick contribution paths:**
-
-- **Dev Tester** — run the framework on your stack, report what breaks
-- **PM Tester** — validate the spec workflow without writing code
-- **Researcher** — investigate whether we're using the best tools for each problem
-- **Stack Champion** — own the experience for Python, Rails, Node, Go, or any other stack
-- **Integration Builder** — wire Product Brain to Linear, GitHub Actions, Slack, Notion
-- **Lifecycle Mapper** — solve the unsolved stages: intake, UAT, post-launch monitoring
-
-**PR format:** Problem you hit → what you changed → which product/stack you tested on → what you're unsure about.
-
-```
-contributions/[role]/[stack-or-topic]/[artifact.md]
+```bash
+pb sync       # pulls your repos, builds one graph over docs + code
 ```
 
-There are 13 open problems documented in `website/product-brain.html` → Section 11. Each one is a concrete, unresolved gap with a proposed approach. Pick one and take a swing.
+That's it. Ask Claude about your product, your code, or your decisions.
+
+---
+
+## What a hub is made of
+
+**Required core** (this is what makes a directory a "brain"):
+
+- `constitution.md` — the non-negotiable principles.
+- `vocabulary.md` — the glossary tying product language to code.
+
+**Recommended:** `domains.md` — the functional areas, owners, status, and which repos implement them. It's graph-assisted: after a sync, the graph's communities are good candidate domains, so you curate rather than author from scratch.
+
+**Extensible docs** — register any doc types you like in `brain.config.json` (`specs`, `decisions`, `meeting-notes`, `research`, `runbooks`, or your own). Markdown is preferred, and graphify connects it automatically.
+
+**Role workflows** — each role gets a lens over the one source: PM, backend, frontend, QA, onboarding.
+
+---
+
+## Method-agnostic by design
+
+Product Brain prescribes **structure**, not **methodology**. Write specs as plain Markdown, RFCs, Shape Up pitches, Spec Kit, or paste exports from Notion — as long as they live under `docs/specs/`, the hub holds and graphs them. Use the tool of your choice.
+
+---
+
+## Markdown-first, but multi-modal
+
+The graph is built with [graphify](https://pypi.org/project/graphifyy/), which parses code locally via tree-sitter and ingests Markdown, PDFs, `.docx`/`.xlsx`, images, and even meeting recordings (transcribed locally). Markdown is preferred for knowledge you author and maintain — it's diffable and free to ingest — but you can drop in native artifacts (a recorded kickoff, a PDF brief) as source material. JSON is used only for machine config (`brain.config.json`). graphify connects related docs and code automatically via inferred edges and communities, so no manual cross-linking is needed. Ask a question and the agent traverses the graph, returning just the few relevant chunks via each node's `source_file` — which is why the graph can live in the hub, away from the code, and still answer.
 
 ---
 
 ## Tools used
 
-- **[graphify](https://pypi.org/project/graphifyy/)** (`pip install graphifyy`) — AST knowledge graph, 19+ languages, no LLM key for code analysis
-- **[speckit](https://github.com/anthropics/speckit)** — spec/plan/task workflow via Claude skills
-- **[Claude](https://claude.ai)** (Cowork or Claude Code) — runs brainify, writes specs, answers graph queries
+- **[graphify](https://pypi.org/project/graphifyy/)** (`pip install graphifyy`) — local AST + doc knowledge graph.
+- **[Claude](https://claude.ai)** (Cowork or Claude Code) — runs `brainify`, answers graph-grounded questions.
+- **Your spec method of choice** — optional; Product Brain doesn't require one.
 
 ---
 
 ## Full documentation
 
-Open `website/product-brain.html` in any browser for the complete documentation: how-tos, role guides, workflows, hygiene schedule, FAQ, contributor roles, open problems, and the origin story of how the framework was developed.
+Open `website/product-brain.html` in a browser, or read `docs/multi-repo-architecture.md` for the architecture and open problems.

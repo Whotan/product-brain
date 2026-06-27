@@ -1,54 +1,47 @@
-# CLAUDE.md — Product Brain Framework
+# CLAUDE.md — Product Brain (framework repo)
 
-> **This file has two purposes:**
-> 1. Copy the section below into your own project's `CLAUDE.md` to activate the framework.
-> 2. It also serves as Claude's guidance when working on the Product Brain repo itself.
+This is the **Product Brain framework** repository — the tooling: the `brainify` skill, the hub
+templates, the architecture docs, and the website. It is *not* a hub. A team's knowledge lives in a
+separate hub repo created by running `brainify`.
+
+> Looking for the snippet to put in a *hub's* `CLAUDE.md`? That's `templates/hub-claude-md-snippet.md` — do not confuse it with this file.
 
 ---
 
-## Product Brain
+## Core principles of the framework
 
-This project uses the **Product Brain** framework for documentation, spec governance, and codebase knowledge management.
+- **Method-agnostic.** Product Brain prescribes structure, not methodology. Never reintroduce a hard dependency on a specific spec tool (e.g. Spec Kit). Specs are just Markdown under a hub's `docs/specs/`, authored however the team likes.
+- **Framework ≠ hub.** Tooling (skills, templates) ships here. Knowledge (constitution, vocabulary, domains, docs, graph) lives in a team's hub. Never nest skills inside a hub, and never put team knowledge here.
+- **Markdown-first, but multi-modal.** Prefer Markdown for knowledge the team authors and maintains. graphify is multi-modal (Markdown, PDF, docx/xlsx, images, audio/video), so native artifacts like meeting recordings are welcome as source material. JSON is only for machine config (`brain.config.json`). Don't rely on manual cross-links — graphify infers edges and communities; we dropped wikilinks as a convention.
+- **App repos stay untouched.** A hub registers repos centrally in `brain.config.json` and pulls them. Don't propose adding config files to application repos.
 
-### Framework health checks
+## Repository map
 
-Before answering a complex codebase question, check if `graphify-out/graph.json` exists and is recent (< 7 days). If not:
-- Missing: suggest building it first — "The knowledge graph isn't built. It takes ~1 min. Build it now?"
-- Stale: mention it — "The graph is X days old — consider rebuilding for an accurate answer."
+| Purpose | Path |
+|---|---|
+| Setup/maintenance skill | `skills/brainify/SKILL.md` |
+| Hub templates | `templates/` |
+| Architecture & open problems | `docs/multi-repo-architecture.md` |
+| Documentation site | `website/product-brain.html` |
 
-When discussing a feature with no spec in `specs/`, mention it once per session: "No spec exists for [area] yet — want me to draft one with speckit?"
+## What a hub looks like (what the templates build)
 
-### Next-step awareness
+Required core: `constitution.md`, `vocabulary.md`. Recommended (graph-assisted): `domains.md`.
+Plus: `brain.config.json` (repos + doc types), `docs/<type>/` (extensible), `workflows/<role>.md`, `graph/` (built by `pb sync`).
 
-After any framework action, suggest the logical next step:
-- After a spec → suggest `speckit-clarify` or `speckit-plan`
-- After a plan → suggest `speckit-tasks`
-- After tasks → suggest implementation
-- After implementation → suggest `speckit-converge` to check for drift
-- After any code change → ask if CHANGELOG.md and vocabulary.json need updating
+## The graph
 
-### Recognized commands
+`pb sync` pulls each repo from `brain.config.json` into `.work/`, then runs graphify once over a
+workspace of `{ core docs, docs/**, .work/repos/** }`, producing a single `graph/graph.json`.
+Querying returns chunks via each node's `source_file`, so the graph need not sit next to the code.
 
-- "Set up product brain" / "walk me through setup" → run `.specify/skills/brainify/SKILL.md`
-- "What's missing from our setup?" → run audit (bash checks for all framework components)
-- "What should I do next?" → suggest highest-priority missing framework component
-- "Build the graph" → `graphify app/ --out graphify-out` (code-only, no LLM key needed)
-- "Rebuild the graph" → delete `graphify-out/` first, then rebuild
-- "Write a spec for X" → use speckit-specify
-- "What domains does this product have?" → query graph communities from `graphify-out/graph.json`
-- "Check for drift" → use speckit-converge on the active spec
+## Deferred — open problems (do not present as solved)
 
-### Canonical vocabulary
+Cross-repo linking adapters, ripple/impact analysis, CI-push freshness, and a vocabulary↔graph
+linter are tracked in `docs/multi-repo-architecture.md` §13. Soft co-location via graph communities
+is the interim answer for cross-repo questions.
 
-Always use `.specify/vocabulary.json` terms when answering questions. When code uses a different term than the product/user-facing term, surface both: "This is the `Appointment` model (called 'Session' in product docs)."
+## When working on this repo
 
-### Framework file map
-
-| Purpose | File |
-|---------|------|
-| Codebase knowledge graph | `graphify-out/graph.json` |
-| Project constitution | `.specify/memory/constitution.md` |
-| Vocabulary synonyms | `.specify/vocabulary.json` |
-| Active feature spec | `specs/NNN-name/spec.md` |
-| Active feature tracker | `.specify/feature.json` |
-| Setup skill | `.specify/skills/brainify/SKILL.md` |
+- Keep the README, the website, the skill, and the architecture doc consistent with each other.
+- After any change, check nothing reintroduces `.specify/`, a Spec Kit dependency, or per-app-repo config.
