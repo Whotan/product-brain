@@ -101,9 +101,15 @@ Make a new git repo for your hub and run Claude in it:
 
 ### 3. Sync
 
+The `pb` CLI ships in this repo under `bin/pb`. Run it from your hub:
+
 ```bash
-pb sync       # pulls your repos, builds one graph over docs + code
+/path/to/product-brain/bin/pb --hub . sync     # pull repos, build one graph over docs + code
+/path/to/product-brain/bin/pb --hub . status   # quick health check
+pb sync --dry-run                               # preview the plan without running graphify
 ```
+
+Tip: add `bin/` to your `PATH` (or symlink `bin/pb` into `/usr/local/bin`) so you can just type `pb sync`.
 
 That's it. Ask Claude about your product, your code, or your decisions.
 

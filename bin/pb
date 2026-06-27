@@ -1,0 +1,212 @@
+#!/usr/bin/env python3
+"""pb — Product Brain hub CLI.
+
+Usage:
+  pb sync [--dry-run] [--hub PATH]
+  pb status [--hub PATH]
+  pb --help
+
+`pb sync` builds one knowledge graph over your hub's docs + the code repos it tracks:
+  1. read brain.config.json
+  2. clone/pull each repo into .work/repos/<id>
+  3. assemble a workspace (core docs + docs/ + each repo's source dirs)
+  4. run graphify over the workspace into the graph/ folder
+  5. write graph/sync-report.md
+
+No third-party Python packages required. Needs `git` and `graphify` on PATH
+(`pip install graphifyy`).
+"""
+
+import argparse
+import datetime as dt
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+CORE_DOCS = ["constitution.md", "vocabulary.md", "domains.md"]
+
+
+def log(msg): print(f"[pb] {msg}")
+def die(msg): print(f"[pb] ERROR: {msg}", file=sys.stderr); sys.exit(1)
+
+
+def load_config(hub: Path) -> dict:
+    cfg = hub / "brain.config.json"
+    if not cfg.exists():
+        die(f"no brain.config.json in {hub} — is this a hub? (run brainify to create one)")
+    try:
+        return json.loads(cfg.read_text())
+    except json.JSONDecodeError as e:
+        die(f"brain.config.json is not valid JSON: {e}")
+
+
+def have(tool: str) -> bool:
+    return shutil.which(tool) is not None
+
+
+def run(cmd, **kw):
+    return subprocess.run(cmd, check=True, **kw)
+
+
+def pull_repos(hub: Path, repos: list, dry: bool):
+    work = hub / ".work" / "repos"
+    work.mkdir(parents=True, exist_ok=True)
+    for r in repos:
+        rid, url = r.get("id"), r.get("url")
+        if not rid or not url:
+            die(f"each repo needs an 'id' and 'url' (got {r})")
+        dest = work / rid
+        if dest.exists():
+            log(f"pull {rid}")
+            if not dry:
+                run(["git", "-C", str(dest), "pull", "--ff-only", "--quiet"])
+        else:
+            log(f"clone {rid} ({url})")
+            if not dry:
+                run(["git", "clone", "--depth", "1", "--quiet", url, str(dest)])
+
+
+def assemble_workspace(hub: Path, repos: list, dry: bool) -> Path:
+    """Build .work/workspace as a hardlinked mirror of everything to graph."""
+    ws = hub / ".work" / "workspace"
+    if not dry and ws.exists():
+        shutil.rmtree(ws)
+    (ws).mkdir(parents=True, exist_ok=True)
+
+    # core docs (small) + docs/ tree
+    inputs = [hub / d for d in CORE_DOCS if (hub / d).exists()]
+    if (hub / "docs").exists():
+        inputs.append(hub / "docs")
+    # each repo's configured source dirs
+    for r in repos:
+        base = hub / ".work" / "repos" / r["id"]
+        for src in r.get("src", ["."]):
+            inputs.append(base / src)
+
+    for src_path in inputs:
+        if not src_path.exists():
+            log(f"  skip (missing): {src_path.relative_to(hub)}")
+            continue
+        rel = src_path.relative_to(hub).as_posix().replace("/", "__")
+        target = ws / rel
+        log(f"  + {src_path.relative_to(hub)}")
+        if dry:
+            continue
+        if src_path.is_dir():
+            # hardlink copy = near-zero space, always walkable
+            _copy_hardlink(src_path, target)
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                os.link(src_path, target)
+            except OSError:
+                shutil.copy2(src_path, target)
+    return ws
+
+
+def _copy_hardlink(src: Path, dst: Path):
+    try:
+        shutil.copytree(src, dst, copy_function=os.link,
+                        ignore=shutil.ignore_patterns(".git", "node_modules", ".work"))
+    except (OSError, shutil.Error):
+        shutil.copytree(src, dst, ignore=shutil.ignore_patterns(".git", "node_modules", ".work"),
+                        dirs_exist_ok=True)
+
+
+def run_graphify(ws: Path, out: Path, dry: bool):
+    cmd = ["graphify", str(ws), "--out", str(out)]
+    if dry:
+        log("would run: " + " ".join(cmd))
+        return
+    if not have("graphify"):
+        die("graphify not found on PATH. Install it: pip install graphifyy")
+    out.mkdir(parents=True, exist_ok=True)
+    log("run: " + " ".join(cmd))
+    run(cmd)
+
+
+def graph_stats(out: Path) -> str:
+    gj = out / "graph.json"
+    if not gj.exists():
+        return "graph.json not found (did graphify run?)"
+    try:
+        data = json.loads(gj.read_text())
+        nodes = len(data.get("nodes", []))
+        edges = len(data.get("links", data.get("edges", [])))
+        return f"{nodes} nodes, {edges} edges"
+    except Exception:
+        return "graph.json present (could not parse stats)"
+
+
+def write_report(hub: Path, cfg: dict, out: Path, dry: bool):
+    if dry:
+        return
+    now = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+    repos = ", ".join(r["id"] for r in cfg.get("repos", []))
+    report = out / "sync-report.md"
+    report.write_text(
+        f"# Sync report\n\n"
+        f"**Last sync:** {now}\n\n"
+        f"**Repos:** {repos or '(none)'}\n\n"
+        f"**Graph:** {graph_stats(out)}\n\n"
+        f"_Run `pb sync` again after meaningful code or doc changes._\n"
+    )
+    log(f"wrote {report.relative_to(hub)}")
+
+
+def cmd_sync(hub: Path, dry: bool):
+    cfg = load_config(hub)
+    repos = cfg.get("repos", [])
+    out = hub / cfg.get("graph", {}).get("out", "graph/")
+    log(f"hub: {hub}")
+    log(f"{len(repos)} repo(s): {', '.join(r['id'] for r in repos) or '(none)'}")
+    if not have("git"):
+        die("git not found on PATH.")
+    pull_repos(hub, repos, dry)
+    log("assembling workspace…")
+    ws = assemble_workspace(hub, repos, dry)
+    run_graphify(ws, out, dry)
+    write_report(hub, cfg, out, dry)
+    log("done." if not dry else "dry-run complete (nothing written).")
+
+
+def cmd_status(hub: Path):
+    cfg = load_config(hub)
+    out = hub / cfg.get("graph", {}).get("out", "graph/")
+    print(f"Hub: {hub}")
+    print(f"Repos: {', '.join(r['id'] for r in cfg.get('repos', [])) or '(none)'}")
+    print(f"Doc types: {', '.join(cfg.get('doc_types', [])) or '(none)'}")
+    for d in CORE_DOCS:
+        mark = "ok" if (hub / d).exists() else ("absent" if d == "domains.md" else "MISSING")
+        print(f"  {d}: {mark}")
+    gj = out / "graph.json"
+    if gj.exists():
+        age = (dt.datetime.now() - dt.datetime.fromtimestamp(gj.stat().st_mtime)).days
+        print(f"Graph: {graph_stats(out)} ({age}d old)")
+    else:
+        print("Graph: not built — run `pb sync`")
+
+
+def main():
+    p = argparse.ArgumentParser(prog="pb", description="Product Brain hub CLI")
+    p.add_argument("--hub", default=".", help="path to the hub repo (default: current dir)")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    s = sub.add_parser("sync", help="pull repos and (re)build the graph")
+    s.add_argument("--dry-run", action="store_true", help="show the plan without writing or running graphify")
+    sub.add_parser("status", help="show hub health at a glance")
+    args = p.parse_args()
+
+    hub = Path(args.hub).resolve()
+    if not hub.exists():
+        die(f"hub path does not exist: {hub}")
+    if args.cmd == "sync":
+        cmd_sync(hub, args.dry_run)
+    elif args.cmd == "status":
+        cmd_status(hub)
+
+
+if __name__ == "__main__":
+    main()

@@ -9,7 +9,7 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --sidebar-bg: #1e293b;
-    --sidebar-width: 270px;
+    --sidebar-width: 280px;
     --accent: #6366f1;
     --accent-light: #818cf8;
     --accent-bg: #eef2ff;
@@ -19,7 +19,9 @@
     --card-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
     --code-bg: #0f172a;
     --code-color: #e2e8f0;
-    --ok: #16a34a; --warn: #d97706; --no: #dc2626;
+    --ok: #16a34a; --okbg: #f0fdf4; --okbd:#bbf7d0;
+    --warn: #d97706;
+    --no: #dc2626; --nobg:#fef2f2; --nobd:#fecaca;
   }
   html { font-family: 'Inter', sans-serif; font-size: 16px; color: var(--text); scroll-behavior: smooth; }
   body { display: flex; min-height: 100vh; background: #f8fafc; }
@@ -28,10 +30,9 @@
   #sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh;
     background: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
   #sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
-  #sidebar-header .logo { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-light); }
-  #sidebar-header h2 { font-size: 18px; font-weight: 700; margin-top: 4px; color: #f1f5f9; }
-  #sidebar-header .ver { font-size: 11px; color: #64748b; margin-top: 6px; }
-  nav { padding: 12px 0; flex: 1; }
+  #sidebar-header .logo { font-size: 20px; font-weight: 800; color: #fff; }
+  #sidebar-header .tag { font-size: 12px; color: var(--accent-light); margin-top: 4px; font-weight: 600; }
+  nav { padding: 10px 0; flex: 1; }
   nav a { display: flex; align-items: center; gap: 10px; padding: 9px 20px; color: #94a3b8; font-size: 14px; font-weight: 500;
     text-decoration: none; cursor: pointer; transition: all .15s; border-left: 3px solid transparent; }
   nav a:hover { color: #fff; background: rgba(255,255,255,.05); }
@@ -46,45 +47,45 @@
   #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90; }
 
   /* Main */
-  #main { margin-left: var(--sidebar-width); flex: 1; min-height: 100vh; padding: 48px 40px; display: flex; justify-content: center; }
+  #main { margin-left: var(--sidebar-width); flex: 1; min-height: 100vh; padding: 48px 44px; display: flex; justify-content: center; }
   .content-wrap { width: 100%; max-width: 880px; }
   .section { display: none; animation: fadeIn .25s ease; }
   .section.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
   h1 { font-size: 2.1rem; font-weight: 800; line-height: 1.2; margin-bottom: 10px; }
-  h2 { font-size: 1.4rem; font-weight: 700; margin: 34px 0 12px; }
+  h2 { font-size: 1.4rem; font-weight: 700; margin: 36px 0 12px; }
   h3 { font-size: 1.1rem; font-weight: 600; margin: 22px 0 8px; }
-  p { line-height: 1.7; color: #334155; margin-bottom: 14px; }
+  p { line-height: 1.75; color: #334155; margin-bottom: 14px; }
   ul, ol { padding-left: 22px; margin-bottom: 14px; }
-  li { line-height: 1.7; color: #334155; margin-bottom: 5px; }
+  li { line-height: 1.7; color: #334155; margin-bottom: 6px; }
   strong { font-weight: 600; color: var(--text); }
   a.inline { color: var(--accent); text-decoration: none; font-weight: 500; }
   a.inline:hover { text-decoration: underline; }
-  .lead { font-size: 1.12rem; color: #475569; margin-bottom: 8px; }
-  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em;
+  .lead { font-size: 1.18rem; color: #475569; margin-bottom: 14px; line-height: 1.6; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .86em;
     background: #eef2ff; color: #4338ca; padding: 1px 6px; border-radius: 5px; }
   pre { background: var(--code-bg); color: var(--code-color); border-radius: 12px; padding: 18px 20px;
     overflow-x: auto; margin: 14px 0; font-size: 13px; line-height: 1.6; }
   pre code { background: none; color: inherit; padding: 0; font-size: 13px; }
 
   /* Hero */
-  .hero { background: linear-gradient(135deg, #1e293b 0%, #312e81 100%); border-radius: 18px; padding: 52px 44px; margin-bottom: 36px; color: #fff; }
-  .hero-badge { display: inline-flex; gap: 6px; background: rgba(99,102,241,.3); border: 1px solid rgba(99,102,241,.5);
-    border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; color: #a5b4fc; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 18px; }
-  .hero h1 { color: #fff; font-size: 2.4rem; }
-  .hero p { color: #cbd5e1; font-size: 1.12rem; max-width: 600px; margin-top: 14px; }
+  .hero { background: linear-gradient(135deg, #1e293b 0%, #4338ca 100%); border-radius: 20px; padding: 48px 44px; margin-bottom: 30px; color: #fff; }
+  .hero-badge { display: inline-flex; gap: 6px; background: rgba(129,140,248,.25); border: 1px solid rgba(129,140,248,.5);
+    border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 600; color: #c7d2fe; letter-spacing: .04em; margin-bottom: 18px; }
+  .hero h1 { color: #fff; font-size: 2.5rem; }
+  .hero p { color: #dbeafe; font-size: 1.18rem; max-width: 620px; margin-top: 14px; margin-bottom: 0; }
 
-  /* Cards & layout helpers */
-  .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; box-shadow: var(--card-shadow); margin-bottom: 14px; }
+  /* Cards & layout */
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; box-shadow: var(--card-shadow); margin-bottom: 14px; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
   .card h3 { margin-top: 0; }
-  .card .ico { font-size: 22px; margin-bottom: 6px; }
-  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .04em; }
-  .pill.core { background: #dcfce7; color: #166534; }
-  .pill.ext { background: #e0e7ff; color: #3730a3; }
-  .pill.def { background: #fef3c7; color: #92400e; }
+  .card .ico { font-size: 26px; margin-bottom: 8px; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; letter-spacing: .03em; }
+  .pill.req { background: #dcfce7; color: #166534; }
+  .pill.rec { background: #e0e7ff; color: #3730a3; }
+  .pill.opt { background: #fef3c7; color: #92400e; }
 
   table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; background: #fff;
     border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
@@ -93,26 +94,46 @@
   tr:last-child td { border-bottom: none; }
 
   .callout { border-left: 4px solid var(--accent); background: var(--accent-bg); border-radius: 0 10px 10px 0; padding: 14px 18px; margin: 16px 0; }
-  .callout.warn { border-left-color: var(--warn); background: #fffbeb; }
   .callout p { margin: 0; color: #3730a3; }
-  .callout.warn p { color: #92400e; }
+  figure { margin: 18px 0; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 8px; }
 
+  /* before / after */
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  .ba > div { border-radius: 12px; padding: 16px 18px; border: 1px solid; }
+  .ba .before { background: var(--nobg); border-color: var(--nobd); }
+  .ba .after  { background: var(--okbg); border-color: var(--okbd); }
+  .ba h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .ba .before h4 { color: var(--no); }
+  .ba .after h4 { color: var(--ok); }
+  .ba p { margin: 0; font-size: 14.5px; }
+
+  /* chat (skill showcase) */
+  .chat { background: #f1f5f9; border-radius: 14px; padding: 18px; margin: 16px 0; }
+  .bubble { max-width: 80%; padding: 11px 15px; border-radius: 14px; margin-bottom: 10px; font-size: 14.5px; line-height: 1.55; }
+  .bubble.you { background: var(--accent); color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+  .bubble.claude { background: #fff; border: 1px solid var(--border); color: #334155; border-bottom-left-radius: 4px; }
+  .bubble .who { font-size: 11px; font-weight: 700; opacity: .7; display: block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: .04em; }
+
+  /* steps */
   .step { display: flex; gap: 16px; margin-bottom: 18px; }
-  .step .num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .step .num { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
   .step .body { flex: 1; }
-  .step .body h3 { margin-top: 3px; }
+  .step .body h3 { margin-top: 4px; }
 
-  .diagram { background: #0f172a; color: #cbd5e1; border-radius: 14px; padding: 26px; font-family: ui-monospace, monospace;
-    font-size: 12.5px; line-height: 1.65; white-space: pre; overflow-x: auto; margin: 16px 0; }
+  .annot { display: grid; grid-template-columns: 180px 1fr; gap: 4px 18px; margin: 6px 0 18px; }
+  .annot dt { font-family: ui-monospace, monospace; font-size: 13px; color: #4338ca; font-weight: 600; }
+  .annot dd { font-size: 14.5px; color: #334155; margin: 0 0 8px; }
 
-  @media (max-width: 860px) {
+  @media (max-width: 880px) {
     #sidebar { transform: translateX(-100%); transition: transform .3s ease; }
     #sidebar.open { transform: translateX(0); }
     #sidebar-toggle { display: block; }
     #sidebar.open ~ #sidebar-overlay { display: block; }
-    #main { margin-left: 0; padding: 70px 20px 40px; }
-    .grid2, .grid3 { grid-template-columns: 1fr; }
+    #main { margin-left: 0; padding: 70px 18px 40px; }
+    .grid2, .grid3, .ba, .annot { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -123,23 +144,23 @@
 <aside id="sidebar">
   <div id="sidebar-header">
     <div class="logo">🧠 Product Brain</div>
-    <h2>Documentation</h2>
-    <div class="ver">Architecture v0.2 · method-agnostic</div>
+    <div class="tag">A shared brain for your product</div>
   </div>
   <nav id="nav">
-    <a data-sec="overview" class="active"><span>Overview</span><span class="nav-num">01</span></a>
+    <a data-sec="overview" class="active"><span>What it is</span><span class="nav-num">01</span></a>
     <a data-sec="problems"><span>Problems it solves</span><span class="nav-num">02</span></a>
     <a data-sec="how"><span>How it works</span><span class="nav-num">03</span></a>
     <a data-sec="hub"><span>Anatomy of a hub</span><span class="nav-num">04</span></a>
-    <a data-sec="agnostic"><span>Method-agnostic</span><span class="nav-num">05</span></a>
-    <a data-sec="graph"><span>Graph &amp; formats</span><span class="nav-num">06</span></a>
-    <a data-sec="roles"><span>Roles &amp; lenses</span><span class="nav-num">07</span></a>
-    <a data-sec="setup"><span>Setup guide</span><span class="nav-num">08</span></a>
+    <a data-sec="skill"><span>The setup wizard</span><span class="nav-num">05</span></a>
+    <a data-sec="setup"><span>Setup guide</span><span class="nav-num">06</span></a>
+    <a data-sec="customize"><span>Customize with Claude</span><span class="nav-num">07</span></a>
+    <a data-sec="roles"><span>How-tos by role</span><span class="nav-num">08</span></a>
     <a data-sec="example"><span>Example: a to-do app</span><span class="nav-num">09</span></a>
-    <a data-sec="open"><span>Open problems</span><span class="nav-num">10</span></a>
-    <a data-sec="faq"><span>FAQ</span><span class="nav-num">11</span></a>
+    <a data-sec="contribute"><span>Contribute</span><span class="nav-num">10</span></a>
+    <a data-sec="open"><span>Open problems</span><span class="nav-num">11</span></a>
+    <a data-sec="faq"><span>FAQ</span><span class="nav-num">12</span></a>
   </nav>
-  <div id="sidebar-footer">Open framework · Markdown-first · multi-repo</div>
+  <div id="sidebar-footer">Easy to start · no technical skills needed</div>
 </aside>
 <div id="sidebar-overlay" onclick="document.getElementById('sidebar').classList.remove('open')"></div>
 
@@ -148,268 +169,402 @@
   <!-- 01 OVERVIEW -->
   <section class="section active" id="overview">
     <div class="hero">
-      <span class="hero-badge">🧠 Single source of truth</span>
-      <h1>One brain for your whole product.</h1>
-      <p>Product Brain keeps specs, vocabulary, domains, and decisions in one place — connected to your code across every repo, answerable by Claude, and authored in whatever method your team already uses.</p>
+      <span class="hero-badge">🧠 ONE PLACE THAT KNOWS YOUR PRODUCT</span>
+      <h1>A shared brain for your whole team.</h1>
+      <p>Product Brain is one place that holds what your team knows — your plans, your words, your decisions — and connects it to your apps. Anyone can ask a question in plain language and get a clear, trustworthy answer.</p>
     </div>
 
-    <p class="lead">Knowledge stops being a guest inside each code repo. It becomes its own product: a <strong>hub</strong> that holds what your team knows, pulls in your code repos, and builds a single knowledge graph you can ask anything.</p>
+    <p class="lead">Think of it like a knowledgeable teammate who has read every document and every line of code, never forgets, and is happy to answer the same question a hundred times.</p>
 
-    <div class="diagram">                 ┌────────────────────────────────────┐
-                 │            your hub repo           │   ← single source of truth
-                 │ constitution · vocabulary · domains│
-                 │ docs/ (specs, decisions, notes, …) │
-                 │ graph/ (built over docs + code)    │
-                 └───────────────┬────────────────────┘
-                       pb sync   │  pulls code, builds one graph
-                 ┌───────────────┴───────────────┐
-                 ▼                                ▼
-          ┌─────────────┐                 ┌──────────────┐
-          │   web-app   │                 │  backend-api │   ← your code repos
-          │ (untouched) │                 │  (untouched) │      (nothing added)
-          └─────────────┘                 └──────────────┘</div>
+    <figure>
+      <svg viewBox="0 0 760 380" role="img" aria-label="The hub sits in the middle. Your apps feed it on the left. People ask it questions on the right.">
+        <defs>
+          <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#94a3b8"/></marker>
+        </defs>
+        <!-- left: apps -->
+        <rect x="20" y="120" width="150" height="56" rx="12" fill="#fff" stroke="#cbd5e1"/>
+        <text x="95" y="145" text-anchor="middle" font-size="14" font-weight="700" fill="#1e293b">Web app</text>
+        <text x="95" y="163" text-anchor="middle" font-size="11" fill="#64748b">your code</text>
+        <rect x="20" y="200" width="150" height="56" rx="12" fill="#fff" stroke="#cbd5e1"/>
+        <text x="95" y="225" text-anchor="middle" font-size="14" font-weight="700" fill="#1e293b">Back-end API</text>
+        <text x="95" y="243" text-anchor="middle" font-size="11" fill="#64748b">your code</text>
+        <!-- center: hub -->
+        <rect x="285" y="90" width="190" height="200" rx="18" fill="#eef2ff" stroke="#6366f1" stroke-width="2"/>
+        <text x="380" y="124" text-anchor="middle" font-size="16" font-weight="800" fill="#3730a3">Product Brain</text>
+        <text x="380" y="143" text-anchor="middle" font-size="12" fill="#4338ca">the shared hub</text>
+        <rect x="305" y="158" width="150" height="26" rx="7" fill="#fff" stroke="#c7d2fe"/><text x="380" y="175" text-anchor="middle" font-size="11.5" fill="#3730a3">📜 principles</text>
+        <rect x="305" y="190" width="150" height="26" rx="7" fill="#fff" stroke="#c7d2fe"/><text x="380" y="207" text-anchor="middle" font-size="11.5" fill="#3730a3">📖 shared words</text>
+        <rect x="305" y="222" width="150" height="26" rx="7" fill="#fff" stroke="#c7d2fe"/><text x="380" y="239" text-anchor="middle" font-size="11.5" fill="#3730a3">📝 specs &amp; decisions</text>
+        <rect x="305" y="254" width="150" height="26" rx="7" fill="#fff" stroke="#c7d2fe"/><text x="380" y="271" text-anchor="middle" font-size="11.5" fill="#3730a3">🗺️ a map of it all</text>
+        <!-- arrows in -->
+        <line x1="172" y1="148" x2="282" y2="160" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ar)"/>
+        <line x1="172" y1="228" x2="282" y2="220" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="225" y="120" text-anchor="middle" font-size="10.5" fill="#64748b">pulls your code</text>
+        <!-- right: people -->
+        <rect x="590" y="70" width="150" height="46" rx="12" fill="#fff" stroke="#cbd5e1"/><text x="665" y="98" text-anchor="middle" font-size="13" fill="#1e293b">🧑‍💼 Product</text>
+        <rect x="590" y="128" width="150" height="46" rx="12" fill="#fff" stroke="#cbd5e1"/><text x="665" y="156" text-anchor="middle" font-size="13" fill="#1e293b">👩‍💻 Engineering</text>
+        <rect x="590" y="186" width="150" height="46" rx="12" fill="#fff" stroke="#cbd5e1"/><text x="665" y="214" text-anchor="middle" font-size="13" fill="#1e293b">🧪 QA</text>
+        <rect x="590" y="244" width="150" height="46" rx="12" fill="#fff" stroke="#cbd5e1"/><text x="665" y="272" text-anchor="middle" font-size="13" fill="#1e293b">🌱 New hires</text>
+        <!-- arrows out -->
+        <line x1="478" y1="150" x2="586" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ar)"/>
+        <line x1="478" y1="170" x2="586" y2="150" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ar)"/>
+        <line x1="478" y1="200" x2="586" y2="205" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ar)"/>
+        <line x1="478" y1="225" x2="586" y2="262" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="533" y="320" text-anchor="middle" font-size="10.5" fill="#64748b">ask in plain language</text>
+      </svg>
+      <figcaption>Your apps feed the hub. Everyone asks the hub questions — and gets grounded answers.</figcaption>
+    </figure>
 
-    <h2>Two things, kept separate</h2>
-    <div class="grid2">
-      <div class="card">
-        <div class="ico">🛠️</div>
-        <h3>Product Brain — the framework</h3>
-        <p>The open-source tooling: the <code>brainify</code> skill, hub templates, and these docs. It operates <em>on</em> a hub; it never lives inside one.</p>
-      </div>
-      <div class="card">
-        <div class="ico">📚</div>
-        <h3>Your hub — an instance</h3>
-        <p>Your team's actual knowledge, in its own git repo. Contains constitution, vocabulary, domains, docs, and the graph — and <strong>no skills</strong>.</p>
-      </div>
+    <h2>Three plain ideas</h2>
+    <div class="grid3">
+      <div class="card"><div class="ico">📚</div><h3>One source of truth</h3><p>All the important knowledge lives in <strong>one place</strong>, not scattered across chats, heads, and tools.</p></div>
+      <div class="card"><div class="ico">🔗</div><h3>Connected to the code</h3><p>It links your words and plans to the <strong>actual apps</strong>, so answers are real — not made up.</p></div>
+      <div class="card"><div class="ico">💬</div><h3>Just ask</h3><p>No special skills. <strong>Type a question</strong> like you'd ask a colleague, and get a clear answer.</p></div>
     </div>
-    <p>This separation is what keeps the framework method-neutral and your hub clean and diffable.</p>
+
+    <div class="callout"><p><strong>You don't write specs a special way.</strong> Use whatever style your team already likes — plain notes, RFCs, exported docs. Product Brain organizes them; it doesn't boss you around.</p></div>
   </section>
 
   <!-- 02 PROBLEMS -->
   <section class="section" id="problems">
     <h1>Problems it solves</h1>
-    <p class="lead">Five recurring failures of product knowledge in a multi-repo team.</p>
-    <table>
-      <tr><th>#</th><th>Problem</th><th>Without Product Brain</th></tr>
-      <tr><td>1</td><td><strong>Codebase questions</strong></td><td>Read every file by hand, or ask the one person who knows.</td></tr>
-      <tr><td>2</td><td><strong>Missing context</strong></td><td>The code exists; nobody wrote down why it works the way it does.</td></tr>
-      <tr><td>3</td><td><strong>Vocabulary mismatch</strong></td><td>"Session" in the meeting, <code>Appointment</code> in the code — nobody bridges them.</td></tr>
-      <tr><td>4</td><td><strong>Multi-repo knowledge</strong></td><td>A question spans the web and API repos and takes days.</td></tr>
-      <tr><td>5</td><td><strong>Institutional knowledge</strong></td><td>Lives in people's heads, and walks out the door when they leave.</td></tr>
-    </table>
-    <div class="callout warn">
-      <p><strong>Honest scope:</strong> precise cross-repo <em>impact analysis</em> — "change this model and exactly these web files break" — is <strong>not</strong> solved yet. It's a tracked open problem (see section 09). What works today is grounded querying and soft cross-repo grouping.</p>
+    <p class="lead">Five everyday frustrations — and what changes once you have a shared brain.</p>
+
+    <h3>1. "What does this part even do?"</h3>
+    <div class="ba">
+      <div class="before"><h4>Before</h4><p>You read files for an hour, or wait for the one engineer who knows to be free.</p></div>
+      <div class="after"><h4>After</h4><p>Ask "how does checkout work?" and get a grounded answer in seconds, pointing at the real code.</p></div>
+    </div>
+
+    <h3>2. "Why was it built this way?"</h3>
+    <div class="ba">
+      <div class="before"><h4>Before</h4><p>The reason lived in someone's memory — and they've moved teams.</p></div>
+      <div class="after"><h4>After</h4><p>The decision (and the trade-offs) is written down once and findable forever.</p></div>
+    </div>
+
+    <h3>3. "We all call it something different"</h3>
+    <div class="ba">
+      <div class="before"><h4>Before</h4><p>Product says "Session", the code says <code>Appointment</code>, support says "booking". Confusion everywhere.</p></div>
+      <div class="after"><h4>After</h4><p>A shared glossary connects all three, so everyone — and Claude — speaks the same language.</p></div>
+    </div>
+
+    <h3>4. "This question touches two apps"</h3>
+    <div class="ba">
+      <div class="before"><h4>Before</h4><p>You hop between the web and API repos for days to piece together the full picture.</p></div>
+      <div class="after"><h4>After</h4><p>One question covers both apps at once, because they live in one brain.</p></div>
+    </div>
+
+    <h3>5. "Knowledge walks out the door"</h3>
+    <div class="ba">
+      <div class="before"><h4>Before</h4><p>Someone leaves and takes years of context with them. New hires take weeks to ramp.</p></div>
+      <div class="after"><h4>After</h4><p>The context stays in the hub. A new hire reads one place and asks the rest.</p></div>
     </div>
   </section>
 
   <!-- 03 HOW -->
   <section class="section" id="how">
     <h1>How it works</h1>
-    <p class="lead">One command assembles everything and builds a single graph.</p>
+    <p class="lead">There's one button to remember: <strong>refresh</strong>. Everything else is just asking questions.</p>
 
-    <h2>The reframe</h2>
-    <div class="grid2">
-      <div class="card"><h3>A. Knowledge is the product</h3><p>It lives in a dedicated hub repo — the single source of truth. Code repos are just <em>sources</em> the hub reads.</p></div>
-      <div class="card"><h3>B. The framework ≠ the hub</h3><p>Tooling ships separately from any team's knowledge. The framework operates on a hub from the outside.</p></div>
-    </div>
+    <figure>
+      <svg viewBox="0 0 760 200" role="img" aria-label="Your code and your docs go into graphify, which builds a map. Then you ask Claude, which reads the map.">
+        <defs>
+          <marker id="ar2" markerWidth="11" markerHeight="11" refX="8" refY="3.2" orient="auto"><path d="M0,0 L8,3.2 L0,6.4 Z" fill="#6366f1"/></marker>
+        </defs>
+        <rect x="10" y="40" width="150" height="50" rx="11" fill="#fff" stroke="#cbd5e1"/><text x="85" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#1e293b">Your apps' code</text><text x="85" y="77" text-anchor="middle" font-size="11" fill="#64748b">web + API</text>
+        <rect x="10" y="110" width="150" height="50" rx="11" fill="#fff" stroke="#cbd5e1"/><text x="85" y="130" text-anchor="middle" font-size="13" font-weight="700" fill="#1e293b">Your docs</text><text x="85" y="147" text-anchor="middle" font-size="11" fill="#64748b">specs, notes, decisions</text>
+        <rect x="250" y="75" width="150" height="50" rx="11" fill="#1e293b"/><text x="325" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">graphify</text><text x="325" y="113" text-anchor="middle" font-size="10.5" fill="#94a3b8">reads &amp; connects</text>
+        <rect x="470" y="75" width="150" height="50" rx="11" fill="#eef2ff" stroke="#6366f1"/><text x="545" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">A map (graph)</text><text x="545" y="113" text-anchor="middle" font-size="10.5" fill="#4338ca">of everything</text>
+        <rect x="660" y="75" width="92" height="50" rx="11" fill="#6366f1"/><text x="706" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Ask</text><text x="706" y="113" text-anchor="middle" font-size="10.5" fill="#dbeafe">Claude</text>
+        <line x1="162" y1="65" x2="246" y2="92" stroke="#6366f1" stroke-width="1.6" marker-end="url(#ar2)"/>
+        <line x1="162" y1="135" x2="246" y2="108" stroke="#6366f1" stroke-width="1.6" marker-end="url(#ar2)"/>
+        <line x1="402" y1="100" x2="466" y2="100" stroke="#6366f1" stroke-width="1.6" marker-end="url(#ar2)"/>
+        <line x1="622" y1="100" x2="656" y2="100" stroke="#6366f1" stroke-width="1.6" marker-end="url(#ar2)"/>
+        <text x="325" y="165" text-anchor="middle" font-size="11" fill="#64748b">the "refresh" step — pb sync</text>
+      </svg>
+      <figcaption>Refresh pulls your code and docs together and builds a map. Then anyone can ask.</figcaption>
+    </figure>
 
-    <h2><code>pb sync</code> — one graph over one workspace</h2>
-    <p>Because the hub pulls and builds centrally, there's no per-repo merging to manage. One graphify run spans your docs and all your code:</p>
-    <pre><code>pb sync
-  1. pull / refresh each repo from brain.config.json → .work/repos/&lt;id&gt;
-  2. run graphify over a workspace =
-       { constitution.md, vocabulary.md, domains.md, docs/**, .work/repos/** }
-  3. write graph/graph.json + graph/GRAPH_REPORT.md</code></pre>
-    <p>In the resulting graph: code structure comes free from tree-sitter; and graphify's semantic edges plus Leiden communities <strong>softly co-locate</strong> related code and docs across repos — so the booking spec, the <code>Appointment</code> model, and the <code>SessionCard</code> component tend to land together, with no manual linking.</p>
+    <h2>What "refresh" does</h2>
+    <p>The refresh button is one command — <code>pb sync</code>. It gathers your apps' code and your hub's documents, then a tool called <a class="inline" href="https://pypi.org/project/graphifyy/" target="_blank">graphify</a> reads them and builds a <strong>map</strong> of how everything connects. After that, when you ask a question, Claude follows the map straight to the few relevant pieces — fast, and grounded in what's really there.</p>
+    <p>You run refresh after meaningful changes (or set it to run automatically). That's the whole maintenance routine.</p>
 
-    <div class="callout"><p><strong>App repos stay untouched.</strong> Registration lives only in the hub's <code>brain.config.json</code>. No files are added to your web or API repos — zero adoption friction.</p></div>
+    <h2>It reads more than text</h2>
+    <p>You don't have to turn everything into tidy documents. graphify can read code, written docs (Markdown, PDFs, Word, spreadsheets), images, and even <strong>meeting recordings</strong> — it transcribes audio and video on your own machine. So a recorded kickoff call can become searchable knowledge sitting right next to the code it affects.</p>
+    <div class="callout"><p><strong>Plain-language tip:</strong> "the graph" or "the map" just means a connected index of your stuff. You never edit it by hand — refresh rebuilds it for you.</p></div>
   </section>
 
   <!-- 04 HUB -->
   <section class="section" id="hub">
     <h1>Anatomy of a hub</h1>
-    <p class="lead">A required core, an extensible <code>docs/</code> tree, and the graph. The hub is its own git repo.</p>
+    <p class="lead">A "hub" is just a folder (kept in Git) that holds your team's knowledge. Here's everything inside it, in plain terms.</p>
 
-    <div class="diagram">acme-brain/                    ← the hub: its own git repo
-  brain.config.json            repos to pull · doc types · graph settings
-  constitution.md              principles / non-negotiables        [REQUIRED]
-  vocabulary.md                glossary: product ↔ code            [REQUIRED]
-  domains.md                   area → owner, status, repos         [recommended]
-  docs/                        extensible knowledge (Markdown-first)
-    specs/   decisions/   meeting-notes/   research/   &lt;your-type&gt;/
-  workflows/                   role lenses: pm, backend, frontend, qa…
-  graph/                       graph.json + GRAPH_REPORT.md (pb sync)
-  .work/                       gitignored: pulled code, sync-time only</div>
+    <pre><code>acme-brain/                  ← the hub (one folder, its own Git repo)
+  brain.config.json          settings: which apps to read, what doc types you keep
+  constitution.md            your rules — the things that must always be true   [REQUIRED]
+  vocabulary.md              your glossary — product words ↔ code words          [REQUIRED]
+  domains.md                 the big areas of your product                       [recommended]
+  docs/                      your knowledge, grouped by type
+    specs/                     what you're building and why
+    decisions/                 choices you made, and the trade-offs
+    meeting-notes/             notes and recordings from meetings
+    research/   runbooks/      ...add any type you want
+  workflows/                 short "how I use this" guides, one per role
+  graph/                     the map (built for you by refresh)
+  .work/                     scratch space refresh uses (ignored by Git)</code></pre>
 
-    <h2>Required core <span class="pill core">required</span></h2>
-    <p>Two files are what make a directory a "brain" — the knowledge that can't be derived from code:</p>
+    <h2>The two things you must have <span class="pill req">required</span></h2>
     <div class="grid2">
-      <div class="card"><h3>constitution.md</h3><p>The non-negotiable principles every change must respect. Optional per-repo notes where a repo legitimately differs.</p></div>
-      <div class="card"><h3>vocabulary.md</h3><p>The glossary tying product language to code in each repo — the bridge between "Session" in a meeting and <code>Appointment</code> in the code.</p></div>
+      <div class="card"><h3>📜 constitution.md</h3><p>Your non-negotiable rules — for example, "every user only ever sees their own data." If a change breaks one of these, it's wrong. Short and stable.</p></div>
+      <div class="card"><h3>📖 vocabulary.md</h3><p>Your shared words. Each entry says what a term means, what else people call it, and what it's named in the code. This is the bridge that ends "wait, what do you mean by that?"</p></div>
+    </div>
+    <p>These two matter most because they hold knowledge that <strong>can't be guessed from the code</strong> — your intent and your language.</p>
+
+    <h2>Strongly suggested <span class="pill rec">recommended</span></h2>
+    <p><strong>domains.md</strong> lists the major areas of your product (like "Scheduling" or "Billing") with an owner and status. It's "graph-assisted": after a refresh, the map already groups related things into clusters, so Claude can suggest the domains and you just tidy up the names. Less typing, same value.</p>
+
+    <h2>Everything else is yours <span class="pill opt">your choice</span></h2>
+    <p>The <code>docs/</code> folder is open-ended. Keep specs, decisions, meeting notes, research, runbooks — or invent your own type by adding it to <code>brain.config.json</code>. Write in Markdown when you can (it's simplest), but drop in PDFs or recordings whenever that's the natural form. You never have to link documents together by hand — the map connects related things automatically.</p>
+
+    <h3>What each file is for, at a glance</h3>
+    <dl class="annot">
+      <dt>brain.config.json</dt><dd>The only settings file. Lists your apps and the doc types you keep. Claude can edit it for you.</dd>
+      <dt>constitution.md</dt><dd>Rules every change must respect.</dd>
+      <dt>vocabulary.md</dt><dd>The glossary tying product words to code words.</dd>
+      <dt>domains.md</dt><dd>The product's big areas, owners, and status.</dd>
+      <dt>docs/&lt;type&gt;/</dt><dd>Your actual knowledge, grouped however you like.</dd>
+      <dt>workflows/&lt;role&gt;.md</dt><dd>A short "how I use the hub" note per role.</dd>
+      <dt>graph/</dt><dd>The map. Built by refresh — don't edit by hand.</dd>
+    </dl>
+  </section>
+
+  <!-- 05 SKILL -->
+  <section class="section" id="skill">
+    <h1>The setup wizard</h1>
+    <p class="lead"><strong>brainify</strong> is a wizard you talk to. It checks what's there, asks a few questions, and writes the files for you — no templates to wrestle with.</p>
+
+    <p>You start it by typing one thing to Claude inside your hub:</p>
+    <div class="chat">
+      <div class="bubble you"><span class="who">You</span>Set up product brain</div>
+      <div class="bubble claude"><span class="who">Claude (brainify)</span>Auditing this hub… Here's what's present and what's missing:<br>✅ brain.config.json · ❌ constitution · ❌ vocabulary · ❌ graph. Want to start at the top?</div>
+      <div class="bubble you"><span class="who">You</span>Yes, let's go</div>
+      <div class="bubble claude"><span class="who">Claude</span>Great. First, your rules. What are the 2–4 things that must always be true in this product? (For example: "users only see their own data.")</div>
+      <div class="bubble you"><span class="who">You</span>Users only see their own data, and we never hard-delete anything.</div>
+      <div class="bubble claude"><span class="who">Claude</span>Got it — I've drafted <code>constitution.md</code> with those. Take a look; change anything you like. Next, let's capture your key words…</div>
     </div>
 
-    <h2>Domains <span class="pill ext">recommended · graph-assisted</span></h2>
-    <p><code>domains.md</code> maps functional areas to owners, status, and repos. It's recommended rather than required because it's largely derivable: after a sync, the graph's communities are good candidate domains, so you curate names and owners instead of authoring from scratch.</p>
-
-    <h2>Extensible docs <span class="pill ext">your choice</span></h2>
-    <p>Register any doc types you want in <code>brain.config.json</code> and drop knowledge into <code>docs/&lt;type&gt;/</code>. Ship with <code>specs</code>, <code>decisions</code>, <code>meeting-notes</code>, <code>research</code>, <code>runbooks</code> — or invent your own. graphify connects it all automatically through inferred edges and communities — no manual cross-linking needed.</p>
-    <pre><code>{
-  "repos": [
-    { "id": "backend-api", "url": "…", "src": ["app/"] },
-    { "id": "web-app",     "url": "…", "src": ["src/"] }
-  ],
-  "doc_types": ["specs", "decisions", "meeting-notes", "research"],
-  "graph": { "out": "graph/" }
-}</code></pre>
+    <h2>What the wizard does, step by step</h2>
+    <figure>
+      <svg viewBox="0 0 760 90" role="img" aria-label="Audit, then interview, then write the files, then build the map, then ask anything.">
+        <defs><marker id="ar3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#818cf8"/></marker></defs>
+        <rect x="6" y="28" width="130" height="38" rx="10" fill="#eef2ff" stroke="#c7d2fe"/><text x="71" y="52" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3730a3">1 · Audit</text>
+        <rect x="166" y="28" width="130" height="38" rx="10" fill="#eef2ff" stroke="#c7d2fe"/><text x="231" y="52" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3730a3">2 · Interview</text>
+        <rect x="326" y="28" width="130" height="38" rx="10" fill="#eef2ff" stroke="#c7d2fe"/><text x="391" y="52" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3730a3">3 · Write docs</text>
+        <rect x="486" y="28" width="130" height="38" rx="10" fill="#eef2ff" stroke="#c7d2fe"/><text x="551" y="52" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3730a3">4 · Build map</text>
+        <rect x="646" y="28" width="112" height="38" rx="10" fill="#6366f1"/><text x="702" y="52" text-anchor="middle" font-size="12.5" font-weight="700" fill="#fff">5 · Ask!</text>
+        <line x1="138" y1="47" x2="162" y2="47" stroke="#818cf8" stroke-width="1.6" marker-end="url(#ar3)"/>
+        <line x1="298" y1="47" x2="322" y2="47" stroke="#818cf8" stroke-width="1.6" marker-end="url(#ar3)"/>
+        <line x1="458" y1="47" x2="482" y2="47" stroke="#818cf8" stroke-width="1.6" marker-end="url(#ar3)"/>
+        <line x1="618" y1="47" x2="642" y2="47" stroke="#818cf8" stroke-width="1.6" marker-end="url(#ar3)"/>
+      </svg>
+    </figure>
+    <ol>
+      <li><strong>Audit</strong> — it looks at your hub and shows a simple checklist of what's there and what's missing.</li>
+      <li><strong>Interview</strong> — it asks plain questions, one at a time, and waits for your answers.</li>
+      <li><strong>Write docs</strong> — it drafts the files from your answers and shows them to you to approve or tweak.</li>
+      <li><strong>Build the map</strong> — it runs refresh so everything becomes searchable.</li>
+      <li><strong>Ask anything</strong> — you (and everyone else) can now ask questions.</li>
+    </ol>
+    <p>You can also say <strong>"what should I do next?"</strong> any time, and the wizard suggests the single most useful next step.</p>
   </section>
 
-  <!-- 05 AGNOSTIC -->
-  <section class="section" id="agnostic">
-    <h1>Method-agnostic by design</h1>
-    <p class="lead">Product Brain prescribes <strong>structure</strong>, not <strong>methodology</strong>.</p>
-    <p>There is no required way to write a spec. Use plain Markdown, RFCs, Shape Up pitches, Spec Kit, or paste an export from Notion. The only requirement is that a spec is a Markdown file under <code>docs/specs/</code> that links to the domain and terms it touches. Bring the tool your team already likes.</p>
-
-    <div class="grid2">
-      <div class="card"><h3>What the framework asks of you</h3>
-        <ul><li>Keep the required core current.</li><li>Put knowledge under <code>docs/</code> (Markdown preferred).</li><li>Run <code>pb sync</code> so the graph stays fresh.</li></ul>
-      </div>
-      <div class="card"><h3>What it never dictates</h3>
-        <ul><li>Your spec format or process.</li><li>Your approval ceremony.</li><li>Which doc types you must keep.</li></ul>
-      </div>
-    </div>
-    <div class="callout"><p>The shipped <code>spec-template.md</code> is a convenience, not a mandate — delete it and use your own.</p></div>
-  </section>
-
-  <!-- 06 GRAPH -->
-  <section class="section" id="graph">
-    <h1>Graph &amp; formats</h1>
-    <p class="lead">The graph is built by <a class="inline" href="https://pypi.org/project/graphifyy/" target="_blank">graphify</a>. What you can graph drives the format choices.</p>
-
-    <h2>Markdown-first, JSON only for config</h2>
-    <p>Prefer Markdown for knowledge you author and maintain — it's diffable and free to ingest. JSON is used only for machine config (<code>brain.config.json</code>), which Claude reads directly and never needs in the graph. There are no manual links to keep up: graphify infers edges and clusters related docs and code into communities on its own. (Native artifacts like PDFs and recordings are also supported — see below.)</p>
-
-    <h2>Why a graph outside the repo still answers questions</h2>
-    <p>Every graph node stores a <code>source_file</code> pointer. When Claude answers, it traverses the graph and opens only the few chunks that matter — it doesn't re-read the codebase. So the graph can sit in the hub, away from the code, and still return precise chunks; the only requirement is that the pulled source in <code>.work/</code> is present (it is, until the next sync). graphify reports a ~70× token reduction per query versus reading raw files on a mixed corpus.</p>
-
-    <h2>It's multi-modal — drop in recordings, PDFs, designs</h2>
-    <p>You don't have to convert everything to Markdown. graphify ingests far more than text, in three passes over one assembled workspace:</p>
-    <table>
-      <tr><th>Pass</th><th>Handles</th><th>How</th><th>Cost</th></tr>
-      <tr><td>1 — Code</td><td>25 languages + SQL schemas</td><td>tree-sitter AST, on your machine</td><td style="color:var(--ok)">Free, local</td></tr>
-      <tr><td>2 — Voice / video</td><td>meeting recordings, calls (<code>.mp3 .wav .mp4 .mov</code>)</td><td>transcribed locally with faster-whisper, seeded with your top concepts for domain focus</td><td style="color:var(--ok)">Free, local</td></tr>
-      <tr><td>3 — Docs / images</td><td>Markdown, PDF, <code>.docx</code>/<code>.xlsx</code>, images</td><td>read by Claude subagents into graph nodes</td><td style="color:var(--warn)">Costs tokens (first build)</td></tr>
-    </table>
-    <p>So a recorded kickoff call or a PDF brief can live in the hub and become queryable knowledge — the meeting's decisions end up in the same graph as the code they affect. Markdown stays the preferred format for knowledge you actively <em>author and maintain</em> (it's diffable and free of token cost), but native artifacts are first-class inputs.</p>
-
-    <h2>Performance</h2>
-    <p>The first <code>pb sync</code> pays the extraction cost (code is free; docs/images cost tokens; audio/video is local). Every file is fingerprinted by content hash, so later syncs skip everything unchanged and only re-process what moved. There is no separate merge step — it's a single graph from a single run over the assembled workspace.</p>
-  </section>
-
-  <!-- 07 ROLES -->
-  <section class="section" id="roles">
-    <h1>Roles &amp; lenses</h1>
-    <p class="lead">One source, never duplicated. Each role gets a view — a saved set of reads and queries — documented in <code>workflows/&lt;role&gt;.md</code>.</p>
-    <table>
-      <tr><th>Role</th><th>Lens</th><th>Backed by</th></tr>
-      <tr><td><strong>PM</strong></td><td>Domains + specs + glossary, no code noise</td><td><code>domains.md</code>, <code>docs/specs/</code>, <code>vocabulary.md</code></td></tr>
-      <tr><td><strong>Backend dev</strong></td><td>Spec + API code slice + constitution</td><td><code>docs/specs/</code>, <code>graph/</code>, <code>constitution.md</code></td></tr>
-      <tr><td><strong>Frontend dev</strong></td><td>Spec + web code slice + constitution</td><td><code>docs/specs/</code>, <code>graph/</code>, <code>constitution.md</code></td></tr>
-      <tr><td><strong>QA</strong></td><td>Acceptance criteria + relevant graph slices</td><td><code>docs/specs/</code>, <code>graph/</code></td></tr>
-      <tr><td><strong>Designer</strong></td><td>Domains + specs + research</td><td><code>domains.md</code>, <code>docs/research/</code></td></tr>
-      <tr><td><strong>New hire</strong></td><td>Guided path through the one source</td><td><code>workflows/onboarding.md</code></td></tr>
-    </table>
-    <p>Every lens reads the same files — the lens only decides what to surface and how.</p>
-  </section>
-
-  <!-- 08 SETUP -->
+  <!-- 06 SETUP -->
   <section class="section" id="setup">
     <h1>Setup guide</h1>
-    <p class="lead">From nothing to a queryable brain in a few steps.</p>
+    <p class="lead">About 15 minutes. You need someone who can run a couple of commands once; after that, anyone can use it.</p>
 
-    <div class="step"><div class="num">1</div><div class="body"><h3>Install graphify</h3>
-      <pre><code>pip install graphifyy      # CLI is `graphify`; no LLM key needed for code
+    <div class="step"><div class="num">1</div><div class="body"><h3>Install the two tools</h3>
+      <p>graphify builds the map; Claude (Cowork or Claude Code) runs the wizard and answers questions.</p>
+      <pre><code>pip install graphifyy        # the map builder; no AI key needed for code
 graphify --version</code></pre></div></div>
 
-    <div class="step"><div class="num">2</div><div class="body"><h3>Create the hub repo</h3>
-      <p>Make a new git repo for the hub — it's your single source of truth and benefits from PR review and history.</p></div></div>
+    <div class="step"><div class="num">2</div><div class="body"><h3>Add the brainify skill to Claude</h3>
+      <p>This is the wizard. It ships in this project under <code>skills/brainify/</code>.</p>
+      <ul>
+        <li><strong>In Cowork:</strong> open <em>Settings → Capabilities</em> and add the <code>brainify</code> skill (or install the Product Brain plugin if your team publishes one).</li>
+        <li><strong>In Claude Code:</strong> copy the <code>skills/brainify/</code> folder into your project's skills directory (e.g. <code>.claude/skills/brainify/</code>), or point your plugin config at it.</li>
+        <li><strong>Quick check:</strong> type <code>/brainify</code> or "set up product brain" — if Claude starts the audit, it's installed.</li>
+      </ul></div></div>
 
-    <div class="step"><div class="num">3</div><div class="body"><h3>Run brainify</h3>
-      <p>Open the hub in Claude (Cowork or Claude Code) and say <strong>"Set up product brain."</strong> It audits what's present, then walks you through declaring repos, writing the required core, mapping domains, registering doc types, and building the graph — one step at a time.</p></div></div>
+    <div class="step"><div class="num">3</div><div class="body"><h3>Create the hub</h3>
+      <p>Make a new, empty Git repository for the hub (e.g. <code>acme-brain</code>). This is where your knowledge will live.</p></div></div>
 
-    <div class="step"><div class="num">4</div><div class="body"><h3>Sync</h3>
-      <pre><code>pb sync     # pulls your repos, builds one graph over docs + code</code></pre>
-      <p>Now ask Claude about your product, your code, or your decisions.</p></div></div>
+    <div class="step"><div class="num">4</div><div class="body"><h3>Run the wizard</h3>
+      <p>Open the hub in Claude and say <strong>"Set up product brain."</strong> It walks you through declaring your apps, writing your rules and glossary, and choosing your doc types — one step at a time.</p></div></div>
 
-    <div class="callout"><p>Your application repos require <strong>no structural changes</strong> — registration lives only in the hub's <code>brain.config.json</code>.</p></div>
+    <div class="step"><div class="num">5</div><div class="body"><h3>Refresh</h3>
+      <pre><code>/path/to/product-brain/bin/pb --hub . sync     # pull apps + build the map
+pb sync --dry-run                               # preview without building</code></pre>
+      <p>Tip: add <code>bin/</code> to your <code>PATH</code> so you can just type <code>pb sync</code>.</p></div></div>
 
-    <h2>Optional: make an app repo hub-aware</h2>
-    <p>If you want a Claude session running <em>inside</em> <code>todo-api</code> or <code>todo-web</code> to benefit from the hub automatically, paste the <strong>app-repo snippet</strong> (<code>templates/app-repo-claude-md-snippet.md</code>) into that repo's <code>CLAUDE.md</code>. It's the only thing you ever add to an app repo, it's pure guidance (no config, no dependency), and it tells Claude to:</p>
-    <ul>
-      <li>check the hub's <code>vocabulary.md</code> so it uses the product's real names;</li>
-      <li>read the relevant spec and domain before answering "what should this do / why";</li>
-      <li>respect the hub's <code>constitution.md</code>;</li>
-      <li>prefer the hub's graph for cross-repo questions, and suggest <code>pb sync</code> if it's stale.</li>
-    </ul>
-    <p>The result: in-repo Claude answers get more accurate and efficient, without duplicating any knowledge into the code repo.</p>
+    <div class="step"><div class="num">6</div><div class="body"><h3>(Optional) Make an app aware of the hub</h3>
+      <p>Paste <code>templates/app-repo-claude-md-snippet.md</code> into an app repo's <code>CLAUDE.md</code> so Claude working inside that app automatically uses the hub's glossary, specs, and rules. It's the only thing you ever add to an app, it's optional, and nothing breaks without it.</p></div></div>
+
+    <div class="callout"><p>Your application repos need <strong>no changes</strong> to get started — the hub pulls them. Step 6 is a nice-to-have.</p></div>
+  </section>
+
+  <!-- 07 CUSTOMIZE -->
+  <section class="section" id="customize">
+    <h1>Customize it — just ask Claude</h1>
+    <p class="lead">The templates are starting points. You almost never edit them by hand — you tell Claude what you want in plain English, and it makes the change.</p>
+
+    <h2>Things you can just say</h2>
+    <div class="card"><p>💬 <strong>"Add a new doc type called <code>retros</code>."</strong><br>Claude adds it to <code>brain.config.json</code> and creates the <code>docs/retros/</code> folder.</p></div>
+    <div class="card"><p>💬 <strong>"Add a term to the glossary: a 'Reminder' is a scheduled nudge; in code it's <code>NotificationJob</code>."</strong><br>Claude adds the entry to <code>vocabulary.md</code> in the right format.</p></div>
+    <div class="card"><p>💬 <strong>"Add a rule: every list endpoint in the API must be paginated."</strong><br>Claude adds it to <code>constitution.md</code> under the API notes.</p></div>
+    <div class="card"><p>💬 <strong>"Write a spec for password reset, using our spec template."</strong><br>Claude drafts <code>docs/specs/00X-password-reset.md</code> for you to review.</p></div>
+    <div class="card"><p>💬 <strong>"Turn this meeting recording into a note and save it."</strong><br>Claude transcribes, summarizes the decisions, and files it under <code>docs/meeting-notes/</code>.</p></div>
+
+    <h2>Editing a template's shape</h2>
+    <p>If you want to change what a template <em>looks like</em> — say your specs should always have a "Rollout plan" section — just say so:</p>
+    <div class="chat">
+      <div class="bubble you"><span class="who">You</span>Update our spec template so every spec has a "Rollout plan" section near the end.</div>
+      <div class="bubble claude"><span class="who">Claude</span>Done — I added a "Rollout plan" section to <code>templates/spec-template.md</code>. Want me to add it to the existing specs too?</div>
+    </div>
+    <p>That's the whole idea: <strong>describe the outcome, let Claude do the editing.</strong> You stay in plain language; the files stay tidy.</p>
+  </section>
+
+  <!-- 08 ROLES -->
+  <section class="section" id="roles">
+    <h1>How-tos by role</h1>
+    <p class="lead">Everyone reads the same hub — they just ask different things. Here's a starting point per role.</p>
+
+    <div class="card"><h3>🧑‍💼 Product Manager</h3>
+      <p>Understand an area, write specs, keep the shared words honest.</p>
+      <ul><li>"What does the Scheduling area do, and what specs cover it?"</li><li>"Draft a spec for guest checkout using our template."</li><li>"Add 'waitlist' to the glossary."</li></ul></div>
+
+    <div class="card"><h3>👩‍💻 Engineer (backend or frontend)</h3>
+      <p>Get grounded on a feature before you build, and keep the brain honest after.</p>
+      <ul><li>"How does login work in the API today?"</li><li>"What rules must I follow for new endpoints?"</li><li>After a rename: "Update the glossary — <code>Appointment</code> is now <code>Booking</code>."</li></ul></div>
+
+    <div class="card"><h3>🧪 QA</h3>
+      <p>Turn specs into test plans and find the surface area of a change.</p>
+      <ul><li>"List the acceptance criteria for the create-task spec."</li><li>"What parts of both apps does booking touch?"</li></ul></div>
+
+    <div class="card"><h3>🎨 Designer</h3>
+      <p>Ground designs in how things actually work and what users said.</p>
+      <ul><li>"Summarize the research we have on onboarding."</li><li>"What does the current checkout flow do, step by step?"</li></ul></div>
+
+    <div class="card"><h3>🌱 New hire</h3>
+      <p>One guided path instead of a scavenger hunt.</p>
+      <ul><li>Read the constitution → the domains → the glossary.</li><li>"Walk me through how the Tasks area works across both apps."</li></ul></div>
+
+    <p>Each role can keep a short note in <code>workflows/</code> so their go-to questions are written down for the next person.</p>
   </section>
 
   <!-- 09 EXAMPLE -->
   <section class="section" id="example">
     <h1>Example: a to-do app</h1>
-    <p class="lead">A complete, tiny hub for a two-repo product — <code>todo-api</code> and <code>todo-web</code>. It ships in this framework under <code>examples/todo-app/</code>.</p>
+    <p class="lead">A complete, tiny hub for a two-app product — a web app and an API. It ships in this project under <code>examples/todo-app/</code>, so you can copy it and poke around.</p>
 
-    <div class="diagram">todo-brain/
-  brain.config.json            todo-api + todo-web · doc types
-  constitution.md              per-user scoping · validate at edge · soft delete · tests gate merge
-  vocabulary.md                Task · List · Due date  (product ↔ code)
-  domains.md                   Tasks · Lists
+    <pre><code>todo-brain/
+  brain.config.json          tracks todo-api + todo-web
+  constitution.md            per-user data · validate inputs · soft delete · tests before merge
+  vocabulary.md              Task · List · Due date   (product words ↔ code words)
+  domains.md                 Tasks · Lists
   docs/
     specs/001-create-task.md
     decisions/ADR-001-soft-delete.md
-    meeting-notes/2026-06-17-kickoff.md</div>
+    meeting-notes/2026-06-17-kickoff.md</code></pre>
 
     <h2>The glossary bridges product and code</h2>
-    <p>One vocabulary entry ties the product word to what each repo calls it:</p>
     <pre><code>## Task
 A single thing the user wants to get done.
 - Also called: todo, item, card
-- In code: `Task` (todo-api model), `TaskItem` (todo-web component)</code></pre>
+- In code: `Task` (todo-api), `TaskItem` (todo-web)</code></pre>
 
-    <h2>One spec, both repos</h2>
-    <p>The create-task spec declares the repos it touches and tags each acceptance criterion by layer, so backend, frontend, and QA all read the same source:</p>
-    <pre><code>ID: 001-create-task   Domain: Tasks   Repos: todo-api, todo-web
+    <h2>One spec, both apps</h2>
+    <p>The create-task spec lists the apps it touches and tags each check by side, so product, engineering, and QA all read the same page:</p>
+    <pre><code>Create a task   ·   apps: todo-api, todo-web
 
-Acceptance
-  (api)  POST /tasks with a title → 201, scoped to the current user
-  (api)  empty title → 422 field error
-  (web)  Enter in quick-add adds the task to the top, no reload
-  (web)  failed create shows an inline error, keeps the typed text</code></pre>
+✓ (api)  POST /tasks with a title → saves it for the current user
+✓ (api)  empty title → friendly error, nothing saved
+✓ (web)  press Enter → the task appears at the top instantly
+✓ (web)  if it fails → show an inline error, keep what was typed</code></pre>
 
-    <h2>Decisions and meetings are knowledge too</h2>
-    <p>The "soft delete" decision (<code>ADR-001</code>) and the kickoff meeting note live in the same hub and graph as the code — so "why can't we hard-delete?" has a documented answer, and the reasoning from the kickoff isn't lost. Ask Claude <em>"how does creating a task work across both apps?"</em> and it answers from the spec, the vocabulary, and both codebases at once.</p>
+    <p>Decisions and meeting notes live in the same hub, so "why can't we permanently delete a task?" has a written answer (see <code>ADR-001</code>), and the reasoning from the kickoff isn't lost. Ask <em>"how does creating a task work across both apps?"</em> and the answer draws on the spec, the glossary, and both codebases at once.</p>
   </section>
 
-  <!-- 10 OPEN -->
+  <!-- 10 CONTRIBUTE -->
+  <section class="section" id="contribute">
+    <h1>Contribute</h1>
+    <p class="lead">Product Brain gets better when teams use it and report back. You don't need to be an engineer to help — pick a role below.</p>
+
+    <h2>Contribution roles</h2>
+    <div class="card"><h3>🧪 Dev Tester</h3>
+      <p><strong>Goal:</strong> run Product Brain on your stack and report what breaks.</p>
+      <p><strong>What to test &amp; report:</strong> Did <code>pb sync</code> build a graph for your languages? Did answers point at the right code? What was confusing, slow, or wrong? Which file types didn't get picked up?</p></div>
+
+    <div class="card"><h3>🧑‍💼 PM Tester</h3>
+      <p><strong>Goal:</strong> validate the writing-and-asking workflow without touching code.</p>
+      <p><strong>What to test &amp; report:</strong> Did the wizard's questions make sense? Was the spec template a good fit? Could you get useful answers to real product questions?</p></div>
+
+    <div class="card"><h3>🔍 Researcher</h3>
+      <p><strong>Goal:</strong> check whether we're using the best tools for each job.</p>
+      <p><strong>What to test &amp; report:</strong> Is graphify the best map-builder? Are there better ways to keep the map fresh, or to detect drift? Share findings and alternatives.</p></div>
+
+    <div class="card"><h3>🏆 Stack Champion</h3>
+      <p><strong>Goal:</strong> own the experience for one language/framework (Python, Rails, Node, Go, …).</p>
+      <p><strong>What to test &amp; report:</strong> Best source folders to include, common gotchas, and a short "works great on X" guide.</p></div>
+
+    <div class="card"><h3>✍️ Template Author</h3>
+      <p><strong>Goal:</strong> improve a doc-type template (spec, decision, meeting note) or add a new one.</p>
+      <p><strong>What to test &amp; report:</strong> Which sections were missing or unused? Propose a clearer template and the kind of team it fits.</p></div>
+
+    <div class="card"><h3>🌱 Onboarding Guide</h3>
+      <p><strong>Goal:</strong> make the new-hire path excellent.</p>
+      <p><strong>What to test &amp; report:</strong> Walk a real new hire through it. Where did they get stuck? What question did the hub fail to answer?</p></div>
+
+    <h2>How to send it in</h2>
+    <p>Keep it simple — one short write-up in this shape:</p>
+    <pre><code>Problem you hit  →  what you changed (or wish changed)  →  what you tested it on  →  what you're unsure about</code></pre>
+    <p>That format works whether you're filing a bug, proposing a template, or sharing research.</p>
+  </section>
+
+  <!-- 11 OPEN -->
   <section class="section" id="open">
     <h1>Open problems</h1>
-    <p class="lead">Deliberately deferred — tracked, not yet built. <span class="pill def">deferred</span></p>
-    <div class="card"><h3>Cross-repo linking adapters</h3><p>Wiring the web graph to the API graph via the contract between them (OpenAPI / GraphQL / tRPC / path heuristics). Hard because the contract style varies per product and heuristic matching is error-prone.</p></div>
-    <div class="card"><h3>Ripple / impact analysis</h3><p>Precise "change X here → these things break there," especially across repos. Depends on the linking above. Soft co-location via graph communities is the interim answer.</p></div>
-    <div class="card"><h3>Freshness via CI-push</h3><p>Moving graph builds from central pull into each repo's CI so the hub is always current. An optimization, not required for v1.</p></div>
-    <div class="card"><h3>Vocabulary ↔ graph linter</h3><p>Auto-verify that each glossary "in code" reference still resolves to a real node after a sync.</p></div>
-    <div class="card"><h3>Non-git knowledge sources</h3><p>Pulling docs from Notion / Drive into the hub as exported Markdown.</p></div>
+    <p class="lead">The honest list of what we haven't solved yet. Each one is a great place to contribute.</p>
+
+    <div class="card"><h3>1. "What breaks if I change this?" across apps</h3>
+      <p>Today the hub can <em>find</em> related things across apps, but it can't yet say precisely "change this model and exactly these screens break." Real cross-app impact analysis is the biggest open prize.</p></div>
+
+    <div class="card"><h3>2. Keeping the map fresh automatically</h3>
+      <p>Right now someone runs refresh (or schedules it). Ideally each app rebuilds its part automatically when code merges, so the hub is never stale.</p></div>
+
+    <div class="card"><h3>3. Catching glossary drift</h3>
+      <p>When code is renamed, the glossary's "in code" notes can go out of date. A checker that flags stale entries after each refresh would keep the bridge trustworthy.</p></div>
+
+    <div class="card"><h3>4. Pulling in non-Git sources</h3>
+      <p>Lots of knowledge lives in Notion, Drive, or Slack. Bringing that in (as documents the hub can read) without manual copy-paste is an open need.</p></div>
+
+    <div class="card"><h3>5. Knowing what to write next</h3>
+      <p>Teams won't document everything. Help deciding <em>which</em> missing specs or decisions matter most — based on what people actually ask — would focus the effort.</p></div>
+
+    <div class="card"><h3>6. Proving it helps</h3>
+      <p>We need a simple way to measure whether the hub actually saves time and improves answers, so teams can see the payoff and keep investing.</p></div>
   </section>
 
-  <!-- 11 FAQ -->
+  <!-- 12 FAQ -->
   <section class="section" id="faq">
     <h1>FAQ</h1>
-    <div class="card"><h3>Do I have to use Spec Kit?</h3><p>No. Product Brain is method-agnostic. Spec Kit is one option among many; use any spec format that produces Markdown under <code>docs/specs/</code>.</p></div>
-    <div class="card"><h3>Is the hub a separate repo?</h3><p>Yes — its own git repo. That gives version history, PR review of knowledge, access control, and a clean directory for graphify to build over.</p></div>
-    <div class="card"><h3>Does anything get added to my app repos?</h3><p>No. The hub pulls them and registers them centrally in <code>brain.config.json</code>. An optional one-line CLAUDE pointer is the only thing you might add, and nothing depends on it.</p></div>
-    <div class="card"><h3>Can the graph answer if it lives outside the code repo?</h3><p>Yes. Nodes carry <code>source_file</code> pointers, so the agent traverses the graph and opens just the relevant chunks. The graph's location is irrelevant as long as the pulled source is present.</p></div>
-    <div class="card"><h3>Do I have to link documents together manually?</h3><p>No. graphify infers semantic edges and clusters related docs and code into communities on its own, so there are no wikilinks to author or maintain. Just write clear Markdown and let the graph connect it.</p></div>
-    <div class="card"><h3>Can it tell me what breaks across repos if I change something?</h3><p>Not precisely yet — that's the deferred ripple/adapter work. Today you get grounded querying and soft cross-repo grouping via graph communities.</p></div>
-    <div class="card"><h3>Can I add my own doc types, like meeting notes?</h3><p>Yes — that's a first-class feature. Add the type to <code>brain.config.json</code> and drop Markdown into <code>docs/&lt;type&gt;/</code>.</p></div>
+    <div class="card"><h3>Do I need to be technical to use it?</h3><p>No. Once it's set up, you ask questions in plain language. Setup needs someone who can run two commands, once.</p></div>
+    <div class="card"><h3>Do I have to write specs a certain way?</h3><p>No. Use any style — plain notes, RFCs, exported docs. Product Brain organizes what you write; it doesn't impose a method.</p></div>
+    <div class="card"><h3>Does anything change in our app code?</h3><p>No. The hub reads your apps; it doesn't add files to them. (You can optionally add one guidance note to an app — see the setup guide.)</p></div>
+    <div class="card"><h3>Is our code sent anywhere?</h3><p>Code is read on your own machine to build the map. Written docs and images use Claude to understand them; recordings are transcribed locally.</p></div>
+    <div class="card"><h3>How often do I refresh?</h3><p>After meaningful changes, or on a schedule. It only re-reads what changed, so repeat refreshes are quick.</p></div>
+    <div class="card"><h3>Can it answer questions that span two apps?</h3><p>Yes — finding and explaining across apps works today. Precise "what breaks where" across apps is still on the open-problems list.</p></div>
+    <div class="card"><h3>Where do I start?</h3><p>The Setup guide. Or copy <code>examples/todo-app/</code> to see a finished hub first.</p></div>
   </section>
 
 </div></main>
@@ -423,7 +578,6 @@ Acceptance
     const id = a.dataset.sec;
     links.forEach(l => l.classList.toggle('active', l === a));
     sections.forEach(s => s.classList.toggle('active', s.id === id));
-    document.getElementById('main').scrollTo(0, 0);
     window.scrollTo(0, 0);
     document.getElementById('sidebar').classList.remove('open');
   });
