@@ -997,6 +997,7 @@
 <span class="dt-dir">.specify/</span>
   <span class="dt-dir">memory/</span>
     <span class="dt-file">constitution.md</span>     <span class="dt-comment">← project principles &amp; canonical vocabulary</span>
+    <span class="dt-file">domains.md</span>          <span class="dt-comment">← product domain map (added in Phase 5)</span>
   <span class="dt-dir">templates/</span>
     <span class="dt-file">spec-template.md</span>     <span class="dt-comment">← feature spec structure</span>
     <span class="dt-file">plan-template.md</span>     <span class="dt-comment">← implementation plan structure</span>
@@ -1086,6 +1087,74 @@ therapists."</span>
   <div class="phase">
     <div class="phase-header">
       <div class="phase-num">5</div>
+      <div>
+        <h3>Map Your Domains</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">Domain detection + core feature specs</p>
+      </div>
+      <span class="time-badge">~2 hours</span>
+    </div>
+    <div class="phase-body">
+      <p>With the graph built and governance in place, use the community clusters you already detected to formally document the product's functional domains. This is the bridge between "we have a codebase" and "we understand what our product does."</p>
+
+      <div class="note" style="margin-bottom:16px">
+        <span class="note-icon">🤖</span>
+        <div><strong>brainify handles this end-to-end.</strong> Say <code>"set up product brain"</code> in Claude Cowork — Phase H of the skill walks you through detection, interviews, and spec creation automatically.</div>
+      </div>
+
+      <p><strong>Step 1 — Detect candidate domains from the graph</strong></p>
+      <p>Ask Claude: <em>"What domains does this product have?"</em> It will query <code>graph.json</code> community clusters and return a list like: Scheduling, Identity, Billing, Notifications, Reporting. Confirm, rename, or add any that are missing.</p>
+
+      <p style="margin-top:14px"><strong>Step 2 — Interview per domain</strong></p>
+      <p>For each domain, answer 6 questions (brainify asks them one at a time):</p>
+      <ul style="font-size:14px;color:#334155;margin:8px 0 14px">
+        <li><strong>Product name</strong> — what do stakeholders call this domain?</li>
+        <li><strong>Responsibility</strong> — one sentence: what does it do?</li>
+        <li><strong>Core features</strong> — 3–5 features end users care about</li>
+        <li><strong>Boundaries</strong> — what is explicitly out of scope?</li>
+        <li><strong>Owner</strong> — which team or person is accountable?</li>
+        <li><strong>Status</strong> — stable / evolving / planned?</li>
+      </ul>
+
+      <p><strong>Step 3 — Write <code>.specify/memory/domains.md</code></strong></p>
+      <p>Claude writes the domain map from your answers. This becomes a permanent reference — Claude reads it automatically when answering domain-level questions.</p>
+
+      <div class="example-box">
+        <div class="label">Example domain entry</div>
+        <pre style="margin:0;font-size:13px">## Scheduling
+
+<b>Responsibility</b>: Manages appointment creation, modification, and cancellation between patients and clinicians.
+<b>Owner</b>: Backend team
+<b>Status</b>: Stable
+
+<b>Core Features</b>:
+- Book an appointment
+- Reschedule with conflict detection
+- Cancel and preserve record (no hard delete)
+- Waitlist management
+
+<b>Out of scope</b>: Payment processing, clinical notes
+<b>Key entities</b>: Appointment, Schedule, Slot, Waitlist</pre>
+      </div>
+
+      <p style="margin-top:16px"><strong>Step 4 — Spec one core feature per domain</strong></p>
+      <p>For each domain, pick its most important core feature and run <code>speckit-specify</code>. By the end of this phase, you have:</p>
+      <ul style="font-size:14px;color:#334155;margin:8px 0">
+        <li>A domain map that explains the product's structure</li>
+        <li>At least one grounded spec per domain</li>
+        <li>A foundation for new-joiner onboarding that doesn't require tribal knowledge</li>
+      </ul>
+
+      <div class="note">
+        <span class="note-icon">💡</span>
+        <div><strong>Recurring value:</strong> When a new feature lands in a domain, Claude checks <code>domains.md</code> first — it knows the boundaries, the owner, and what's already specced. This prevents scope creep silently sneaking into a domain it doesn't belong in.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 6 (was 5) -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">6</div>
       <div>
         <h3>Multi-Repo Setup (if needed)</h3>
         <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">Merge graphs for cross-app queries</p>
