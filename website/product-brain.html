@@ -400,7 +400,9 @@
     <div class="step"><div class="num">1</div><div class="body"><h3>Install the two tools</h3>
       <p>graphify builds the map; Claude (Cowork or Claude Code) runs the wizard and answers questions.</p>
       <pre><code>pip install graphifyy        # the map builder; no AI key needed for code
-graphify --version</code></pre></div></div>
+graphify --version</code></pre>
+      <p>Code and recordings are processed locally and need no key. Only the document/image step uses an AI provider — and you choose which one (Gemini, Claude, OpenAI, …). For Gemini, set a key once:</p>
+      <pre><code>export GEMINI_API_KEY=your-key   # then: pb sync --provider gemini</code></pre></div></div>
 
     <div class="step"><div class="num">2</div><div class="body"><h3>Add the brainify skill to Claude</h3>
       <p>This is the wizard. It ships in this project under <code>skills/brainify/</code>.</p>
@@ -577,7 +579,8 @@ A single thing the user wants to get done.
     <div class="card"><h3>Do I need to be technical to use it?</h3><p>No. Once it's set up, you ask questions in plain language. Setup needs someone who can run two commands, once.</p></div>
     <div class="card"><h3>Do I have to write specs a certain way?</h3><p>No. Use any style — plain notes, RFCs, exported docs. Product Brain organizes what you write; it doesn't impose a method.</p></div>
     <div class="card"><h3>Does anything change in our app code?</h3><p>No. The hub reads your apps; it doesn't add files to them. (You can optionally add one guidance note to an app — see the setup guide.)</p></div>
-    <div class="card"><h3>Is our code sent anywhere?</h3><p>Code is read on your own machine to build the map. Written docs and images use Claude to understand them; recordings are transcribed locally.</p></div>
+    <div class="card"><h3>Is our code sent anywhere?</h3><p>Code is read on your own machine to build the map, and recordings are transcribed locally. Only written docs and images go to your chosen AI provider to be understood.</p></div>
+    <div class="card"><h3>Which AI provider does it use? Can I use Gemini?</h3><p>Yes. You're not tied to Anthropic. The document/image step works with Gemini, Claude, OpenAI, Kimi, DeepSeek, or a local model (Ollama). Pick one with <code>pb sync --provider gemini</code> or set <code>"provider"</code> in <code>brain.config.json</code>. Set the matching key (e.g. <code>GEMINI_API_KEY</code>) as an environment variable — never commit keys.</p></div>
     <div class="card"><h3>How often do I refresh?</h3><p>After meaningful changes, or on a schedule. It only re-reads what changed, so repeat refreshes are quick.</p></div>
     <div class="card"><h3>Can it answer questions that span two apps?</h3><p>Yes — finding and explaining across apps works today. Precise "what breaks where" across apps is still on the open-problems list.</p></div>
     <div class="card"><h3>Where do I start?</h3><p>The Setup guide. Or copy <code>examples/todo-app/</code> to see a finished hub first.</p></div>

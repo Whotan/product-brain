@@ -6,5 +6,6 @@
     { "id": "web-app",     "url": "git@github.com:acme/web-app.git",     "src": ["src/"] }
   ],
   "doc_types": ["specs", "decisions", "meeting-notes", "research", "runbooks"],
-  "graph": { "out": "graph/" }
+  "graph": { "out": "graph/", "provider": "auto" }
 }
+

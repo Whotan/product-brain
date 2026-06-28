@@ -2,9 +2,15 @@
 """pb — Product Brain hub CLI.
 
 Usage:
-  pb sync [--dry-run] [--hub PATH]
+  pb sync [--dry-run] [--rebuild] [--provider NAME] [--hub PATH]
   pb status [--hub PATH]
+  pb find <term> [aliases...] [--hub PATH]
+  pb version [--check]
   pb --help
+
+Provider: graphify's doc/image pass uses an LLM. Pick it with --provider
+(gemini | claude | openai | kimi | deepseek | ollama | auto) or in brain.config.json
+("graph": {"provider": "gemini"}). Set the matching key, e.g. export GEMINI_API_KEY=...
 
 `pb sync` builds one knowledge graph over your hub's docs + the code repos it tracks:
   1. read brain.config.json
@@ -29,6 +35,19 @@ import sys
 from pathlib import Path
 
 CORE_DOCS = ["constitution.md", "vocabulary.md", "domains.md"]
+
+# graphify picks its LLM provider (for the doc/image semantic pass) from env vars.
+# We map a friendly provider name to the env var(s) graphify looks for.
+PROVIDER_ENV = {
+    "gemini":    ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+    "claude":    ["ANTHROPIC_API_KEY"],
+    "anthropic": ["ANTHROPIC_API_KEY"],
+    "openai":    ["OPENAI_API_KEY"],
+    "kimi":      ["MOONSHOT_API_KEY"],
+    "deepseek":  ["DEEPSEEK_API_KEY"],
+    "ollama":    ["OLLAMA_BASE_URL"],
+}
+ALL_PROVIDER_KEYS = {k for keys in PROVIDER_ENV.values() for k in keys}
 
 
 def log(msg): print(f"[pb] {msg}")
@@ -132,15 +151,36 @@ def ensure_exclusions(hub: Path, rdir: Path, out: Path, dry: bool):
             gfi.write_text("\n".join(wanted_lines) + "\n")
 
 
-def run_graphify(content_root: Path, out: Path, dry: bool, rebuild: bool):
+def graphify_env(provider: str):
+    """Return (env, label) for the chosen provider. 'auto' lets graphify decide."""
+    env = os.environ.copy()
+    if not provider or provider == "auto":
+        return env, "auto-detected by graphify (set GEMINI_API_KEY to prefer Gemini)"
+    provider = provider.lower()
+    keys = PROVIDER_ENV.get(provider)
+    if keys is None:
+        die(f"unknown graph provider '{provider}'. Choose one of: {', '.join(sorted(PROVIDER_ENV))} or 'auto'.")
+    if not any(env.get(k) for k in keys):
+        die(f"provider '{provider}' selected but none of {keys} is set.\n"
+            f"      Set it first, e.g.:  export {keys[0]}=your-key")
+    # Remove other providers' keys so graphify's auto-detect lands on the chosen one.
+    for k in ALL_PROVIDER_KEYS - set(keys):
+        env.pop(k, None)
+    return env, provider
+
+
+def run_graphify(content_root: Path, out: Path, dry: bool, rebuild: bool, provider: str):
     cmd = ["graphify", str(content_root), "--out", str(out)]
     cache = out / "cache"
     if dry:
         log("would run: " + " ".join(cmd))
+        log(f"provider: {provider}")
         log("cache: would " + ("clear (full rebuild)" if rebuild else "reuse" if cache.exists() else "create"))
         return
     if not have("graphify"):
         die("graphify not found on PATH. Install it: pip install graphifyy")
+    env, label = graphify_env(provider)
+    log(f"semantic extraction provider: {label}")
     out.mkdir(parents=True, exist_ok=True)
     if rebuild and cache.exists():
         log("clearing graphify cache for a full rebuild…")
@@ -148,7 +188,7 @@ def run_graphify(content_root: Path, out: Path, dry: bool, rebuild: bool):
     elif cache.exists():
         # graphify fingerprints each file by content hash; unchanged files are skipped.
         log("incremental build — reusing graphify cache (unchanged files are skipped)")
-    run(cmd)
+    run(cmd, env=env)
 
 
 def graph_stats(out: Path) -> str:
@@ -180,12 +220,15 @@ def write_report(hub: Path, cfg: dict, out: Path, dry: bool):
     log(f"wrote {report.relative_to(hub)}")
 
 
-def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool):
+def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, provider: str):
     cfg = load_config(hub)
     repos = cfg.get("repos", [])
     out = hub / cfg.get("graph", {}).get("out", "graph/")
+    provider = provider or cfg.get("graph", {}).get("provider", "auto")
     log(f"hub: {hub}")
     log(f"{len(repos)} repo(s): {', '.join(r['id'] for r in repos) or '(none)'}")
+    if not dry:
+        graphify_env(provider)  # validate provider + key now, before any slow work
     if not have("git"):
         die("git not found on PATH.")
     if hub_pull:
@@ -194,7 +237,7 @@ def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool):
     log(f"apps folder: {rdir.name}/ (visible; kept out of Git, read by graphify)")
     pull_repos(rdir, repos, dry)
     ensure_exclusions(hub, rdir, out, dry)
-    run_graphify(hub, out, dry, rebuild)
+    run_graphify(hub, out, dry, rebuild, provider)
     write_report(hub, cfg, out, dry)
     log("done." if not dry else "dry-run complete (nothing written).")
 
@@ -346,6 +389,8 @@ def main():
     s.add_argument("--dry-run", action="store_true", help="show the plan without writing or running graphify")
     s.add_argument("--rebuild", action="store_true", help="clear the graphify cache and rebuild everything from scratch")
     s.add_argument("--no-hub-pull", action="store_true", help="don't pull the hub's own latest changes first")
+    s.add_argument("--provider", help="LLM provider for graphify's doc/image pass: "
+                   "gemini | claude | openai | kimi | deepseek | ollama | auto (overrides brain.config.json)")
     sub.add_parser("status", help="show hub health at a glance")
     f = sub.add_parser("find", help="search the graph for code symbols matching a term (powers vocabulary)")
     f.add_argument("terms", nargs="+", help="the product term and/or its aliases, e.g. find session booking appointment")
@@ -362,12 +407,15 @@ def main():
     hub = Path(args.hub).resolve()
     if not hub.exists():
         die(f"hub path does not exist: {hub}")
-    if args.cmd == "sync":
-        cmd_sync(hub, args.dry_run, args.rebuild, not args.no_hub_pull)
-    elif args.cmd == "status":
-        cmd_status(hub)
-    elif args.cmd == "find":
-        cmd_find(hub, args.terms, args.code_only, args.limit)
+    try:
+        if args.cmd == "sync":
+            cmd_sync(hub, args.dry_run, args.rebuild, not args.no_hub_pull, args.provider)
+        elif args.cmd == "status":
+            cmd_status(hub)
+        elif args.cmd == "find":
+            cmd_find(hub, args.terms, args.code_only, args.limit)
+    except subprocess.CalledProcessError as e:
+        die(f"command failed: {' '.join(str(c) for c in e.cmd)}")
 
 
 if __name__ == "__main__":

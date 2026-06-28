@@ -1,6 +1,6 @@
 ---
 name: brainify
-version: 0.1.1
+version: 0.1.2
 description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
 ---
 
@@ -179,7 +179,9 @@ is free and local, and since there are few/no docs yet, this first build is chea
 # 4. run graphify over the hub → graph/graph.json + graph/GRAPH_REPORT.md
 ```
 
-If a `pb` CLI isn't available, perform the steps directly: clone each repo into `repos/<id>`, exclude `repos/` and `graph/` via `.git/info/exclude`, then run graphify over the hub into `graph/`.
+**Choose the LLM provider.** Only the doc/image pass uses an LLM (code + audio/video are local). Product Brain is provider-agnostic — Gemini, Claude, OpenAI, Kimi, DeepSeek, or local Ollama. Ask the user which they want (or read `graph.provider` from `brain.config.json`). Make sure the matching key is set in the environment — for Gemini, `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) — then run `pb sync --provider <name>` (or set `graph.provider`). **Never** write an API key into the hub or a memory file; it's an environment variable the user/teammate sets.
+
+If a `pb` CLI isn't available, perform the steps directly: clone each repo into `repos/<id>`, exclude `repos/` and `graph/` via `.git/info/exclude`, then run graphify over the hub into `graph/` (graphify auto-detects the provider from the env keys; Gemini has top priority).
 
 **Re-syncs are cheap.** graphify fingerprints every file by content hash and caches results under
 `graph/cache/`, so a later `pb sync` only re-reads what changed — never delete `graph/cache/`. Use

@@ -142,6 +142,26 @@ pb version --check  # also fetches and tells you if a newer version is available
 If you installed the skill in **copy** mode, re-run `bin/install-skill.sh` after pulling updates.
 If you used `--link` mode, it always reflects the repo — nothing to re-run.
 
+### Choose your AI provider (Gemini, Claude, OpenAI, …)
+
+Code and audio/video are processed locally and need no key. Only the document/image pass uses an LLM,
+and you choose which one — Product Brain is not tied to Anthropic. Pick a provider per sync or in
+`brain.config.json`:
+
+```bash
+export GEMINI_API_KEY=your-key       # or GOOGLE_API_KEY
+pb sync --provider gemini            # one-off override
+```
+
+```json
+"graph": { "out": "graph/", "provider": "gemini" }   // persistent, in brain.config.json
+```
+
+Supported: `gemini`, `claude`, `openai`, `kimi`, `deepseek`, `ollama` (local), or `auto` (graphify
+picks based on whichever key is set). `pb` validates that the chosen provider's key is present before
+it does any work, and forces that provider even if other providers' keys are also in your environment.
+Keep API keys in environment variables — never commit them to the hub.
+
 Tip: add `bin/` to your `PATH` (or symlink `bin/pb` into `/usr/local/bin`) so you can just type `pb sync`.
 
 That's it. Ask Claude about your product, your code, or your decisions.
