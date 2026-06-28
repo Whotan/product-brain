@@ -1,3 +1,6 @@
 .DS_Store
-.work/
-graph/
+
+# Artifacts pb sync generates inside any hub (e.g. when running on examples/).
+# In a real standalone hub these are kept out of Git via .git/info/exclude instead.
+**/repos/
+**/graph/

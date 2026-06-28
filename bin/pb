@@ -9,9 +9,10 @@ Usage:
 `pb sync` builds one knowledge graph over your hub's docs + the code repos it tracks:
   1. read brain.config.json
   2. pull the hub's own latest changes (safe: only if git repo + upstream + clean tree)
-  3. clone/pull each tracked repo into .work/repos/<id>
-  4. assemble a workspace (core docs + docs/ + each repo's source dirs)
-  5. run graphify over the workspace into the graph/ folder (incremental via cache)
+  3. clone/pull each tracked repo into a VISIBLE folder: repos/<id>
+  4. keep repos/ and graph/ out of Git via .git/info/exclude (not .gitignore, so graphify
+     still reads repos/), and write a .graphifyignore so graphify skips its own output
+  5. run graphify over the hub into the graph/ folder (incremental via cache)
   6. write graph/sync-report.md
 
 No third-party Python packages required. Needs `git` and `graphify` on PATH
@@ -72,73 +73,67 @@ def pull_hub(hub: Path, dry: bool):
         run(["git", "-C", str(hub), "pull", "--ff-only", "--quiet"])
 
 
-def pull_repos(hub: Path, repos: list, dry: bool):
-    work = hub / ".work" / "repos"
-    work.mkdir(parents=True, exist_ok=True)
+def repos_dir(hub: Path, cfg: dict) -> Path:
+    name = cfg.get("workspace", {}).get("repos_dir", "repos")
+    return hub / name
+
+
+def pull_repos(rdir: Path, repos: list, dry: bool):
+    """Clone/pull tracked repos into a visible folder (default: repos/)."""
+    if not dry:
+        rdir.mkdir(parents=True, exist_ok=True)
     for r in repos:
         rid, url = r.get("id"), r.get("url")
         if not rid or not url:
             die(f"each repo needs an 'id' and 'url' (got {r})")
-        dest = work / rid
-        if dest.exists():
-            log(f"pull {rid}")
+        dest = rdir / rid
+        if (dest / ".git").exists():
+            log(f"pull {rdir.name}/{rid}")
             if not dry:
                 run(["git", "-C", str(dest), "pull", "--ff-only", "--quiet"])
         else:
-            log(f"clone {rid} ({url})")
+            log(f"clone {rdir.name}/{rid} ({url})")
             if not dry:
                 run(["git", "clone", "--depth", "1", "--quiet", url, str(dest)])
 
 
-def assemble_workspace(hub: Path, repos: list, dry: bool) -> Path:
-    """Build .work/workspace as a hardlinked mirror of everything to graph."""
-    ws = hub / ".work" / "workspace"
-    if not dry and ws.exists():
-        shutil.rmtree(ws)
-    (ws).mkdir(parents=True, exist_ok=True)
+def ensure_exclusions(hub: Path, rdir: Path, out: Path, dry: bool):
+    """Keep the clones + the graph output out of Git — but WITHOUT a tracked .gitignore,
+    because graphify honors .gitignore and would then skip the repos. We use:
+      - .git/info/exclude  (local, untracked) so Git ignores repos/ and graph/
+      - .graphifyignore     so graphify skips only its own output (and re-includes repos/)
+    """
+    repos_name = rdir.name
+    out_name = out.relative_to(hub).as_posix().rstrip("/")
 
-    # core docs (small) + docs/ tree
-    inputs = [hub / d for d in CORE_DOCS if (hub / d).exists()]
-    if (hub / "docs").exists():
-        inputs.append(hub / "docs")
-    # each repo's configured source dirs
-    for r in repos:
-        base = hub / ".work" / "repos" / r["id"]
-        for src in r.get("src", ["."]):
-            inputs.append(base / src)
+    # 1) Git: local exclude (does not affect graphify, which reads .gitignore files)
+    git_dir = hub / ".git"
+    if git_dir.exists():
+        excl = git_dir / "info" / "exclude"
+        existing = excl.read_text().splitlines() if excl.exists() else []
+        wanted = [f"/{repos_name}/", f"/{out_name}/"]
+        add = [w for w in wanted if w not in existing]
+        if add:
+            log(f"git: excluding {', '.join(w.strip('/') for w in add)} from commits (.git/info/exclude)")
+            if not dry:
+                excl.parent.mkdir(parents=True, exist_ok=True)
+                excl.write_text("\n".join(existing + add).rstrip("\n") + "\n")
 
-    for src_path in inputs:
-        if not src_path.exists():
-            log(f"  skip (missing): {src_path.relative_to(hub)}")
-            continue
-        rel = src_path.relative_to(hub).as_posix().replace("/", "__")
-        target = ws / rel
-        log(f"  + {src_path.relative_to(hub)}")
-        if dry:
-            continue
-        if src_path.is_dir():
-            # hardlink copy = near-zero space, always walkable
-            _copy_hardlink(src_path, target)
-        else:
-            target.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                os.link(src_path, target)
-            except OSError:
-                shutil.copy2(src_path, target)
-    return ws
+    # 2) graphify: skip the generated output; explicitly keep the repos in
+    gfi = hub / ".graphifyignore"
+    wanted_lines = [
+        "# Managed by Product Brain (pb sync).",
+        f"{out_name}/",        # don't graph the generated map
+        f"!{repos_name}/",     # do graph the pulled apps even if Git ignores them
+    ]
+    if not gfi.exists() or gfi.read_text().splitlines() != wanted_lines:
+        log(f"graphify: writing .graphifyignore (skip {out_name}/, keep {repos_name}/)")
+        if not dry:
+            gfi.write_text("\n".join(wanted_lines) + "\n")
 
 
-def _copy_hardlink(src: Path, dst: Path):
-    try:
-        shutil.copytree(src, dst, copy_function=os.link,
-                        ignore=shutil.ignore_patterns(".git", "node_modules", ".work"))
-    except (OSError, shutil.Error):
-        shutil.copytree(src, dst, ignore=shutil.ignore_patterns(".git", "node_modules", ".work"),
-                        dirs_exist_ok=True)
-
-
-def run_graphify(ws: Path, out: Path, dry: bool, rebuild: bool):
-    cmd = ["graphify", str(ws), "--out", str(out)]
+def run_graphify(content_root: Path, out: Path, dry: bool, rebuild: bool):
+    cmd = ["graphify", str(content_root), "--out", str(out)]
     cache = out / "cache"
     if dry:
         log("would run: " + " ".join(cmd))
@@ -195,10 +190,11 @@ def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool):
         die("git not found on PATH.")
     if hub_pull:
         pull_hub(hub, dry)
-    pull_repos(hub, repos, dry)
-    log("assembling workspace…")
-    ws = assemble_workspace(hub, repos, dry)
-    run_graphify(ws, out, dry, rebuild)
+    rdir = repos_dir(hub, cfg)
+    log(f"apps folder: {rdir.name}/ (visible; kept out of Git, read by graphify)")
+    pull_repos(rdir, repos, dry)
+    ensure_exclusions(hub, rdir, out, dry)
+    run_graphify(hub, out, dry, rebuild)
     write_report(hub, cfg, out, dry)
     log("done." if not dry else "dry-run complete (nothing written).")
 

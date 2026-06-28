@@ -86,9 +86,13 @@ acme-brain/                          ← the hub: its own git repo, single sourc
     <your-own-type>/                 anything the team registers in brain.config.json
   workflows/                         role playbooks: pm.md, backend.md, frontend.md, qa.md, …
   graph/                             graphify output: graph.json, GRAPH_REPORT.md, graph.html
-  .work/                             gitignored: pulled working copies of the code repos (sync-time only)
-  .gitignore                         ignores .work/ (and optionally heavy graph artifacts)
+  repos/                             VISIBLE: pulled clones of the code repos (browsable by devs)
+  .graphifyignore                    managed: graphify skips graph/, keeps repos/
 ```
+
+`repos/` and `graph/` are kept out of Git via `.git/info/exclude` (a local, untracked exclude),
+**not** a tracked `.gitignore` — because graphify honors `.gitignore` and would otherwise skip the
+clones. They stay visible so developers can open the pulled apps normally.
 
 The **required core** is just two files (`constitution.md`, `vocabulary.md`) — the knowledge that can't be derived from code. `domains.md` is **recommended and graph-assisted** (curate it from the graph's communities after a sync). Everything under `docs/` is optional and extensible. There is **no spec-kit-specific folder and no required methodology**.
 
@@ -170,16 +174,21 @@ So the app repos stay **completely untouched**. This is strictly better for the 
 
 ## 9. How the graph is built — one graph over one assembled workspace
 
-Because we've **deferred cross-repo linking and ripple analysis** (your call, see Open Problems §13), we don't need per-repo graphs plus a merge-and-link step. We build **one graph over one assembled workspace**:
+Because we've **deferred cross-repo linking and ripple analysis** (your call, see Open Problems §13), we don't need per-repo graphs plus a merge-and-link step. We build **one graph over the hub**:
 
 ```
 pb sync
-  1. pull/refresh each repo in brain.config.json into .work/repos/<id>
-  2. run graphify over a single workspace = { constitution.md, vocabulary.md, domains.md,
-                                              docs/**,  .work/repos/** }
-  3. write graph/graph.json + graph/GRAPH_REPORT.md
-  4. write a short staleness/health note
+  1. pull the hub's own latest changes (safe: git repo + upstream + clean tree)
+  2. pull/refresh each repo in brain.config.json into the VISIBLE repos/<id> folder
+  3. keep repos/ and graph/ out of Git via .git/info/exclude; write a managed .graphifyignore
+  4. run graphify over the hub → graph/graph.json + graph/GRAPH_REPORT.md
+  5. write a short staleness/health note
 ```
+
+**Why `.git/info/exclude` rather than `.gitignore`?** graphify honors `.gitignore`, so a git-ignored
+`repos/` would be skipped by graphify too. Using the local `.git/info/exclude` keeps the clones out
+of commits while leaving them visible *and* readable by graphify. A managed `.graphifyignore`
+excludes only the generated `graph/` output.
 
 One graphify run over docs + both codebases yields a single graph in which:
 
@@ -189,7 +198,7 @@ One graphify run over docs + both codebases yields a single graph in which:
 
 This gives genuinely useful cross-repo querying ("how does booking work across both apps?") today. What it does **not** give is precise, automatic impact analysis ("change this model → exactly these web files break"); that needs explicit cross-repo edges and is deferred.
 
-**Why outside-the-repo graphs still answer questions and return chunks.** Each graph node stores a `source_file`. When Claude answers, it traverses the graph and opens only the few relevant chunks via those pointers. As long as `.work/` holds the pulled source (it does, until the next sync), chunk-level retrieval works exactly as if the graph lived next to the code. The graph's physical location is irrelevant.
+**Why outside-the-repo graphs still answer questions and return chunks.** Each graph node stores a `source_file`. When Claude answers, it traverses the graph and opens only the few relevant chunks via those pointers. Because the pulled source lives in the hub's visible `repos/`, those pointers always resolve. The graph's physical location is irrelevant.
 
 ---
 

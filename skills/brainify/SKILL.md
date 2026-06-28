@@ -145,7 +145,10 @@ Copy `brain.config.template.json` to `brain.config.json` and fill it in by askin
 2. "Which code repos should it cover? Give each an id, git URL, and source dir(s) (e.g. `app/`, `src/`)."
 3. "Which doc types do you want? Defaults: specs, decisions, meeting-notes, research, runbooks. Add your own freely."
 
-Create `docs/<type>/` for each registered type, plus `graph/` and a `.gitignore` ignoring `.work/`.
+Create `docs/<type>/` for each registered type. The pulled apps land in a **visible `repos/`** folder
+and the map in `graph/`; `pb sync` keeps both out of Git automatically (via `.git/info/exclude`, so
+graphify can still read `repos/`) and writes a managed `.graphifyignore`. Don't add `repos/` to a
+tracked `.gitignore` — graphify honors `.gitignore` and would then skip the apps.
 
 ### Phase B — Install graphify
 
@@ -177,12 +180,12 @@ Confirm the doc types in `brain.config.json`. Offer the shipped templates (`spec
 
 ```bash
 # 1. pull the hub's own latest changes (safe: only if git repo + upstream + clean tree)
-# 2. pull/refresh each tracked repo from brain.config.json into .work/repos/<id>
-# 3. run graphify over a workspace = { constitution.md, vocabulary.md, domains.md, docs/**, .work/repos/** }
-# 4. write graph/graph.json + graph/GRAPH_REPORT.md
+# 2. pull/refresh each tracked repo into the visible repos/<id> folder
+# 3. keep repos/ and graph/ out of Git (.git/info/exclude) + write .graphifyignore
+# 4. run graphify over the hub → graph/graph.json + graph/GRAPH_REPORT.md
 ```
 
-If a `pb` CLI isn't available yet, perform the steps directly: clone/pull each repo into `.work/repos/<id>`, then run graphify over the assembled paths into `graph/`. Report node/edge counts, communities, and thin areas. Keep `.work/` so `source_file` chunk lookups keep working.
+If a `pb` CLI isn't available yet, perform the steps directly: clone/pull each repo into `repos/<id>`, exclude `repos/` and `graph/` via `.git/info/exclude`, then run graphify over the hub into `graph/`. Report node/edge counts, communities, and thin areas. Keep `repos/` so `source_file` chunk lookups keep working.
 
 **Re-syncs are cheap.** graphify fingerprints every file by content hash and caches results under
 `graph/cache/`, so a later `pb sync` only re-reads what changed — never delete `graph/cache/`

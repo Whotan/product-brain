@@ -31,9 +31,11 @@ Plus: `brain.config.json` (repos + doc types), `docs/<type>/` (extensible), `wor
 
 ## The graph
 
-`pb sync` pulls each repo from `brain.config.json` into `.work/`, then runs graphify once over a
-workspace of `{ core docs, docs/**, .work/repos/** }`, producing a single `graph/graph.json`.
-Querying returns chunks via each node's `source_file`, so the graph need not sit next to the code.
+`pb sync` pulls each repo from `brain.config.json` into a **visible `repos/`** folder, then runs
+graphify once over the hub, producing a single `graph/graph.json`. `repos/` and `graph/` are kept
+out of Git via `.git/info/exclude` (not a tracked `.gitignore`, because graphify honors `.gitignore`
+and would otherwise skip the clones); a managed `.graphifyignore` makes graphify skip its own
+output while still reading `repos/`. Querying returns chunks via each node's `source_file`.
 
 ## Deferred — open problems (do not present as solved)
 
