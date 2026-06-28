@@ -124,6 +124,19 @@ pb sync --rebuild                               # ignore the cache and rebuild f
 then pulls each tracked app repo, then rebuilds the graph **incrementally** — graphify caches by
 content hash, so only changed files are re-read. Use `--no-hub-pull` to skip the hub pull.
 
+### Versions & updates
+
+The framework version lives in `VERSION` (currently `0.1.0`) and is stamped into the skill's
+frontmatter. Check what you have — and whether your installed skill is current — with:
+
+```bash
+pb version          # framework version + commit + whether your installed skill matches
+pb version --check  # also fetches and tells you if a newer version is available upstream
+```
+
+If you installed the skill in **copy** mode, re-run `bin/install-skill.sh` after pulling updates.
+If you used `--link` mode, it always reflects the repo — nothing to re-run.
+
 Tip: add `bin/` to your `PATH` (or symlink `bin/pb` into `/usr/local/bin`) so you can just type `pb sync`.
 
 That's it. Ask Claude about your product, your code, or your decisions.

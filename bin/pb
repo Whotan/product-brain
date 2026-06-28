@@ -203,6 +203,84 @@ def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool):
     log("done." if not dry else "dry-run complete (nothing written).")
 
 
+def framework_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def read_version() -> str:
+    vf = framework_root() / "VERSION"
+    return vf.read_text().strip() if vf.exists() else "unknown"
+
+
+def _skill_version(skill_dir: Path):
+    f = skill_dir / "SKILL.md"
+    if not f.exists():
+        return None
+    for line in f.read_text().splitlines():
+        if line.strip().lower().startswith("version:"):
+            return line.split(":", 1)[1].strip()
+    return "unversioned"
+
+
+def report_installed_skill():
+    root = framework_root()
+    repo_v = _skill_version(root / "skills" / "brainify")
+    locations = [(Path.home() / ".claude" / "skills" / "brainify", "personal"),
+                 (Path.cwd() / ".claude" / "skills" / "brainify", "project")]
+    found = False
+    for loc, label in locations:
+        if not loc.exists():
+            continue
+        found = True
+        if loc.is_symlink():
+            print(f"installed skill ({label}): linked to the repo — always current")
+        else:
+            iv = _skill_version(loc)
+            if iv == repo_v:
+                print(f"installed skill ({label}): {iv} — up to date")
+            else:
+                print(f"installed skill ({label}): {iv} — repo has {repo_v}; re-run bin/install-skill.sh")
+    if not found:
+        print("installed skill: not found in ~/.claude/skills or ./.claude/skills "
+              "(run bin/install-skill.sh)")
+
+
+def cmd_version(check: bool):
+    root = framework_root()
+    print(f"Product Brain {read_version()}")
+    if (root / ".git").exists() and have("git"):
+        sha = subprocess.run(["git", "-C", str(root), "log", "-1", "--format=%h (%cs)"],
+                             capture_output=True, text=True).stdout.strip()
+        if sha:
+            print(f"commit: {sha}")
+    report_installed_skill()
+    if not check:
+        print("Run `pb version --check` to see if a newer version exists upstream.")
+        return
+    if not ((root / ".git").exists() and have("git")):
+        print("check: not a git checkout — can't compare with upstream.")
+        return
+    fetch = subprocess.run(["git", "-C", str(root), "fetch", "--quiet"], capture_output=True, text=True)
+    if fetch.returncode != 0:
+        print("check: couldn't reach the remote (offline or no access).")
+        return
+    up = subprocess.run(["git", "-C", str(root), "rev-parse", "--abbrev-ref",
+                         "--symbolic-full-name", "@{u}"], capture_output=True, text=True)
+    if up.returncode != 0:
+        print("check: no upstream branch configured.")
+        return
+    behind = subprocess.run(["git", "-C", str(root), "rev-list", "--count", "HEAD..@{u}"],
+                            capture_output=True, text=True).stdout.strip()
+    ahead = subprocess.run(["git", "-C", str(root), "rev-list", "--count", "@{u}..HEAD"],
+                           capture_output=True, text=True).stdout.strip()
+    if behind and int(behind) > 0:
+        print(f"⬇️  {behind} update(s) available upstream. Run: git -C {root} pull")
+    elif ahead and int(ahead) > 0:
+        print(f"✅ up to date (and {ahead} local commit(s) not yet pushed).")
+    else:
+        print("✅ up to date — you have the latest version.")
+
+
 def cmd_status(hub: Path):
     cfg = load_config(hub)
     out = hub / cfg.get("graph", {}).get("out", "graph/")
@@ -229,7 +307,13 @@ def main():
     s.add_argument("--rebuild", action="store_true", help="clear the graphify cache and rebuild everything from scratch")
     s.add_argument("--no-hub-pull", action="store_true", help="don't pull the hub's own latest changes first")
     sub.add_parser("status", help="show hub health at a glance")
+    v = sub.add_parser("version", help="show the Product Brain version (and check for updates)")
+    v.add_argument("--check", action="store_true", help="fetch and report whether a newer version exists upstream")
     args = p.parse_args()
+
+    if args.cmd == "version":
+        cmd_version(args.check)
+        return
 
     hub = Path(args.hub).resolve()
     if not hub.exists():

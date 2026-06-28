@@ -17,7 +17,9 @@
 
 set -euo pipefail
 
-SRC="$(cd "$(dirname "$0")/.." && pwd)/skills/brainify"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SRC="$ROOT/skills/brainify"
+VER="$( [ -f "$ROOT/VERSION" ] && cat "$ROOT/VERSION" || echo "?" )"
 
 LINK=0
 DEST="$HOME/.claude/skills"
@@ -40,9 +42,10 @@ rm -rf "$DEST/brainify"
 
 if [ "$LINK" -eq 1 ]; then
   ln -s "$SRC" "$DEST/brainify"
-  echo "🔗 Linked brainify → $DEST/brainify  (always reflects this repo)"
+  echo "🔗 Linked brainify v$VER → $DEST/brainify  (always reflects this repo)"
 else
   cp -R "$SRC" "$DEST/brainify"
-  echo "✅ Copied brainify → $DEST/brainify  (snapshot — re-run to update)"
+  echo "✅ Copied brainify v$VER → $DEST/brainify  (snapshot — re-run to update)"
 fi
+echo "   Check anytime with: pb version"
 echo "   Open Claude Code (or Cowork) and say: \"set up product brain\""
