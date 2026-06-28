@@ -178,6 +178,11 @@ That's it. Ask Claude about your product, your code, or your decisions.
 
 ## What a hub is made of
 
+**Connecting your apps:** in `brain.config.json`, each repo is declared with either a `url` (cloned
+by `pb sync`) or a local `path` (mirrored into `repos/<id>` with cheap hardlinks — your working repo
+is never moved or modified). Use `url` for hubs shared across a team; use `path` when the code is
+already on your machine, the repo is private/auth-heavy, or you'd rather not deal with git URLs.
+
 **Required core** (this is what makes a directory a "brain"):
 
 - `constitution.md` — the non-negotiable principles.

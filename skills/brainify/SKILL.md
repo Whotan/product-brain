@@ -1,6 +1,6 @@
 ---
 name: brainify
-version: 0.1.3
+version: 0.1.4
 description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
 ---
 
@@ -147,8 +147,17 @@ If there's no `brain.config.json`, this is a new hub. The hub should be **its ow
 
 Copy `brain.config.template.json` to `brain.config.json` and fill it in by asking:
 1. "What's the hub name?"
-2. "Which code repos should it cover? Give each an id, git URL, and source dir(s) (e.g. `app/`, `src/`)."
+2. "Which apps should it cover?" For each, get an id and source dir(s) (e.g. `app/`, `src/`), plus **one of**:
+   - a **git URL** → recorded as `"url"`; `pb sync` clones it (best for hubs shared across a team), or
+   - the **local folder path** if the code is already on this machine → recorded as `"path"`; `pb sync`
+     mirrors it into `repos/<id>` with cheap hardlinks. **The working repo is never moved or copied
+     destructively.** Prefer this when the user isn't sure of the git URL, the repo is private/auth-heavy,
+     or they're non-technical — it avoids cloning and authentication entirely. (A local path is
+     machine-specific, so for shared hubs prefer `url`.)
 3. "Which doc types do you want? Defaults: specs, decisions, meeting-notes, research, runbooks. Add your own freely."
+
+If the user already has a repo open/checked out, the simplest first step is usually to point at it by
+`path` rather than asking for a URL.
 
 Create `docs/<type>/` for each registered type. The pulled apps land in a **visible `repos/`** folder
 and the map in `graph/`; `pb sync` keeps both out of Git automatically (via `.git/info/exclude`, so

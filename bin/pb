@@ -98,22 +98,63 @@ def repos_dir(hub: Path, cfg: dict) -> Path:
 
 
 def pull_repos(rdir: Path, repos: list, dry: bool):
-    """Clone/pull tracked repos into a visible folder (default: repos/)."""
+    """Make each tracked repo available under a visible folder (default: repos/).
+
+    Two ways to declare a repo in brain.config.json:
+      - "url":  a git URL  → cloned/pulled into repos/<id> (best for shared hubs)
+      - "path": a local folder already on this machine → mirrored into repos/<id> via cheap
+                hardlinks (your working repo is never moved or modified; best for
+                solo/offline/non-technical setups). Note: a local path is machine-specific, so
+                prefer "url" for hubs shared across a team.
+    """
     if not dry:
         rdir.mkdir(parents=True, exist_ok=True)
     for r in repos:
-        rid, url = r.get("id"), r.get("url")
-        if not rid or not url:
-            die(f"each repo needs an 'id' and 'url' (got {r})")
+        rid = r.get("id")
+        if not rid:
+            die(f"each repo needs an 'id' (got {r})")
+        url, path = r.get("url"), r.get("path")
         dest = rdir / rid
-        if (dest / ".git").exists():
-            log(f"pull {rdir.name}/{rid}")
-            if not dry:
-                run(["git", "-C", str(dest), "pull", "--ff-only", "--quiet"])
+
+        if path:
+            src = Path(path).expanduser()
+            if not src.exists():
+                die(f"local path for '{rid}' not found: {src}")
+            src = src.resolve()
+            log(f"mirror {rdir.name}/{rid} ← {src} (local repo; your working copy is never moved or changed)")
+            if dry:
+                continue
+            if dest.is_symlink():
+                dest.unlink()
+            elif dest.exists():
+                shutil.rmtree(dest)  # rebuild the generated mirror (it's git-excluded)
+            mirror_local(src, dest)
+
+        elif url:
+            if (dest / ".git").exists():
+                log(f"pull {rdir.name}/{rid}")
+                if not dry:
+                    run(["git", "-C", str(dest), "pull", "--ff-only", "--quiet"])
+            else:
+                log(f"clone {rdir.name}/{rid} ({url})")
+                if not dry:
+                    run(["git", "clone", "--depth", "1", "--quiet", url, str(dest)])
         else:
-            log(f"clone {rdir.name}/{rid} ({url})")
-            if not dry:
-                run(["git", "clone", "--depth", "1", "--quiet", url, str(dest)])
+            die(f"repo '{rid}' needs either 'url' (to clone) or 'path' (a local folder).")
+
+
+_MIRROR_SKIP = shutil.ignore_patterns(
+    ".git", "node_modules", "vendor", "dist", "build", ".next", "target",
+    "__pycache__", ".venv", "venv", ".gradle", ".idea", "graph", "repos")
+
+
+def mirror_local(src: Path, dest: Path):
+    """Mirror a local repo into the hub via hardlinks (cheap, no data copy); fall back to a
+    full copy across filesystems. Heavy/generated dirs are skipped."""
+    try:
+        shutil.copytree(src, dest, copy_function=os.link, ignore=_MIRROR_SKIP)
+    except (OSError, shutil.Error):
+        shutil.copytree(src, dest, ignore=_MIRROR_SKIP, dirs_exist_ok=True)
 
 
 def ensure_exclusions(hub: Path, rdir: Path, out: Path, dry: bool):
