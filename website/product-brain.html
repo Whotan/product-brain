@@ -358,7 +358,10 @@
       <div class="bubble claude"><span class="who">Claude</span>Great. First, your rules. What are the 2–4 things that must always be true in this product? (For example: "users only see their own data.")</div>
       <div class="bubble you"><span class="who">You</span>Users only see their own data, and we never hard-delete anything.</div>
       <div class="bubble claude"><span class="who">Claude</span>Got it — I've drafted <code>constitution.md</code> with those. Take a look; change anything you like. Next, let's capture your key words…</div>
+      <div class="bubble you"><span class="who">You</span>We say "Session" a lot. I'm not sure what it's called in the code though.</div>
+      <div class="bubble claude"><span class="who">Claude</span>No need to remember — I'll check the graph. Found <code>Appointment</code> (in the API) and <code>SessionCard</code> (in the web app). Shall I record "Session → Appointment / SessionCard" in the glossary?</div>
     </div>
+    <p>Notice the wizard doesn't make you recall code names — it looks them up in the graph (that's <code>pb find</code> under the hood) and proposes the mapping for you to confirm. That's why the graph is built early, before the glossary step.</p>
 
     <h2>What the wizard does, step by step</h2>
     <figure>

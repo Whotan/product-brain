@@ -116,9 +116,14 @@ The `pb` CLI ships in this repo under `bin/pb`. Run it from your hub:
 ```bash
 /path/to/product-brain/bin/pb --hub . sync     # pull the hub + tracked repos, rebuild the graph
 /path/to/product-brain/bin/pb --hub . status   # quick health check
+/path/to/product-brain/bin/pb --hub . find session booking   # look up code symbols in the graph
 pb sync --dry-run                               # preview the plan without running graphify
 pb sync --rebuild                               # ignore the cache and rebuild from scratch
 ```
+
+`pb find <term> [aliases…]` searches the built graph for the code symbols a product term maps to
+(e.g. `Appointment — app/Models/Appointment.php`). It's what powers **graph-assisted vocabulary** —
+so you never have to recall what something is called in code; the graph tells you.
 
 `pb sync` first pulls the hub's own latest changes (only when it's a clean git repo with an upstream),
 then pulls each tracked app repo, then rebuilds the graph **incrementally** — graphify caches by

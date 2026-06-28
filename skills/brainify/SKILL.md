@@ -1,6 +1,6 @@
 ---
 name: brainify
-version: 0.1.0
+version: 0.1.1
 description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
 ---
 
@@ -126,13 +126,18 @@ Rules: ✅ present & healthy · ⚠️ present but thin/stale · ❌ missing (re
 ```
 A → Stand up the hub repo + brain.config.json
 B → Install graphify
-C → Write the required core (constitution, vocabulary)
-D → Register doc types and seed docs
-E → First pb sync (build the graph)
-F → Map domains (graph-assisted, recommended)
-G → Add the CLAUDE.md snippet(s)
-H → Write role workflows
+C → First pb sync — build the graph NOW (later steps query it)
+D → Write the constitution
+E → Build the vocabulary (graph-assisted — use `pb find`)
+F → Register doc types & seed docs
+G → Map domains (graph-assisted)
+H → Re-sync to fold the new docs into the graph
+I → Add the CLAUDE.md snippet(s)
+J → Write role workflows
 ```
+
+> **Order matters.** Build the graph *before* vocabulary and domains. Both are graph-assisted:
+> never ask the user to recall what something is called in code — look it up in the graph.
 
 ---
 
@@ -160,48 +165,74 @@ teammate can, and continue with steps that don't need it.
 pip install graphifyy --break-system-packages && graphify --version
 ```
 
-### Phase C — Write the required core
+### Phase C — First `pb sync` (build the graph first)
 
-Interview, then write. Ask one question at a time; write nothing until a section's questions are answered.
-
-**Constitution** (from `constitution-template.md`): the 2–4 non-negotiable rules, plus any per-repo differences (test conventions, API patterns). Principles, not bureaucracy.
-
-**Vocabulary** (from `vocabulary-template.md`): the keystone. For each core concept capture the product term, definition, aliases, and what it's called in each repo's code. Markdown only — graphify connects these terms to the code and docs automatically; no manual links are needed.
-
-Present each draft; iterate until approved before moving on.
-
-### Phase D — Register doc types & seed docs
-
-Confirm the doc types in `brain.config.json`. Offer the shipped templates (`spec-template.md`, `doc-types/meeting-note-template.md`, `doc-types/decision-template.md`) but make clear teams can use any format. Knowledge the team authors goes in as Markdown under `docs/<type>/`; native artifacts (a recorded call, a PDF brief) can be dropped in as-is and graphify will ingest them.
-
-### Phase E — First `pb sync`
-
-`pb sync` builds one graph over the hub docs + the pulled code repos:
+Build the graph **now**, before writing vocabulary or domains — those steps depend on it. Run
+`pb sync` yourself. It pulls the apps into the visible `repos/` folder and graphs them; code parsing
+is free and local, and since there are few/no docs yet, this first build is cheap.
 
 ```bash
-# 1. pull the hub's own latest changes (safe: only if git repo + upstream + clean tree)
+# pb sync:
+# 1. pull the hub's own latest changes (safe: git repo + upstream + clean tree)
 # 2. pull/refresh each tracked repo into the visible repos/<id> folder
 # 3. keep repos/ and graph/ out of Git (.git/info/exclude) + write .graphifyignore
 # 4. run graphify over the hub → graph/graph.json + graph/GRAPH_REPORT.md
 ```
 
-If a `pb` CLI isn't available yet, perform the steps directly: clone/pull each repo into `repos/<id>`, exclude `repos/` and `graph/` via `.git/info/exclude`, then run graphify over the hub into `graph/`. Report node/edge counts, communities, and thin areas. Keep `repos/` so `source_file` chunk lookups keep working.
+If a `pb` CLI isn't available, perform the steps directly: clone each repo into `repos/<id>`, exclude `repos/` and `graph/` via `.git/info/exclude`, then run graphify over the hub into `graph/`.
 
 **Re-syncs are cheap.** graphify fingerprints every file by content hash and caches results under
-`graph/cache/`, so a later `pb sync` only re-reads what changed — never delete `graph/cache/`
-between runs. The first sync costs the most; routine refreshes are fast. Use `pb sync --rebuild`
-only when you deliberately want a full rebuild. Run `pb sync` yourself for the user, and suggest
-scheduling it (e.g. nightly) so the graph stays fresh with no one having to remember.
+`graph/cache/`, so a later `pb sync` only re-reads what changed — never delete `graph/cache/`. Use
+`pb sync --rebuild` only for a deliberate full rebuild. Suggest scheduling `pb sync` (e.g. nightly).
 
-### Phase F — Map domains (recommended, graph-assisted)
+### Phase D — Write the constitution
 
-Domains aren't required, and they're partly derivable. After the first sync, read the graph's Leiden communities and propose them as candidate domains. Then use `domains-template.md` to capture, per area: responsibility, owner, status, repos, core features, and key terms. If there's no graph yet, ask the user to name the main functional areas.
+Interview, then write. Ask one question at a time; write nothing until the questions are answered.
+From `constitution-template.md`: the 2–4 non-negotiable rules, plus any per-repo differences (test
+conventions, API patterns). Principles, not bureaucracy. Present the draft; iterate until approved.
 
-### Phase G — Add the CLAUDE.md snippet(s)
+### Phase E — Build the vocabulary (graph-assisted — do NOT guess code names)
+
+The vocabulary is the keystone, and it **must use the graph**. When the user names a concept (and you
+both may be unsure what it's called in the code), look it up — don't ask them to recall it and don't
+guess:
+
+```bash
+pb find <term> [aliases...]     # e.g.  pb find session booking appointment
+pb find <term> --code-only      # only code symbols (skip docs)
+```
+
+`pb find` searches the built graph and returns candidate code symbols with their files (e.g.
+`Appointment — app/Models/Appointment.php`). For each concept:
+
+1. Run `pb find` with the product term **and** its aliases.
+2. Show the top candidates and let the user pick the right one(s) per repo, or say "none".
+3. Fill the entry's **In code** line from the confirmed symbols.
+
+Only ask the user to type a code name when the graph genuinely has no match. Write `vocabulary.md`
+from the confirmed mappings (Markdown only — no manual links); iterate until approved.
+
+If the graph isn't built yet, build it first (Phase C). Falling back to manual guessing is a last
+resort, not the default.
+
+### Phase F — Register doc types & seed docs
+
+Confirm the doc types in `brain.config.json`. Offer the shipped templates (`spec-template.md`, `doc-types/meeting-note-template.md`, `doc-types/decision-template.md`) but make clear teams can use any format. Knowledge the team authors goes in as Markdown under `docs/<type>/`; native artifacts (a recorded call, a PDF brief) can be dropped in as-is and graphify will ingest them.
+
+### Phase G — Map domains (recommended, graph-assisted)
+
+Domains aren't required, and they're partly derivable. Read the graph's Leiden communities and propose them as candidate domains; use `pb find` to confirm the key entities per area. Then use `domains-template.md` to capture, per area: responsibility, owner, status, repos, core features, and key terms.
+
+### Phase H — Re-sync
+
+After writing the constitution, vocabulary, and any seeded docs, run `pb sync` again so the new
+Markdown is folded into the graph. It's cheap — only the changed files are re-read.
+
+### Phase I — Add the CLAUDE.md snippet(s)
 
 Append `hub-claude-md-snippet.md` to the hub's `CLAUDE.md`. Optionally, offer to add `app-repo-claude-md-snippet.md` to each application repo so in-repo Claude sessions consult the hub — it's the only (optional, dependency-free) thing ever added to an app repo. Registration itself lives only in `brain.config.json`.
 
-### Phase H — Role workflows
+### Phase J — Role workflows
 
 Offer `workflows/<role>.md` for the roles the team has (pm, backend, frontend, qa, onboarding). Each is a lens over the one source, not a copy.
 
