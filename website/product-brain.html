@@ -400,10 +400,16 @@ graphify --version</code></pre></div></div>
 
     <div class="step"><div class="num">2</div><div class="body"><h3>Add the brainify skill to Claude</h3>
       <p>This is the wizard. It ships in this project under <code>skills/brainify/</code>.</p>
+      <p>Claude Code and Cowork only auto-discover skills from <code>~/.claude/skills/</code> (personal, all projects) or a project's <code>.claude/skills/</code>. The skill ships here under <code>skills/brainify/</code>, so copy it into one of those. The bundled installer does it for you:</p>
+      <pre><code># personal — available in every project (recommended)
+/path/to/product-brain/bin/install-skill.sh
+
+# or project-only (this repo), shareable via git
+/path/to/product-brain/bin/install-skill.sh --project</code></pre>
       <ul>
-        <li><strong>In Cowork:</strong> open <em>Settings → Capabilities</em> and add the <code>brainify</code> skill (or install the Product Brain plugin if your team publishes one).</li>
-        <li><strong>In Claude Code:</strong> copy the <code>skills/brainify/</code> folder into your project's skills directory (e.g. <code>.claude/skills/brainify/</code>), or point your plugin config at it.</li>
-        <li><strong>Quick check:</strong> type <code>/brainify</code> or "set up product brain" — if Claude starts the audit, it's installed.</li>
+        <li><strong>In Cowork:</strong> you can also open <em>Settings → Capabilities</em> and add the <code>brainify</code> skill (or install the Product Brain plugin if your team publishes one).</li>
+        <li><strong>No restart needed:</strong> Claude Code watches the skills folder and picks it up in the current session.</li>
+        <li><strong>Quick check:</strong> say "set up product brain" — if Claude starts the audit, it's installed.</li>
       </ul></div></div>
 
     <div class="step"><div class="num">3</div><div class="body"><h3>Create the hub</h3>

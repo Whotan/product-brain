@@ -91,7 +91,17 @@ pip install graphifyy        # CLI is `graphify`; no LLM key needed for code
 graphify --version
 ```
 
-### 2. Create your hub
+### 2. Add the brainify skill to Claude
+
+Claude Code / Cowork auto-discover skills from `~/.claude/skills/` or a project's `.claude/skills/`.
+Install the bundled skill there (no restart needed — Claude Code picks it up live):
+
+```bash
+bin/install-skill.sh            # personal: ~/.claude/skills (all projects)
+bin/install-skill.sh --project  # this repo only: ./.claude/skills
+```
+
+### 3. Create your hub
 
 Make a new git repo for your hub and run Claude in it:
 
