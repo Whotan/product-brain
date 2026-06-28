@@ -178,10 +178,12 @@ That's it. Ask Claude about your product, your code, or your decisions.
 
 ## What a hub is made of
 
-**Connecting your apps:** in `brain.config.json`, each repo is declared with either a `url` (cloned
-by `pb sync`) or a local `path` (mirrored into `repos/<id>` with cheap hardlinks — your working repo
-is never moved or modified). Use `url` for hubs shared across a team; use `path` when the code is
-already on your machine, the repo is private/auth-heavy, or you'd rather not deal with git URLs.
+**The hub is your workspace.** Each app is declared in `brain.config.json` with a git `url`, and
+`pb sync` clones it into `repos/<id>` as a **full working clone you develop in** — right next to the
+constitution, specs, vocabulary, and graph. Because you work on the live code inside the hub, the
+graph is always current — no separate copies to drift out of date. Re-syncs pull each clone only when
+it's clean (fast-forward), so your uncommitted work is never touched (`--no-repo-pull` to skip
+entirely).
 
 **Required core** (this is what makes a directory a "brain"):
 

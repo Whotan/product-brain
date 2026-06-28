@@ -86,13 +86,18 @@ acme-brain/                          ← the hub: its own git repo, single sourc
     <your-own-type>/                 anything the team registers in brain.config.json
   workflows/                         role playbooks: pm.md, backend.md, frontend.md, qa.md, …
   graph/                             graphify output: graph.json, GRAPH_REPORT.md, graph.html
-  repos/                             VISIBLE: pulled clones of the code repos (browsable by devs)
+  repos/                             FULL working clones of the apps — developers work in them here
   .graphifyignore                    managed: graphify skips graph/, keeps repos/
 ```
 
-`repos/` and `graph/` are kept out of Git via `.git/info/exclude` (a local, untracked exclude),
-**not** a tracked `.gitignore` — because graphify honors `.gitignore` and would otherwise skip the
-clones. They stay visible so developers can open the pulled apps normally.
+**The hub is the developer's workspace.** Each app is cloned into `repos/<id>` as a full working
+clone (with its own Git remote); developers do their actual work there, alongside the constitution,
+specs, vocabulary, and graph. Because work happens on the live code, the graph never drifts from a
+separate copy — and we explicitly reject any "mirror/copy a local repo into the hub" option, which
+would go stale. Existing clones are pulled only when clean (fast-forward), so uncommitted work is
+never disturbed. `repos/` and `graph/` are kept out of the *hub's* Git via `.git/info/exclude` (a
+local, untracked exclude), **not** a tracked `.gitignore` — because graphify honors `.gitignore` and
+would otherwise skip the clones.
 
 The **required core** is just two files (`constitution.md`, `vocabulary.md`) — the knowledge that can't be derived from code. `domains.md` is **recommended and graph-assisted** (curate it from the graph's communities after a sync). Everything under `docs/` is optional and extensible. There is **no spec-kit-specific folder and no required methodology**.
 

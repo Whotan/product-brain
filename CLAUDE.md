@@ -31,11 +31,15 @@ Plus: `brain.config.json` (repos + doc types), `docs/<type>/` (extensible), `wor
 
 ## The graph
 
-`pb sync` pulls each repo from `brain.config.json` into a **visible `repos/`** folder, then runs
-graphify once over the hub, producing a single `graph/graph.json`. `repos/` and `graph/` are kept
-out of Git via `.git/info/exclude` (not a tracked `.gitignore`, because graphify honors `.gitignore`
-and would otherwise skip the clones); a managed `.graphifyignore` makes graphify skip its own
-output while still reading `repos/`. Querying returns chunks via each node's `source_file`.
+**The hub is the developer's workspace.** `pb sync` clones each repo from `brain.config.json` into
+`repos/<id>` as a **full working clone developers work in directly** (each keeps its own Git remote),
+then runs graphify once over the hub, producing a single `graph/graph.json`. Because work happens on
+the live code in `repos/`, the graph never drifts from a separate copy. Existing clones are pulled
+only when clean (fast-forward), so uncommitted work is never disturbed. `repos/` and `graph/` are kept
+out of the hub's Git via `.git/info/exclude` (not a tracked `.gitignore`, because graphify honors
+`.gitignore` and would otherwise skip the clones); a managed `.graphifyignore` makes graphify skip its
+own output while still reading `repos/`. Querying returns chunks via each node's `source_file`. Never
+reintroduce a local-copy/mirror option — it leads to stale code.
 
 ## Deferred — open problems (do not present as solved)
 

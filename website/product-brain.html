@@ -316,9 +316,9 @@
     meeting-notes/             notes and recordings from meetings
     research/   runbooks/      ...add any type you want
   workflows/                 short "how I use this" guides, one per role
-  repos/                     the apps, pulled in for you (visible; kept out of Git)
+  repos/                     the apps, cloned here as working copies you develop in
   graph/                     the map (built for you by refresh)</code></pre>
-    <p style="font-size:14px;color:#64748b;margin-top:-4px">The <code>repos/</code> and <code>graph/</code> folders are created by refresh and kept out of Git automatically, so they never clutter your commits — but <code>repos/</code> stays <strong>visible</strong> so developers can open and browse the pulled apps normally.</p>
+    <p style="font-size:14px;color:#64748b;margin-top:-4px">The <code>repos/</code> and <code>graph/</code> folders are created by refresh and kept out of the hub's Git automatically, so they never clutter your commits. Each app in <code>repos/</code> is a <strong>full working clone with its own Git remote</strong> — you develop there normally (commit and push to the app's own repo as usual), while the hub keeps your code, specs, rules, and the map all in one place.</p>
 
     <h2>The two things you must have <span class="pill req">required</span></h2>
     <div class="grid2">
@@ -419,7 +419,7 @@ graphify --version</code></pre>
       </ul></div></div>
 
     <div class="step"><div class="num">3</div><div class="body"><h3>Create the hub</h3>
-      <p>Make a new, empty Git repository for the hub (e.g. <code>acme-brain</code>). This is where your knowledge will live. When you tell the wizard which apps to cover, you can give a <strong>git URL</strong> (it clones them) or just point at a <strong>folder already on your computer</strong> — it references your local copy without moving or changing it. The local-folder option is easiest if you're unsure of the git address or the repo is private.</p></div></div>
+      <p>Make a new, empty Git repository for the hub (e.g. <code>acme-brain</code>). This is where your knowledge lives — and where you'll work. You give the wizard each app's <strong>git URL</strong>, and it clones them into a <code>repos/</code> folder inside the hub as <strong>full working copies you develop in</strong>. So your code sits right next to the specs, rules, and the map — and because you edit the real code in place, everything stays current with no separate copies to go stale.</p></div></div>
 
     <div class="step"><div class="num">4</div><div class="body"><h3>Run the wizard</h3>
       <p>Open the hub in Claude and say <strong>"Set up product brain."</strong> It walks you through declaring your apps, writing your rules and glossary, and choosing your doc types — one step at a time.</p></div></div>

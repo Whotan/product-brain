@@ -1,10 +1,12 @@
 # CLAUDE.md snippet — for an application repo
 
-Paste this into the `CLAUDE.md` of an application repo (e.g. `todo-api`, `todo-web`) so that any
-Claude session running **inside that repo** knows the hub exists and uses it.
+The normal setup is to develop **inside the hub** (`<hub>/repos/<id>`), where the hub's own
+`CLAUDE.md`, specs, vocabulary, and graph are already alongside your code. Use this snippet only if
+some developers keep a **separate checkout outside the hub** and still want their in-repo Claude
+session to use the hub.
 
-This is the **only** thing you ever add to an app repo, it's **optional**, and it's pure guidance —
-no config, no dependency, nothing that breaks if the hub moves. Replace the URL/path with your hub's.
+Paste it into that app repo's `CLAUDE.md`. It's **optional** and pure guidance — no config, no
+dependency, nothing that breaks if the hub moves. Point the path at where the hub is cloned.
 
 ---
 

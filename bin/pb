@@ -12,12 +12,16 @@ Provider: graphify's doc/image pass uses an LLM. Pick it with --provider
 (gemini | claude | openai | kimi | deepseek | ollama | auto) or in brain.config.json
 ("graph": {"provider": "gemini"}). Set the matching key, e.g. export GEMINI_API_KEY=...
 
-`pb sync` builds one knowledge graph over your hub's docs + the code repos it tracks:
+The hub is your workspace: each app is cloned into repos/<id> as a FULL working clone, and
+developers work in it directly — alongside the constitution, specs, vocabulary, and graph.
+
+`pb sync` builds one knowledge graph over your hub's docs + those working clones:
   1. read brain.config.json
   2. pull the hub's own latest changes (safe: only if git repo + upstream + clean tree)
-  3. clone/pull each tracked repo into a VISIBLE folder: repos/<id>
-  4. keep repos/ and graph/ out of Git via .git/info/exclude (not .gitignore, so graphify
-     still reads repos/), and write a .graphifyignore so graphify skips its own output
+  3. clone each app into repos/<id> (full clone); existing clones are pulled only when safe
+     (clean tree, fast-forward) so your uncommitted work is never disturbed
+  4. keep repos/ and graph/ out of the hub's Git via .git/info/exclude (not .gitignore, so
+     graphify still reads repos/), and write a .graphifyignore so graphify skips its own output
   5. run graphify over the hub into the graph/ folder (incremental via cache)
   6. write graph/sync-report.md
 
@@ -72,24 +76,25 @@ def run(cmd, **kw):
     return subprocess.run(cmd, check=True, **kw)
 
 
-def pull_hub(hub: Path, dry: bool):
-    """Pull the hub's own latest changes first — but only when it's safe."""
-    if not (hub / ".git").exists():
-        log("hub pull: skipped (hub is not a git repo)")
+def safe_git_pull(path: Path, label: str, dry: bool):
+    """Fast-forward pull a working tree — but only when it's safe to do so, so a developer's
+    uncommitted work is never disturbed."""
+    if not (path / ".git").exists():
+        log(f"{label}: skipped pull (not a git repo)")
         return
-    up = subprocess.run(["git", "-C", str(hub), "rev-parse", "--abbrev-ref",
+    up = subprocess.run(["git", "-C", str(path), "rev-parse", "--abbrev-ref",
                          "--symbolic-full-name", "@{u}"], capture_output=True, text=True)
     if up.returncode != 0:
-        log("hub pull: skipped (no upstream/remote configured)")
+        log(f"{label}: skipped pull (no upstream/remote configured)")
         return
-    dirty = subprocess.run(["git", "-C", str(hub), "status", "--porcelain"],
+    dirty = subprocess.run(["git", "-C", str(path), "status", "--porcelain"],
                            capture_output=True, text=True).stdout.strip()
     if dirty:
-        log("hub pull: skipped (you have uncommitted changes — commit or stash to enable)")
+        log(f"{label}: skipped pull (uncommitted changes — your work is left untouched)")
         return
-    log("hub pull: fetching teammates' latest hub changes…")
+    log(f"{label}: fast-forward pull")
     if not dry:
-        run(["git", "-C", str(hub), "pull", "--ff-only", "--quiet"])
+        run(["git", "-C", str(path), "pull", "--ff-only", "--quiet"])
 
 
 def repos_dir(hub: Path, cfg: dict) -> Path:
@@ -97,64 +102,29 @@ def repos_dir(hub: Path, cfg: dict) -> Path:
     return hub / name
 
 
-def pull_repos(rdir: Path, repos: list, dry: bool):
-    """Make each tracked repo available under a visible folder (default: repos/).
-
-    Two ways to declare a repo in brain.config.json:
-      - "url":  a git URL  → cloned/pulled into repos/<id> (best for shared hubs)
-      - "path": a local folder already on this machine → mirrored into repos/<id> via cheap
-                hardlinks (your working repo is never moved or modified; best for
-                solo/offline/non-technical setups). Note: a local path is machine-specific, so
-                prefer "url" for hubs shared across a team.
-    """
+def pull_repos(rdir: Path, repos: list, dry: bool, do_pull: bool):
+    """Clone each app repo into repos/<id> as a FULL working clone, so developers can work
+    in it directly inside the hub (and the graph is built over the live code). Existing clones
+    are pulled only when safe (clean tree, fast-forward), never disturbing local work."""
     if not dry:
         rdir.mkdir(parents=True, exist_ok=True)
     for r in repos:
         rid = r.get("id")
         if not rid:
             die(f"each repo needs an 'id' (got {r})")
-        url, path = r.get("url"), r.get("path")
+        url = r.get("url")
+        if not url:
+            die(f"repo '{rid}' needs a 'url' to clone. Develop inside the hub's repos/{rid} folder.")
         dest = rdir / rid
-
-        if path:
-            src = Path(path).expanduser()
-            if not src.exists():
-                die(f"local path for '{rid}' not found: {src}")
-            src = src.resolve()
-            log(f"mirror {rdir.name}/{rid} ← {src} (local repo; your working copy is never moved or changed)")
-            if dry:
-                continue
-            if dest.is_symlink():
-                dest.unlink()
-            elif dest.exists():
-                shutil.rmtree(dest)  # rebuild the generated mirror (it's git-excluded)
-            mirror_local(src, dest)
-
-        elif url:
-            if (dest / ".git").exists():
-                log(f"pull {rdir.name}/{rid}")
-                if not dry:
-                    run(["git", "-C", str(dest), "pull", "--ff-only", "--quiet"])
+        if (dest / ".git").exists():
+            if do_pull:
+                safe_git_pull(dest, f"{rdir.name}/{rid}", dry)
             else:
-                log(f"clone {rdir.name}/{rid} ({url})")
-                if not dry:
-                    run(["git", "clone", "--depth", "1", "--quiet", url, str(dest)])
+                log(f"{rdir.name}/{rid}: present (pull skipped)")
         else:
-            die(f"repo '{rid}' needs either 'url' (to clone) or 'path' (a local folder).")
-
-
-_MIRROR_SKIP = shutil.ignore_patterns(
-    ".git", "node_modules", "vendor", "dist", "build", ".next", "target",
-    "__pycache__", ".venv", "venv", ".gradle", ".idea", "graph", "repos")
-
-
-def mirror_local(src: Path, dest: Path):
-    """Mirror a local repo into the hub via hardlinks (cheap, no data copy); fall back to a
-    full copy across filesystems. Heavy/generated dirs are skipped."""
-    try:
-        shutil.copytree(src, dest, copy_function=os.link, ignore=_MIRROR_SKIP)
-    except (OSError, shutil.Error):
-        shutil.copytree(src, dest, ignore=_MIRROR_SKIP, dirs_exist_ok=True)
+            log(f"clone {rdir.name}/{rid} ({url}) — full working clone you can develop in")
+            if not dry:
+                run(["git", "clone", "--quiet", url, str(dest)])
 
 
 def ensure_exclusions(hub: Path, rdir: Path, out: Path, dry: bool):
@@ -261,7 +231,7 @@ def write_report(hub: Path, cfg: dict, out: Path, dry: bool):
     log(f"wrote {report.relative_to(hub)}")
 
 
-def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, provider: str):
+def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, repo_pull: bool, provider: str):
     cfg = load_config(hub)
     repos = cfg.get("repos", [])
     out = hub / cfg.get("graph", {}).get("out", "graph/")
@@ -273,10 +243,10 @@ def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, provider: str)
     if not have("git"):
         die("git not found on PATH.")
     if hub_pull:
-        pull_hub(hub, dry)
+        safe_git_pull(hub, "hub pull", dry)
     rdir = repos_dir(hub, cfg)
-    log(f"apps folder: {rdir.name}/ (visible; kept out of Git, read by graphify)")
-    pull_repos(rdir, repos, dry)
+    log(f"apps folder: {rdir.name}/ — full working clones; develop in them directly inside the hub")
+    pull_repos(rdir, repos, dry, repo_pull)
     ensure_exclusions(hub, rdir, out, dry)
     run_graphify(hub, out, dry, rebuild, provider)
     write_report(hub, cfg, out, dry)
@@ -439,6 +409,7 @@ def main():
     s.add_argument("--dry-run", action="store_true", help="show the plan without writing or running graphify")
     s.add_argument("--rebuild", action="store_true", help="clear the graphify cache and rebuild everything from scratch")
     s.add_argument("--no-hub-pull", action="store_true", help="don't pull the hub's own latest changes first")
+    s.add_argument("--no-repo-pull", action="store_true", help="don't pull the app working clones (leave them exactly as they are)")
     s.add_argument("--provider", help="LLM provider for graphify's doc/image pass: "
                    "gemini | claude | openai | kimi | deepseek | ollama | auto (overrides brain.config.json)")
     sub.add_parser("status", help="show hub health at a glance")
@@ -460,7 +431,7 @@ def main():
         die(f"hub path does not exist: {hub}")
     try:
         if args.cmd == "sync":
-            cmd_sync(hub, args.dry_run, args.rebuild, not args.no_hub_pull, args.provider)
+            cmd_sync(hub, args.dry_run, args.rebuild, not args.no_hub_pull, not args.no_repo_pull, args.provider)
         elif args.cmd == "status":
             cmd_status(hub)
         elif args.cmd == "find":
