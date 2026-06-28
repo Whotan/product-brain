@@ -198,6 +198,14 @@ One graphify run over docs + both codebases yields a single graph in which:
 
 This gives genuinely useful cross-repo querying ("how does booking work across both apps?") today. What it does **not** give is precise, automatic impact analysis ("change this model → exactly these web files break"); that needs explicit cross-repo edges and is deferred.
 
+**One combined graph, scoped at query time (not separate-then-merge).** A tempting alternative is to
+graph each repo separately, store them apart, and merge for cross-repo questions. We don't, because a
+naive union of per-repo graphs has **no cross-graph edges or global communities** — strictly less
+connected than a single combined run. And focusing on one repo doesn't require separate files:
+every node carries a `source_file`, so a repo-scoped question is a **filter** (restrict to
+`repos/<id>/…` plus the shared docs), exposed via `pb find --repo <id>` and the hub's CLAUDE
+guidance. This keeps cross-repo power while still giving tight, accurate single-repo answers.
+
 **Why outside-the-repo graphs still answer questions and return chunks.** Each graph node stores a `source_file`. When Claude answers, it traverses the graph and opens only the few relevant chunks via those pointers. Because the pulled source lives in the hub's visible `repos/`, those pointers always resolve. The graph's physical location is irrelevant.
 
 ---
@@ -251,6 +259,7 @@ These are explicitly out of scope for this version and tracked for later:
 - **Freshness via CI-push.** Moving graph builds from central pull into each repo's CI so the hub is always current. Optimization, not required for v1.
 - **Vocabulary ↔ graph linter.** Auto-verify that each glossary "in code" reference still resolves to a real node.
 - **Non-git knowledge sources.** Pulling docs from Notion/Drive into the hub as exported Markdown.
+- **Optional isolated per-repo graphs.** For very large or noisy monorepos, building an additional per-repo graph (alongside the combined one) might sharpen single-repo answers further than query-time scoping. Not needed for the common 2–3 repo case; revisit if scoping proves insufficient.
 
 ---
 

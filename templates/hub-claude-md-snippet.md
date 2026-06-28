@@ -28,6 +28,15 @@ It is **method-agnostic** — specs may be written in any format, as long as the
 - Before a complex codebase question, check `graph/graph.json` exists and is recent. If missing or stale, suggest running `pb sync` (pulls repos, rebuilds the graph) — it takes ~1 min.
 - When asked about an area with no doc under `docs/`, say so once and offer to start one.
 
+### Scope answers to one repo when the question is repo-specific
+
+There is one combined graph for the whole hub (best for cross-repo questions and shared communities).
+When a question is clearly about a single app, scope to it for a tighter, more accurate answer:
+restrict to graph nodes whose `source_file` is under `repos/<id>/…`, plus the shared docs
+(`constitution.md`, `vocabulary.md`, `domains.md`, `docs/`). For symbol lookups, use
+`pb find <term> --repo <id>`. Use the whole graph for cross-app or "how does this work end to end"
+questions.
+
 ### Canonical vocabulary
 
 Use `vocabulary.md` terms when answering. When code uses a different word than the product term, surface both (e.g. "the `Appointment` model, called 'Session' in product docs"). If a term's code reference changes, update `vocabulary.md`.

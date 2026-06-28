@@ -320,14 +320,19 @@ def cmd_version(check: bool):
         print("✅ up to date — you have the latest version.")
 
 
-def cmd_find(hub: Path, terms: list, code_only: bool, limit: int):
+def cmd_find(hub: Path, terms: list, code_only: bool, limit: int, repo: str):
     """Search the built graph for code symbols matching a product term + its aliases.
-    This is what powers graph-assisted vocabulary: don't guess code names — look them up."""
+    This is what powers graph-assisted vocabulary: don't guess code names — look them up.
+    Pass --repo <id> to scope the search to one repo (e.g. backend-only questions)."""
     cfg = load_config(hub)
     out = hub / cfg.get("graph", {}).get("out", "graph/")
     gj = out / "graph.json"
     if not gj.exists():
         die("no graph yet — run `pb sync` first, then `pb find <term>`.")
+    if repo:
+        known = [r.get("id") for r in cfg.get("repos", [])]
+        if repo not in known:
+            die(f"unknown repo '{repo}'. Known: {', '.join(known) or '(none)'}")
     try:
         data = json.loads(gj.read_text())
     except Exception as e:
@@ -337,7 +342,10 @@ def cmd_find(hub: Path, terms: list, code_only: bool, limit: int):
     for n in data.get("nodes", []):
         label = str(n.get("label", n.get("id", "")))
         ft = str(n.get("file_type", ""))
+        src = str(n.get("source_file", ""))
         if code_only and ft != "code":
+            continue
+        if repo and f"repos/{repo}/" not in src.replace("\\", "/"):
             continue
         hay = label.lower()
         score = 0
@@ -357,7 +365,8 @@ def cmd_find(hub: Path, terms: list, code_only: bool, limit: int):
         print(f"no matches for: {', '.join(terms)}")
         return
     results.sort(key=lambda x: (-x[0], x[1]))
-    print(f"Candidate code symbols for: {', '.join(terms)}")
+    scope = f" (scoped to repo: {repo})" if repo else ""
+    print(f"Candidate code symbols for: {', '.join(terms)}{scope}")
     for score, label, ft, src in results[:limit]:
         tag = f" [{ft}]" if ft else ""
         loc = f"  — {src}" if src else ""
@@ -395,6 +404,7 @@ def main():
     f = sub.add_parser("find", help="search the graph for code symbols matching a term (powers vocabulary)")
     f.add_argument("terms", nargs="+", help="the product term and/or its aliases, e.g. find session booking appointment")
     f.add_argument("--code-only", action="store_true", help="only return code symbols (skip docs)")
+    f.add_argument("--repo", help="scope the search to one repo id (e.g. backend-api)")
     f.add_argument("--limit", type=int, default=15, help="max results (default 15)")
     v = sub.add_parser("version", help="show the Product Brain version (and check for updates)")
     v.add_argument("--check", action="store_true", help="fetch and report whether a newer version exists upstream")
@@ -413,7 +423,7 @@ def main():
         elif args.cmd == "status":
             cmd_status(hub)
         elif args.cmd == "find":
-            cmd_find(hub, args.terms, args.code_only, args.limit)
+            cmd_find(hub, args.terms, args.code_only, args.limit, args.repo)
     except subprocess.CalledProcessError as e:
         die(f"command failed: {' '.join(str(c) for c in e.cmd)}")
 

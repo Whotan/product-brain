@@ -123,7 +123,15 @@ pb sync --rebuild                               # ignore the cache and rebuild f
 
 `pb find <term> [aliases…]` searches the built graph for the code symbols a product term maps to
 (e.g. `Appointment — app/Models/Appointment.php`). It's what powers **graph-assisted vocabulary** —
-so you never have to recall what something is called in code; the graph tells you.
+so you never have to recall what something is called in code; the graph tells you. Add
+`--repo <id>` to scope to one app (e.g. `pb find session --repo backend-api`).
+
+**One combined graph, scoped at query time.** Product Brain keeps a single graph over all repos +
+docs — that's what makes cross-app questions and shared communities work. For a focused, accurate
+answer about just one app, you *scope* the query (filter to that repo's `source_file` paths) rather
+than maintaining a separate graph per repo. Separate-then-merge would actually lose the cross-repo
+edges a combined run infers, so it's not the default. (Optional isolated per-repo graphs for very
+large/noisy monorepos are noted in the architecture doc's open problems.)
 
 `pb sync` first pulls the hub's own latest changes (only when it's a clean git repo with an upstream),
 then pulls each tracked app repo, then rebuilds the graph **incrementally** — graphify caches by
