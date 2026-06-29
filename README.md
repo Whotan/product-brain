@@ -114,12 +114,18 @@ Make a new git repo for your hub and run Claude in it:
 The `pb` CLI ships in this repo under `bin/pb`. Run it from your hub:
 
 ```bash
-/path/to/product-brain/bin/pb --hub . sync     # pull the hub + tracked repos, rebuild the graph
-/path/to/product-brain/bin/pb --hub . status   # quick health check
-/path/to/product-brain/bin/pb --hub . find session booking   # look up code symbols in the graph
-pb sync --dry-run                               # preview the plan without running graphify
-pb sync --rebuild                               # ignore the cache and rebuild from scratch
+/path/to/product-brain/bin/pb --hub . sync          # pull the hub + tracked repos, rebuild the graph
+/path/to/product-brain/bin/pb --hub . adopt ~/dev/backend-api   # move an existing checkout into the hub
+/path/to/product-brain/bin/pb --hub . status        # quick health check
+/path/to/product-brain/bin/pb --hub . find session  # look up code symbols in the graph
+pb sync --dry-run                                    # preview without running graphify
+pb sync --rebuild                                    # ignore the cache and rebuild from scratch
 ```
+
+`pb adopt <path>` is a one-time migration for developers who already have a repo checked out: it
+**moves** that checkout into the hub's `repos/<id>` (keeping history, branches, remote, and
+uncommitted work), so there's a single working copy and no drift. After that you develop inside the
+hub. See the website's **For developers** guide.
 
 `pb find <term> [aliases…]` searches the built graph for the code symbols a product term maps to
 (e.g. `Appointment — app/Models/Appointment.php`). It's what powers **graph-assisted vocabulary** —

@@ -1,6 +1,6 @@
 ---
 name: brainify
-version: 0.1.5
+version: 0.1.6
 description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
 ---
 
@@ -153,10 +153,15 @@ Copy `brain.config.template.json` to `brain.config.json` and fill it in by askin
 **The hub is the developer's workspace.** `pb sync` clones each app into `repos/<id>` as a *full
 working clone* — developers do their actual work there, inside the hub, so they sit right next to the
 constitution, specs, vocabulary, and the graph, and the graph is always built over the live code (no
-copies, no drift). Never instruct anyone to move or mirror a separate local copy into the hub; that
-just goes stale. If a dev already has the app checked out elsewhere, the model is to work in the hub's
-clone going forward (or point that existing checkout at the same remote). Re-syncs pull each clone
-only when it's clean (fast-forward), so a dev's uncommitted work is never disturbed.
+copies, no drift). Re-syncs pull each clone only when it's clean (fast-forward), so uncommitted work
+is never disturbed.
+
+**Onboarding a developer who already has the code.** Don't make them re-clone or keep a second copy.
+Ask: *"Where is your current checkout?"* and run `pb adopt <path>` — it **moves** their existing
+checkout into `repos/<id>`, preserving git history, branches, the remote, and uncommitted work, then
+registers it in `brain.config.json`. After that there's a single copy (in the hub). Prefer move over
+`--copy`; a copy leaves a stale duplicate, which is exactly the drift we avoid. (Moving via `adopt` is
+a one-time relocation — that's fine; an ongoing *mirror* of a separate copy is what we never do.)
 
 Create `docs/<type>/` for each registered type. The pulled apps land in a **visible `repos/`** folder
 and the map in `graph/`; `pb sync` keeps both out of Git automatically (via `.git/info/exclude`, so

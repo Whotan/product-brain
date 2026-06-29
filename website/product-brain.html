@@ -154,11 +154,12 @@
     <a data-sec="skill"><span>The setup wizard</span><span class="nav-num">05</span></a>
     <a data-sec="setup"><span>Setup guide</span><span class="nav-num">06</span></a>
     <a data-sec="customize"><span>Customize with Claude</span><span class="nav-num">07</span></a>
-    <a data-sec="roles"><span>How-tos by role</span><span class="nav-num">08</span></a>
-    <a data-sec="example"><span>Example: a to-do app</span><span class="nav-num">09</span></a>
-    <a data-sec="contribute"><span>Contribute</span><span class="nav-num">10</span></a>
-    <a data-sec="open"><span>Open problems</span><span class="nav-num">11</span></a>
-    <a data-sec="faq"><span>FAQ</span><span class="nav-num">12</span></a>
+    <a data-sec="devstart"><span>For developers</span><span class="nav-num">08</span></a>
+    <a data-sec="roles"><span>How-tos by role</span><span class="nav-num">09</span></a>
+    <a data-sec="example"><span>Example: a to-do app</span><span class="nav-num">10</span></a>
+    <a data-sec="contribute"><span>Contribute</span><span class="nav-num">11</span></a>
+    <a data-sec="open"><span>Open problems</span><span class="nav-num">12</span></a>
+    <a data-sec="faq"><span>FAQ</span><span class="nav-num">13</span></a>
   </nav>
   <div id="sidebar-footer">Easy to start · no technical skills needed</div>
 </aside>
@@ -456,7 +457,40 @@ pb sync --dry-run                               # preview without building</code
     <p>That's the whole idea: <strong>describe the outcome, let Claude do the editing.</strong> You stay in plain language; the files stay tidy.</p>
   </section>
 
-  <!-- 08 ROLES -->
+  <!-- 08 DEVSTART -->
+  <section class="section" id="devstart">
+    <h1>For developers: work inside the hub</h1>
+    <p class="lead">The hub is your workspace. Your app lives in it as a normal git clone — you code there as usual, with the specs, rules, and the map right alongside.</p>
+
+    <div class="callout"><p><strong>Why this matters:</strong> because you edit the real code in the hub, the map is always built over what you're actually working on — there's never a stale second copy to drift out of sync.</p></div>
+
+    <h2>Getting started — two cases</h2>
+
+    <h3>A. You don't have the code yet</h3>
+    <p>Just sync — the hub clones each app for you, ready to work in:</p>
+    <pre><code>pb sync                       # clones each app into the hub's repos/ folder
+cd repos/backend-api          # ...and work here, normally</code></pre>
+
+    <h3>B. You already have the code on your machine</h3>
+    <p>Don't keep two copies. Tell Claude where your checkout is, and it moves it into the hub for you — keeping all your history, branches, and even uncommitted work:</p>
+    <div class="chat">
+      <div class="bubble you"><span class="who">You</span>I already have backend-api cloned at ~/dev/backend-api</div>
+      <div class="bubble claude"><span class="who">Claude</span>Great — I'll move it into the hub so there's a single copy and nothing drifts. Your branches and uncommitted changes come with it.</div>
+    </div>
+    <pre><code>pb adopt ~/dev/backend-api    # moves it into repos/backend-api (history + WIP preserved)</code></pre>
+    <p>After this, your old folder is gone (it was <em>moved</em>, not copied) and you work in the hub's copy. Its git remote is unchanged, so push/pull to your app's repo exactly as before. (Use <code>--copy</code> if you'd rather leave the original behind — but then delete it, so it doesn't become a stale duplicate.)</p>
+
+    <h2>Your daily loop</h2>
+    <ol>
+      <li><strong>Work in <code>repos/&lt;app&gt;</code></strong> like any normal clone — branch, commit, and push to the app's own remote.</li>
+      <li><strong>Ask the hub anything</strong> as you go: "how does X work?", "what rule covers Y?", "is there a spec for Z?"</li>
+      <li><strong>Refresh after meaningful changes</strong> — say "update me" (or <code>pb sync</code>) so the map reflects your latest code. It's incremental, so it's quick.</li>
+    </ol>
+
+    <div class="callout"><p>The hub's Git tracks only knowledge (specs, rules, vocabulary) — it ignores <code>repos/</code>, so your app's commits go to your app's repo, never to the hub. The two never tangle.</p></div>
+  </section>
+
+  <!-- 09 ROLES -->
   <section class="section" id="roles">
     <h1>How-tos by role</h1>
     <p class="lead">Everyone reads the same hub — they just ask different things. Here's a starting point per role.</p>

@@ -3,10 +3,15 @@
 
 Usage:
   pb sync [--dry-run] [--rebuild] [--provider NAME] [--hub PATH]
+  pb adopt <local-checkout> [--id ID] [--copy] [--hub PATH]
   pb status [--hub PATH]
   pb find <term> [aliases...] [--hub PATH]
   pb version [--check]
   pb --help
+
+`pb adopt` is a one-time migration: it relocates an existing local checkout into the hub's
+repos/<id> folder (keeping git history, remote, and uncommitted work) so you work in the hub
+from then on — a single copy, no drift.
 
 Provider: graphify's doc/image pass uses an LLM. Pick it with --provider
 (gemini | claude | openai | kimi | deepseek | ollama | auto) or in brain.config.json
@@ -253,6 +258,71 @@ def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, repo_pull: boo
     log("done." if not dry else "dry-run complete (nothing written).")
 
 
+def _same_remote(a: str, b: str) -> bool:
+    norm = lambda u: u.strip().lower().rstrip("/").removesuffix(".git").split("@")[-1].split("//")[-1]
+    return bool(a) and bool(b) and norm(a).endswith(norm(b).split("/", 1)[-1])
+
+
+def cmd_adopt(hub: Path, path: str, rid: str, do_copy: bool, force: bool):
+    """One-time migration: relocate an EXISTING local checkout into the hub's repos/ folder,
+    preserving its git history, remote, branches, and uncommitted work. After this there's a
+    single working copy (in the hub) — no drift. Default is to MOVE; --copy leaves the original
+    in place (which then becomes a stale duplicate you should delete)."""
+    cfg = load_config(hub)
+    if not have("git"):
+        die("git not found on PATH.")
+    src = Path(path).expanduser()
+    if not src.exists():
+        die(f"path not found: {src}")
+    src = src.resolve()
+    if not (src / ".git").exists():
+        die(f"{src} is not a git checkout (adopt expects a real repo with its history).")
+    if src == hub or hub in src.parents:
+        die("that path is already inside the hub.")
+
+    rdir = repos_dir(hub, cfg)
+    out = hub / cfg.get("graph", {}).get("out", "graph/")
+    origin = subprocess.run(["git", "-C", str(src), "remote", "get-url", "origin"],
+                            capture_output=True, text=True)
+    origin_url = origin.stdout.strip() if origin.returncode == 0 else ""
+
+    if not rid:
+        for r in cfg.get("repos", []):
+            if _same_remote(r.get("url", ""), origin_url):
+                rid = r["id"]; break
+        rid = rid or src.name
+    dest = rdir / rid
+    if dest.exists():
+        if not force:
+            die(f"{dest} already exists — remove it, pass --force to replace it, or choose a different --id.")
+        log(f"removing existing {dest} (--force)")
+        shutil.rmtree(dest)
+
+    rdir.mkdir(parents=True, exist_ok=True)
+    action = "copy" if do_copy else "move"
+    log(f"{action} {src} → {dest}")
+    log("  (preserving git history, remote, branches, and any uncommitted work)")
+    if do_copy:
+        shutil.copytree(src, dest, symlinks=True)
+    else:
+        shutil.move(str(src), str(dest))
+
+    ids = [r.get("id") for r in cfg.get("repos", [])]
+    if rid not in ids:
+        cfg.setdefault("repos", []).append({"id": rid, "url": origin_url, "src": ["."]})
+        (hub / "brain.config.json").write_text(json.dumps(cfg, indent=2) + "\n")
+        log(f"registered '{rid}' in brain.config.json — set its \"src\" dirs (e.g. [\"app/\"]) if needed")
+    elif origin_url:
+        cfgd = next(r for r in cfg["repos"] if r.get("id") == rid)
+        if cfgd.get("url") and not _same_remote(cfgd["url"], origin_url):
+            log(f"  ! note: config url for '{rid}' differs from this checkout's origin ({origin_url})")
+
+    ensure_exclusions(hub, rdir, out, dry=False)
+    log(f"done — develop in {dest} from now on. Run `pb sync` to (re)build the graph.")
+    if do_copy:
+        log(f"  reminder: your original at {src} is now a stale duplicate — delete it to avoid confusion.")
+
+
 def framework_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
@@ -413,6 +483,11 @@ def main():
     s.add_argument("--provider", help="LLM provider for graphify's doc/image pass: "
                    "gemini | claude | openai | kimi | deepseek | ollama | auto (overrides brain.config.json)")
     sub.add_parser("status", help="show hub health at a glance")
+    a = sub.add_parser("adopt", help="move an existing local checkout into the hub (one-time, keeps git history + uncommitted work)")
+    a.add_argument("path", help="path to your existing local checkout")
+    a.add_argument("--id", help="repo id to use under repos/ (default: matched from config, else folder name)")
+    a.add_argument("--copy", action="store_true", help="copy instead of move (leaves a stale duplicate behind)")
+    a.add_argument("--force", action="store_true", help="replace repos/<id> if it already exists")
     f = sub.add_parser("find", help="search the graph for code symbols matching a term (powers vocabulary)")
     f.add_argument("terms", nargs="+", help="the product term and/or its aliases, e.g. find session booking appointment")
     f.add_argument("--code-only", action="store_true", help="only return code symbols (skip docs)")
@@ -434,6 +509,8 @@ def main():
             cmd_sync(hub, args.dry_run, args.rebuild, not args.no_hub_pull, not args.no_repo_pull, args.provider)
         elif args.cmd == "status":
             cmd_status(hub)
+        elif args.cmd == "adopt":
+            cmd_adopt(hub, args.path, args.id, args.copy, args.force)
         elif args.cmd == "find":
             cmd_find(hub, args.terms, args.code_only, args.limit, args.repo)
     except subprocess.CalledProcessError as e:
