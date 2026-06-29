@@ -191,6 +191,10 @@ graph is always current — no separate copies to drift out of date. Re-syncs pu
 it's clean (fast-forward), so your uncommitted work is never touched (`--no-repo-pull` to skip
 entirely).
 
+Each repo's `src` lists the source folders worth graphing (e.g. `["app/"]`, `["src/"]`); `pb sync`
+tells graphify to skip that repo's other top-level entries (migrations, infra, generated docs…) so
+the graph stays focused. Use `["."]` (the default for adopted repos) to graph the whole repo.
+
 **Required core** (this is what makes a directory a "brain"):
 
 - `constitution.md` — the non-negotiable principles.

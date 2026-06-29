@@ -618,6 +618,7 @@ A single thing the user wants to get done.
     <div class="card"><h3>How often do I refresh?</h3><p>After meaningful changes, or on a schedule. It only re-reads what changed, so repeat refreshes are quick.</p></div>
     <div class="card"><h3>Can it answer questions that span two apps?</h3><p>Yes — finding and explaining across apps works today. Precise "what breaks where" across apps is still on the open-problems list.</p></div>
     <div class="card"><h3>Can I ask about just one app?</h3><p>Yes. There's one combined map (great for cross-app questions), and when your question is clearly about a single app, Claude narrows to that app's files for a tighter answer — no need for separate maps. This keeps the cross-app connections a combined map provides while still giving focused answers.</p></div>
+    <div class="card"><h3>What does "src" mean in the config?</h3><p>For each app, <code>src</code> lists the folders that actually hold source code (like <code>app/</code> or <code>src/</code>). The map then focuses there and skips the rest of the repo (migrations, infra, generated docs), keeping answers sharp. Leave it as <code>["."]</code> to map the whole repo.</p></div>
     <div class="card"><h3>Where do I start?</h3><p>The Setup guide. Or copy <code>examples/todo-app/</code> to see a finished hub first.</p></div>
   </section>
 

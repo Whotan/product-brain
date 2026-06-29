@@ -132,11 +132,12 @@ def pull_repos(rdir: Path, repos: list, dry: bool, do_pull: bool):
                 run(["git", "clone", "--quiet", url, str(dest)])
 
 
-def ensure_exclusions(hub: Path, rdir: Path, out: Path, dry: bool):
+def ensure_exclusions(hub: Path, rdir: Path, out: Path, repos: list, dry: bool):
     """Keep the clones + the graph output out of Git — but WITHOUT a tracked .gitignore,
     because graphify honors .gitignore and would then skip the repos. We use:
       - .git/info/exclude  (local, untracked) so Git ignores repos/ and graph/
-      - .graphifyignore     so graphify skips only its own output (and re-includes repos/)
+      - .graphifyignore     so graphify skips its own output, and — when a repo declares "src" —
+        skips that repo's non-source top-level entries so the graph focuses on the source.
     """
     repos_name = rdir.name
     out_name = out.relative_to(hub).as_posix().rstrip("/")
@@ -154,15 +155,30 @@ def ensure_exclusions(hub: Path, rdir: Path, out: Path, dry: bool):
                 excl.parent.mkdir(parents=True, exist_ok=True)
                 excl.write_text("\n".join(existing + add).rstrip("\n") + "\n")
 
-    # 2) graphify: skip the generated output; explicitly keep the repos in
+    # 2) graphify: skip the generated output; keep the repos in; focus each repo on its "src".
     gfi = hub / ".graphifyignore"
     wanted_lines = [
-        "# Managed by Product Brain (pb sync).",
+        "# Managed by Product Brain (pb sync). Edits here are overwritten — change brain.config.json instead.",
         f"{out_name}/",        # don't graph the generated map
         f"!{repos_name}/",     # do graph the pulled apps even if Git ignores them
     ]
+    for r in repos:
+        rid = r.get("id")
+        src_list = r.get("src") or ["."]
+        if not rid or "." in src_list:
+            continue  # no scoping → graph the whole repo
+        repo_path = rdir / rid
+        if not repo_path.exists():
+            continue
+        keep = {s.strip("/").split("/")[0] for s in src_list}   # top-level dirs to keep
+        extras = sorted(e.name for e in repo_path.iterdir()
+                        if e.name != ".git" and e.name not in keep)
+        if extras:
+            wanted_lines.append(f"# {rid}: graph only {', '.join(sorted(keep))}")
+            wanted_lines += [f"{repos_name}/{rid}/{name}" for name in extras]
+
     if not gfi.exists() or gfi.read_text().splitlines() != wanted_lines:
-        log(f"graphify: writing .graphifyignore (skip {out_name}/, keep {repos_name}/)")
+        log(f"graphify: writing .graphifyignore (skip {out_name}/, focus repos on their src)")
         if not dry:
             gfi.write_text("\n".join(wanted_lines) + "\n")
 
@@ -252,7 +268,7 @@ def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, repo_pull: boo
     rdir = repos_dir(hub, cfg)
     log(f"apps folder: {rdir.name}/ — full working clones; develop in them directly inside the hub")
     pull_repos(rdir, repos, dry, repo_pull)
-    ensure_exclusions(hub, rdir, out, dry)
+    ensure_exclusions(hub, rdir, out, repos, dry)
     run_graphify(hub, out, dry, rebuild, provider)
     write_report(hub, cfg, out, dry)
     log("done." if not dry else "dry-run complete (nothing written).")
@@ -317,7 +333,7 @@ def cmd_adopt(hub: Path, path: str, rid: str, do_copy: bool, force: bool):
         if cfgd.get("url") and not _same_remote(cfgd["url"], origin_url):
             log(f"  ! note: config url for '{rid}' differs from this checkout's origin ({origin_url})")
 
-    ensure_exclusions(hub, rdir, out, dry=False)
+    ensure_exclusions(hub, rdir, out, cfg.get("repos", []), dry=False)
     log(f"done — develop in {dest} from now on. Run `pb sync` to (re)build the graph.")
     if do_copy:
         log(f"  reminder: your original at {src} is now a stale duplicate — delete it to avoid confusion.")
