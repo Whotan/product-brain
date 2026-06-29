@@ -26,7 +26,9 @@ developers work in it directly — alongside the constitution, specs, vocabulary
   3. clone each app into repos/<id> (full clone); existing clones are pulled only when safe
      (clean tree, fast-forward) so your uncommitted work is never disturbed
   4. keep repos/ and graph/ out of the hub's Git via .git/info/exclude (not .gitignore, so
-     graphify still reads repos/), and write a .graphifyignore so graphify skips its own output
+     graphify still reads repos/); write .gitignore entries for graphify's AST cache
+     (graphify-out/) and .work/ — safe in a tracked .gitignore since they are never source
+     input; and write a .graphifyignore so graphify skips its own output directories
   5. run graphify over the hub into the graph/ folder (incremental via cache)
   6. write graph/sync-report.md
 
@@ -133,9 +135,11 @@ def pull_repos(rdir: Path, repos: list, dry: bool, do_pull: bool):
 
 
 def ensure_exclusions(hub: Path, rdir: Path, out: Path, repos: list, dry: bool):
-    """Keep the clones + the graph output out of Git — but WITHOUT a tracked .gitignore,
-    because graphify honors .gitignore and would then skip the repos. We use:
-      - .git/info/exclude  (local, untracked) so Git ignores repos/ and graph/
+    """Keep the clones + the graph output out of Git — but WITHOUT a tracked .gitignore for
+    repos/, because graphify honors .gitignore and would then skip the repos. We use:
+      - .git/info/exclude  (local, untracked) so Git ignores repos/, graph/, and graphify-out/
+      - .gitignore          (tracked) for graphify's AST cache (safe: it is graphify's own
+                            output, never a source input, so graphify ignoring it is fine)
       - .graphifyignore     so graphify skips its own output, and — when a repo declares "src" —
         skips that repo's non-source top-level entries so the graph focuses on the source.
     """
@@ -147,7 +151,7 @@ def ensure_exclusions(hub: Path, rdir: Path, out: Path, repos: list, dry: bool):
     if git_dir.exists():
         excl = git_dir / "info" / "exclude"
         existing = excl.read_text().splitlines() if excl.exists() else []
-        wanted = [f"/{repos_name}/", f"/{out_name}/"]
+        wanted = [f"/{repos_name}/", f"/{out_name}/", "/graphify-out/"]
         add = [w for w in wanted if w not in existing]
         if add:
             log(f"git: excluding {', '.join(w.strip('/') for w in add)} from commits (.git/info/exclude)")
@@ -155,11 +159,33 @@ def ensure_exclusions(hub: Path, rdir: Path, out: Path, repos: list, dry: bool):
                 excl.parent.mkdir(parents=True, exist_ok=True)
                 excl.write_text("\n".join(existing + add).rstrip("\n") + "\n")
 
-    # 2) graphify: skip the generated output; keep the repos in; focus each repo on its "src".
+    # 2) .gitignore: graphify's internal AST cache and temporary work dirs.
+    #    repos/ is intentionally NOT listed here — it stays in .git/info/exclude so graphify
+    #    can still read the clones. graphify-out/ IS safe here: it is graphify's own output.
+    gitignore = hub / ".gitignore"
+    gi_marker = "graphify-out/cache/"
+    existing_gi = gitignore.read_text() if gitignore.exists() else ""
+    if gi_marker not in existing_gi:
+        block = (
+            "\n# graphify-out/ — graphify AST parse cache (regenerable, can reach 200 MB+)\n"
+            "graphify-out/cache/\n"
+            "graphify-out/manifest.json\n"
+            "graphify-out/.graphify_labels.json\n"
+            "graphify-out/.graphify_root\n"
+            "\n# Temporary work directory used during brainify runs\n"
+            ".work/\n"
+        )
+        log("git: writing graphify-out/ cache and .work/ exclusions to .gitignore")
+        if not dry:
+            with open(gitignore, "a") as f:
+                f.write(block)
+
+    # 3) graphify: skip the generated output; keep the repos in; focus each repo on its "src".
     gfi = hub / ".graphifyignore"
     wanted_lines = [
         "# Managed by Product Brain (pb sync). Edits here are overwritten — change brain.config.json instead.",
         f"{out_name}/",        # don't graph the generated map
+        "graphify-out/",       # don't graph graphify's own AST cache
         f"!{repos_name}/",     # do graph the pulled apps even if Git ignores them
     ]
     for r in repos:
@@ -203,21 +229,25 @@ def graphify_env(provider: str):
 
 def run_graphify(content_root: Path, out: Path, dry: bool, rebuild: bool, provider: str):
     cmd = ["graphify", str(content_root), "--out", str(out)]
-    cache = out / "cache"
+    # graphify may place its AST cache at out/cache/ or at graphify-out/cache/ (its own default)
+    cache_candidates = [out / "cache", content_root / "graphify-out" / "cache"]
+    has_cache = any(c.exists() for c in cache_candidates)
     if dry:
         log("would run: " + " ".join(cmd))
         log(f"provider: {provider}")
-        log("cache: would " + ("clear (full rebuild)" if rebuild else "reuse" if cache.exists() else "create"))
+        log("cache: would " + ("clear (full rebuild)" if rebuild else "reuse" if has_cache else "create"))
         return
     if not have("graphify"):
         die("graphify not found on PATH. Install it: pip install graphifyy")
     env, label = graphify_env(provider)
     log(f"semantic extraction provider: {label}")
     out.mkdir(parents=True, exist_ok=True)
-    if rebuild and cache.exists():
-        log("clearing graphify cache for a full rebuild…")
-        shutil.rmtree(cache, ignore_errors=True)
-    elif cache.exists():
+    if rebuild:
+        for cache in cache_candidates:
+            if cache.exists():
+                log(f"clearing graphify cache for a full rebuild… ({cache.relative_to(content_root)})")
+                shutil.rmtree(cache, ignore_errors=True)
+    elif has_cache:
         # graphify fingerprints each file by content hash; unchanged files are skipped.
         log("incremental build — reusing graphify cache (unchanged files are skipped)")
     run(cmd, env=env)

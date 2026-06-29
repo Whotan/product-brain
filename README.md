@@ -91,15 +91,18 @@ pip install graphifyy        # CLI is `graphify`; no LLM key needed for code
 graphify --version
 ```
 
-### 2. Add the brainify skill to Claude
+### 2. Install the brainify skill and pb CLI
 
-Claude Code / Cowork auto-discover skills from `~/.claude/skills/` or a project's `.claude/skills/`.
-Install the bundled skill there (no restart needed — Claude Code picks it up live):
+One script installs both: the skill (so Claude Code discovers it) and the `pb` CLI (linked into `~/.local/bin/pb` so you can just type `pb`):
 
 ```bash
-bin/install-skill.sh            # personal: ~/.claude/skills (all projects)
-bin/install-skill.sh --project  # this repo only: ./.claude/skills
+bin/install-skill.sh            # installs skill + pb (recommended)
+bin/install-skill.sh --project  # skill into ./.claude/skills instead of ~/.claude/skills
+bin/install-skill.sh --no-pb    # skill only, skip pb
+bin/install-skill.sh --pb-dir /usr/local/bin   # install pb into a different directory
 ```
+
+If `~/.local/bin` isn't on your `PATH` yet, the script will tell you what to add to your shell profile. No restart needed — Claude Code picks up the skill live.
 
 ### 3. Create your hub
 
@@ -109,17 +112,17 @@ Make a new git repo for your hub and run Claude in it:
 
 `brainify` audits what's there, then walks you through it one step at a time: declaring your repos in `brain.config.json`, writing the required core (constitution, vocabulary), mapping domains from the graph, registering the doc types you want, and building the graph.
 
-### 3. Sync
+### 4. Sync
 
-The `pb` CLI ships in this repo under `bin/pb`. Run it from your hub:
+Run `pb` from your hub (installed in step 2 — if you skipped it, use `bin/pb` from this repo instead):
 
 ```bash
-/path/to/product-brain/bin/pb --hub . sync          # pull the hub + tracked repos, rebuild the graph
-/path/to/product-brain/bin/pb --hub . adopt ~/dev/backend-api   # move an existing checkout into the hub
-/path/to/product-brain/bin/pb --hub . status        # quick health check
-/path/to/product-brain/bin/pb --hub . find session  # look up code symbols in the graph
-pb sync --dry-run                                    # preview without running graphify
-pb sync --rebuild                                    # ignore the cache and rebuild from scratch
+pb sync                          # pull the hub + tracked repos, rebuild the graph
+pb adopt ~/dev/backend-api       # move an existing checkout into the hub
+pb status                        # quick health check
+pb find session                  # look up code symbols in the graph
+pb sync --dry-run                # preview without running graphify
+pb sync --rebuild                # ignore the cache and rebuild from scratch
 ```
 
 `pb adopt <path>` is a one-time migration for developers who already have a repo checked out: it
@@ -145,7 +148,7 @@ content hash, so only changed files are re-read. Use `--no-hub-pull` to skip the
 
 ### Versions & updates
 
-The framework version lives in `VERSION` (currently `0.1.0`) and is stamped into the skill's
+The framework version lives in `VERSION` (currently `0.1.7`) and is stamped into the skill's
 frontmatter. Check what you have — and whether your installed skill is current — with:
 
 ```bash
@@ -153,8 +156,10 @@ pb version          # framework version + commit + whether your installed skill 
 pb version --check  # also fetches and tells you if a newer version is available upstream
 ```
 
-If you installed the skill in **copy** mode, re-run `bin/install-skill.sh` after pulling updates.
-If you used `--link` mode, it always reflects the repo — nothing to re-run.
+**pb** is always installed as a symlink, so `git pull` in this repo is all you need — `pb` updates automatically.
+
+**Skill** (copy mode, the default): re-run `bin/install-skill.sh` after pulling updates.
+**Skill** (`--link` mode): also updates automatically on pull — nothing to re-run.
 
 ### Choose your AI provider (Gemini, Claude, OpenAI, …)
 
@@ -175,8 +180,6 @@ Supported: `gemini`, `claude`, `openai`, `kimi`, `deepseek`, `ollama` (local), o
 picks based on whichever key is set). `pb` validates that the chosen provider's key is present before
 it does any work, and forces that provider even if other providers' keys are also in your environment.
 Keep API keys in environment variables — never commit them to the hub.
-
-Tip: add `bin/` to your `PATH` (or symlink `bin/pb` into `/usr/local/bin`) so you can just type `pb sync`.
 
 That's it. Ask Claude about your product, your code, or your decisions.
 

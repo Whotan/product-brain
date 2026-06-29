@@ -186,8 +186,8 @@ pb sync
   1. pull the hub's own latest changes (safe: git repo + upstream + clean tree)
   2. pull/refresh each repo in brain.config.json into the VISIBLE repos/<id> folder
   3. keep repos/ and graph/ out of Git via .git/info/exclude; write a managed .graphifyignore
-  4. run graphify over the hub → graph/graph.json + graph/GRAPH_REPORT.md
-  5. write a short staleness/health note
+  4. run graphify over the hub → graph/graph.json
+  5. write graph/sync-report.md (staleness/health summary)
 ```
 
 **Why `.git/info/exclude` rather than `.gitignore`?** graphify honors `.gitignore`, so a git-ignored

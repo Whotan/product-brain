@@ -166,7 +166,10 @@ a one-time relocation — that's fine; an ongoing *mirror* of a separate copy is
 Create `docs/<type>/` for each registered type. The pulled apps land in a **visible `repos/`** folder
 and the map in `graph/`; `pb sync` keeps both out of Git automatically (via `.git/info/exclude`, so
 graphify can still read `repos/`) and writes a managed `.graphifyignore`. Don't add `repos/` to a
-tracked `.gitignore` — graphify honors `.gitignore` and would then skip the apps.
+tracked `.gitignore` — graphify honors `.gitignore` and would then skip the apps. `pb sync` also
+writes tracked `.gitignore` entries for graphify's internal AST cache (`graphify-out/`) and `.work/`
+— those are graphify's own output, never source input, so excluding them in `.gitignore` is safe and
+shared when the hub is pushed to a remote.
 
 ### Phase B — Install graphify
 
@@ -189,7 +192,8 @@ is free and local, and since there are few/no docs yet, this first build is chea
 # 1. pull the hub's own latest changes (safe: git repo + upstream + clean tree)
 # 2. pull/refresh each tracked repo into the visible repos/<id> folder
 # 3. keep repos/ and graph/ out of Git (.git/info/exclude) + write .graphifyignore
-# 4. run graphify over the hub → graph/graph.json + graph/GRAPH_REPORT.md
+#    write .gitignore entries for graphify-out/ cache and .work/ (committed, shared)
+# 4. run graphify over the hub → graph/graph.json; pb writes graph/sync-report.md
 ```
 
 **Choose the LLM provider.** Only the doc/image pass uses an LLM (code + audio/video are local). Product Brain is provider-agnostic — Gemini, Claude, OpenAI, Kimi, DeepSeek, or local Ollama. Ask the user which they want (or read `graph.provider` from `brain.config.json`). Make sure the matching key is set in the environment — for Gemini, `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) — then run `pb sync --provider <name>` (or set `graph.provider`). **Never** write an API key into the hub or a memory file; it's an environment variable the user/teammate sets.
@@ -197,8 +201,9 @@ is free and local, and since there are few/no docs yet, this first build is chea
 If a `pb` CLI isn't available, perform the steps directly: clone each repo into `repos/<id>`, exclude `repos/` and `graph/` via `.git/info/exclude`, then run graphify over the hub into `graph/` (graphify auto-detects the provider from the env keys; Gemini has top priority).
 
 **Re-syncs are cheap.** graphify fingerprints every file by content hash and caches results under
-`graph/cache/`, so a later `pb sync` only re-reads what changed — never delete `graph/cache/`. Use
-`pb sync --rebuild` only for a deliberate full rebuild. Suggest scheduling `pb sync` (e.g. nightly).
+`graphify-out/cache/`, so a later `pb sync` only re-reads what changed. Never delete that cache
+manually — use `pb sync --rebuild` for a deliberate full rebuild. Suggest scheduling `pb sync` (e.g.
+nightly).
 
 ### Phase D — Write the constitution
 
@@ -222,7 +227,17 @@ pb find <term> --code-only      # only code symbols (skip docs)
 
 1. Run `pb find` with the product term **and** its aliases.
 2. Show the top candidates and let the user pick the right one(s) per repo, or say "none".
-3. Fill the entry's **In code** line from the confirmed symbols.
+3. Write **What it is** — required. One or two sentences in product language. This is the
+   definition; never leave it implicit as prose above the field list.
+4. Fill **Also called** — required. For each alias, tag the repo or app where that name is used:
+   `term (repo-or-app)`. Different repos often use different names for the same concept; capturing
+   which name lives where is the main value of this field. These tags are also critical for
+   `pb find` to surface the concept under any of its names.
+5. Fill the **In code** line from the confirmed symbols — **select 2–5 representative anchors**
+   (typically: main model, main service/action class, main API/UI entry point). Do NOT enumerate
+   every repository, middleware, test, or resource class — the graph already indexes all of those.
+   The vocabulary is a navigational bridge; exhaustive symbol lists make it an index, which is
+   exactly what the graph is for.
 
 Only ask the user to type a code name when the graph genuinely has no match. Write `vocabulary.md`
 from the confirmed mappings (Markdown only — no manual links); iterate until approved.
