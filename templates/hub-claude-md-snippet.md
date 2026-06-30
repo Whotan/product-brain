@@ -28,6 +28,24 @@ It is **method-agnostic** — specs may be written in any format, as long as the
 - Before a complex codebase question, check `graph/graph.json` exists and is recent. If missing or stale, suggest running `pb sync` (pulls repos, rebuilds the graph) — it takes ~1 min.
 - When asked about an area with no doc under `docs/`, say so once and offer to start one.
 
+### Answer codebase questions from the graph first
+
+When a question is about how the code works — where something lives, what an entity is, how features
+relate, or what a change might touch — consult the knowledge graph **before** falling back to grep or
+directory browsing. The graph already encodes the relationships and established patterns that a raw
+text search misses.
+
+- Start with `pb find <term> [aliases...]` to locate the relevant code symbols and their files
+  (the product term *and* its code aliases — see `vocabulary.md`), then read the chunks via each
+  node's `source_file`.
+- Scope to one repo with `pb find <term> --repo <id>` when the question is clearly about a single app
+  (see below); use the whole graph for cross-app or end-to-end questions.
+- Reach for grep/directory browsing only to confirm a specific line or when the graph genuinely has
+  no entry — not as the first move.
+
+If `graph/graph.json` is missing or stale, fall back to grep for this answer but say so once and
+suggest `pb sync`.
+
 ### What not to commit
 
 `pb sync` manages this automatically, but if you ever run `git status` and see unexpected untracked files:
