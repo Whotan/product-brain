@@ -38,8 +38,11 @@ If the user just wants to **update or refresh** (phrases like "update me", "upda
 refresh **for them** and report the result:
 
 1. Run `pb sync` from the hub (use `bin/pb --hub <hub> sync`). It (a) pulls the hub's own latest
-   changes, (b) pulls each tracked app repo, and (c) rebuilds the graph incrementally using the
-   graphify cache, so it's fast.
+   changes, (b) pulls each tracked app repo, (c) rebuilds the graph incrementally using the
+   graphify cache, so it's fast, and (d) creates or refreshes the hub's `README.md` from
+   `brain.config.json` (a managed block between `product-brain:managed` markers — it replaces a
+   git-host default README but never a hand-written one). Don't hand-author a hub README; edit
+   `brain.config.json` or the prose outside the markers instead.
 2. If `pb` isn't on PATH, run it via its path in the framework repo, or perform the steps directly.
 3. Report in plain language: what was pulled, and the new graph stats (nodes/edges) from
    `graph/sync-report.md`. Then invite the next question.

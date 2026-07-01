@@ -4,3 +4,7 @@
 # In a real standalone hub these are kept out of Git via .git/info/exclude instead.
 **/repos/
 **/graph/
+
+# Python bytecode
+__pycache__/
+*.pyc

@@ -31,6 +31,7 @@ developers work in it directly — alongside the constitution, specs, vocabulary
      input; and write a .graphifyignore so graphify skips its own output directories
   5. run graphify over the hub into the graph/ folder (incremental via cache)
   6. write graph/sync-report.md
+  7. create/refresh the hub's README.md (managed block, from brain.config.json) — see --no-readme
 
 No third-party Python packages required. Needs `git` and `graphify` on PATH
 (`pip install graphifyy`).
@@ -46,6 +47,17 @@ import sys
 from pathlib import Path
 
 CORE_DOCS = ["constitution.md", "vocabulary.md", "domains.md"]
+
+README_START = "<!-- product-brain:managed:start -->"
+README_END = "<!-- product-brain:managed:end -->"
+# Signatures of a git-host default README (safe to replace — it's boilerplate, not the team's).
+HOST_README_SIGNS = (
+    "Getting started with GitLab",
+    "makeareadme.com",
+    "git push -uf origin",
+    "## Add your files",
+    "## Integrate with your tools",
+)
 
 # graphify picks its LLM provider (for the doc/image semantic pass) from env vars.
 # We map a friendly provider name to the env var(s) graphify looks for.
@@ -282,7 +294,75 @@ def write_report(hub: Path, cfg: dict, out: Path, dry: bool):
     log(f"wrote {report.relative_to(hub)}")
 
 
-def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, repo_pull: bool, provider: str):
+def render_readme(cfg: dict, graph_name: str) -> str:
+    """Interpolate the framework's hub-readme template with this hub's config.
+    Byte-stable for unchanged config: repos are sorted, no timestamps."""
+    tmpl_path = framework_root() / "templates" / "hub-readme-template.md"
+    if not tmpl_path.exists():
+        return ""
+    repos = sorted(cfg.get("repos", []), key=lambda r: r.get("id", ""))
+    if repos:
+        rows = ["| Repo | Source | `src` dirs |", "|---|---|---|"]
+        for r in repos:
+            src = ", ".join(f"`{s}`" for s in r.get("src", ["."])) or "`.`"
+            rows.append(f"| `{r.get('id','?')}` | {r.get('url','—')} | {src} |")
+        rows.append("")
+        rows.append("Each is a full working clone under `repos/<id>` — develop in it directly.")
+        repos_table = "\n".join(rows)
+    else:
+        repos_table = "_No repos registered yet — add them to `brain.config.json`, then `pb sync`._"
+    doc_types = ", ".join(f"`{d}`" for d in cfg.get("doc_types", [])) or "_none registered yet_"
+    return (tmpl_path.read_text()
+            .replace("{{HUB_NAME}}", cfg.get("hub_name", "Product Brain hub"))
+            .replace("{{REPOS_TABLE}}", repos_table)
+            .replace("{{DOC_TYPES}}", doc_types)
+            .replace("{{GRAPH}}", graph_name)
+            .replace("{{VERSION}}", read_version()))
+
+
+def _managed_block(text: str):
+    s, e = text.find(README_START), text.find(README_END)
+    if s == -1 or e == -1 or e < s:
+        return None
+    return text[s:e + len(README_END)]
+
+
+def write_readme(hub: Path, cfg: dict, out: Path, dry: bool):
+    """Generate the hub README on first sync, and keep its managed block current thereafter.
+    - No README, or a git-host default boilerplate → write the full scaffold.
+    - README with our managed markers → refresh only that block, leave the rest.
+    - Hand-written README without markers → leave untouched (just hint how to opt in)."""
+    graph_name = out.relative_to(hub).as_posix().rstrip("/") + "/graph.json"
+    rendered = render_readme(cfg, graph_name)
+    if not rendered:
+        return  # framework template not found (e.g. pb copied out of the repo)
+    block = _managed_block(rendered)
+    readme = hub / "README.md"
+    existing = readme.read_text() if readme.exists() else None
+
+    if existing is None or any(sign in existing for sign in HOST_README_SIGNS):
+        new, why = rendered, ("created README.md" if existing is None
+                              else "replaced git-host default README.md")
+    elif block and README_START in existing and README_END in existing:
+        pre = existing[:existing.find(README_START)]
+        post = existing[existing.find(README_END) + len(README_END):]
+        new, why = pre + block + post, "refreshed README.md managed block"
+    else:
+        log("README.md looks hand-written — leaving it untouched. Add "
+            f"{README_START} … {README_END} markers to let pb sync keep a section current.")
+        return
+
+    if new == existing:
+        return  # byte-stable: unchanged config produces no diff, no noise commit
+    if dry:
+        log(f"would update README.md ({why.split(' ',1)[0]})")
+        return
+    readme.write_text(new)
+    log(why)
+
+
+def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, repo_pull: bool, provider: str,
+             readme: bool = True):
     cfg = load_config(hub)
     repos = cfg.get("repos", [])
     out = hub / cfg.get("graph", {}).get("out", "graph/")
@@ -301,6 +381,8 @@ def cmd_sync(hub: Path, dry: bool, rebuild: bool, hub_pull: bool, repo_pull: boo
     ensure_exclusions(hub, rdir, out, repos, dry)
     run_graphify(hub, out, dry, rebuild, provider)
     write_report(hub, cfg, out, dry)
+    if readme:
+        write_readme(hub, cfg, out, dry)
     log("done." if not dry else "dry-run complete (nothing written).")
 
 
@@ -526,6 +608,7 @@ def main():
     s.add_argument("--rebuild", action="store_true", help="clear the graphify cache and rebuild everything from scratch")
     s.add_argument("--no-hub-pull", action="store_true", help="don't pull the hub's own latest changes first")
     s.add_argument("--no-repo-pull", action="store_true", help="don't pull the app working clones (leave them exactly as they are)")
+    s.add_argument("--no-readme", action="store_true", help="don't create or refresh the hub's README.md")
     s.add_argument("--provider", help="LLM provider for graphify's doc/image pass: "
                    "gemini | claude | openai | kimi | deepseek | ollama | auto (overrides brain.config.json)")
     sub.add_parser("status", help="show hub health at a glance")
@@ -552,7 +635,8 @@ def main():
         die(f"hub path does not exist: {hub}")
     try:
         if args.cmd == "sync":
-            cmd_sync(hub, args.dry_run, args.rebuild, not args.no_hub_pull, not args.no_repo_pull, args.provider)
+            cmd_sync(hub, args.dry_run, args.rebuild, not args.no_hub_pull, not args.no_repo_pull,
+                     args.provider, not args.no_readme)
         elif args.cmd == "status":
             cmd_status(hub)
         elif args.cmd == "adopt":
