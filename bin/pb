@@ -24,7 +24,9 @@ developers work in it directly — alongside the constitution, specs, vocabulary
   1. read brain.config.json
   2. pull the hub's own latest changes (safe: only if git repo + upstream + clean tree)
   3. clone each app into repos/<id> (full clone); existing clones are pulled only when safe
-     (clean tree, fast-forward) so your uncommitted work is never disturbed
+     (clean tree, fast-forward) so your uncommitted work is never disturbed. Per repo you can
+     set "branch" (which branch to clone / switch a clean clone to) and "pull": false (never
+     auto-pull that clone) in brain.config.json
   4. keep repos/ and graph/ out of the hub's Git via .git/info/exclude (not .gitignore, so
      graphify still reads repos/); write .gitignore entries for graphify's AST cache
      (graphify-out/) and .work/ — safe in a tracked .gitignore since they are never source
@@ -111,9 +113,20 @@ def safe_git_pull(path: Path, label: str, dry: bool):
     if dirty:
         log(f"{label}: skipped pull (uncommitted changes — your work is left untouched)")
         return
-    log(f"{label}: fast-forward pull")
-    if not dry:
-        run(["git", "-C", str(path), "pull", "--ff-only", "--quiet"])
+    branch = subprocess.run(["git", "-C", str(path), "rev-parse", "--abbrev-ref", "HEAD"],
+                            capture_output=True, text=True).stdout.strip()
+    if dry:
+        log(f"{label}: fast-forward pull ({branch})")
+        return
+    # --ff-only so a diverged branch fails cleanly instead of creating a merge commit.
+    # A diverged branch is a normal developer state, not an error, so skip it gracefully.
+    r = subprocess.run(["git", "-C", str(path), "pull", "--ff-only", "--quiet"],
+                       capture_output=True, text=True)
+    if r.returncode == 0:
+        log(f"{label}: fast-forward pull ({branch})")
+    else:
+        log(f"{label}: skipped pull (branch '{branch}' has diverged from upstream — "
+            "your work is left untouched; reconcile with git when ready)")
 
 
 def repos_dir(hub: Path, cfg: dict) -> Path:
@@ -121,10 +134,35 @@ def repos_dir(hub: Path, cfg: dict) -> Path:
     return hub / name
 
 
+def maybe_switch_branch(path: Path, branch: str, label: str, dry: bool):
+    """Check out `branch` in an existing clone — but only when the tree is clean, so a
+    developer's uncommitted work is never disturbed. A no-op if already on `branch`."""
+    current = subprocess.run(["git", "-C", str(path), "rev-parse", "--abbrev-ref", "HEAD"],
+                             capture_output=True, text=True).stdout.strip()
+    if current == branch:
+        return
+    dirty = subprocess.run(["git", "-C", str(path), "status", "--porcelain"],
+                           capture_output=True, text=True).stdout.strip()
+    if dirty:
+        log(f"{label}: on '{current}', config wants '{branch}' — kept '{current}' "
+            "(uncommitted changes; switch yourself with git when ready)")
+        return
+    log(f"{label}: switching '{current}' → '{branch}' (config branch)")
+    if not dry:
+        r = subprocess.run(["git", "-C", str(path), "switch", branch],
+                           capture_output=True, text=True)
+        if r.returncode != 0:
+            log(f"{label}: could not switch to '{branch}' (kept '{current}'): {r.stderr.strip()}")
+
+
 def pull_repos(rdir: Path, repos: list, dry: bool, do_pull: bool):
     """Clone each app repo into repos/<id> as a FULL working clone, so developers can work
     in it directly inside the hub (and the graph is built over the live code). Existing clones
-    are pulled only when safe (clean tree, fast-forward), never disturbing local work."""
+    are pulled only when safe (clean tree, fast-forward), never disturbing local work.
+
+    Per repo in brain.config.json:
+      "branch": "develop"  — clone that branch; on an existing clean clone, switch to it
+      "pull": false        — never pull this clone (still cloned once if missing)"""
     if not dry:
         rdir.mkdir(parents=True, exist_ok=True)
     for r in repos:
@@ -135,15 +173,26 @@ def pull_repos(rdir: Path, repos: list, dry: bool, do_pull: bool):
         if not url:
             die(f"repo '{rid}' needs a 'url' to clone. Develop inside the hub's repos/{rid} folder.")
         dest = rdir / rid
+        branch = r.get("branch")
+        repo_pull = do_pull and r.get("pull", True)
+        label = f"{rdir.name}/{rid}"
         if (dest / ".git").exists():
-            if do_pull:
-                safe_git_pull(dest, f"{rdir.name}/{rid}", dry)
+            if branch:
+                maybe_switch_branch(dest, branch, label, dry)
+            if repo_pull:
+                safe_git_pull(dest, label, dry)
+            elif not r.get("pull", True):
+                log(f"{label}: present (pull disabled in config)")
             else:
-                log(f"{rdir.name}/{rid}: present (pull skipped)")
+                log(f"{label}: present (pull skipped)")
         else:
-            log(f"clone {rdir.name}/{rid} ({url}) — full working clone you can develop in")
+            on = f" (branch {branch})" if branch else ""
+            log(f"clone {label} ({url}){on} — full working clone you can develop in")
             if not dry:
-                run(["git", "clone", "--quiet", url, str(dest)])
+                cmd = ["git", "clone", "--quiet"]
+                if branch:
+                    cmd += ["--branch", branch]
+                run(cmd + [url, str(dest)])
 
 
 def ensure_exclusions(hub: Path, rdir: Path, out: Path, repos: list, dry: bool):

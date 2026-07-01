@@ -3,7 +3,7 @@
   "hub_name": "acme-brain",
   "repos": [
     { "id": "backend-api", "url": "git@github.com:acme/backend-api.git", "src": ["app/"] },
-    { "id": "web-app",     "url": "git@github.com:acme/web-app.git",     "src": ["src/"] }
+    { "id": "web-app",     "url": "git@github.com:acme/web-app.git",     "src": ["src/"], "branch": "develop", "pull": false }
   ],
   "doc_types": ["specs", "decisions", "meeting-notes", "research", "runbooks"],
   "graph": { "out": "graph/", "provider": "auto" }

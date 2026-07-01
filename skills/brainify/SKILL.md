@@ -157,7 +157,10 @@ Copy `brain.config.template.json` to `brain.config.json` and fill it in by askin
 working clone* — developers do their actual work there, inside the hub, so they sit right next to the
 constitution, specs, vocabulary, and the graph, and the graph is always built over the live code (no
 copies, no drift). Re-syncs pull each clone only when it's clean (fast-forward), so uncommitted work
-is never disturbed.
+is never disturbed. Each repo entry in `brain.config.json` can set `"branch": "<name>"` (which branch
+to clone, and to switch a *clean* clone to on re-sync) and `"pull": false` (never auto-pull that
+clone — it's still cloned once if missing). Sync never touches a dirty tree, and a branch that has
+diverged from its upstream is skipped rather than force-merged; developers reconcile with git when ready.
 
 **Onboarding a developer who already has the code.** Don't make them re-clone or keep a second copy.
 Ask: *"Where is your current checkout?"* and run `pb adopt <path>` — it **moves** their existing
