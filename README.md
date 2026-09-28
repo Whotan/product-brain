@@ -209,7 +209,7 @@ from the plugin and report up to date) and "set up product brain" (the skill sho
 
 ### Versions & updates
 
-The framework version lives in `VERSION` (currently `0.6.0`) and is stamped into the skill's
+The framework version lives in `VERSION` (currently `0.7.0`) and is stamped into the skill's
 frontmatter. Check what you have — and whether your installed skill is current — with:
 
 ```bash
@@ -339,7 +339,7 @@ the graph stays focused. Use `["."]` (the default for adopted repos) to graph th
 
 **Recommended:** `domains.md` — the functional areas, owners, status, and which repos implement them. It's graph-assisted: after a sync, the graph's communities are good candidate domains, so you curate rather than author from scratch.
 
-**Product facts** — `docs/knowledge/` (required): the stable context Claude reads first, such as the product overview, stakeholders, feature status, metrics, and ways of working.
+**Product facts** — `docs/knowledge/` (required): the stable context Claude reads first, in five standard files: `overview`, `stakeholders`, `feature-status`, `metrics` and `ways-of-working`. `brainify` drafts them from what the hub already knows and asks only for the gaps; say "create the knowledge docs" to run just that step.
 
 **Extensible docs** — register any doc types you like in `brain.config.json` (`specs`, `decisions`, `meeting-notes`, `research`, `runbooks`, or your own). Markdown is preferred, and graphify connects it automatically. Registering a type is the one way to add a folder: the top level stays closed, scratch goes in `.work/`, and `pb check` (which also runs automatically when Claude finishes a reply) flags anything out of place.
 

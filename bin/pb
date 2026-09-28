@@ -803,18 +803,32 @@ LAYOUT_HELP = """Where things go in a Product Brain hub:
     docs/, workflows/, templates/ (plus dot-files and the repos/graph folders)"""
 
 
+def _config_doc_dirs(v) -> set:
+    """The docs/<x>/ folders brain.config.json points a skill at (e.g. releases.out, roadmap.out)."""
+    if isinstance(v, dict):
+        v = list(v.values())
+    if isinstance(v, list):
+        return set().union(set(), *map(_config_doc_dirs, v))
+    if isinstance(v, str) and v.startswith("docs/") and v.split("/")[1]:
+        return {v.split("/")[1]}
+    return set()
+
+
 def layout_problems(cfg: dict, paths) -> list:
     """The hub-relative (POSIX) paths that sit outside the hub layout."""
-    types = set(cfg.get("doc_types", []))
+    types = set(cfg.get("doc_types", [])) | _config_doc_dirs(cfg)
+    design = cfg.get("design", {})
     dirs = ROOT_DIRS | {cfg.get("workspace", {}).get("repos_dir", "repos"),
-                        cfg.get("graph", {}).get("out", "graph/").strip("/").split("/")[0]}
+                        cfg.get("graph", {}).get("out", "graph/").strip("/").split("/")[0],
+                        design.get("build", "brand").strip("/").split("/")[0]}
+    files = ROOT_FILES | {design.get("system", "DESIGN.md")}
     bad = []
     for p in paths:
         top, _, rest = p.partition("/")
         if top.startswith("."):
             continue  # tooling: .claude/, .mcp.json, .gitignore, .work/, …
         if not rest:
-            ok = top in ROOT_FILES
+            ok = top in files
         elif top == "docs":
             kind, _, leaf = rest.partition("/")
             ok = bool(leaf) and kind in types
@@ -938,6 +952,11 @@ def selftest():
                              "Stuff/ (2 files)"], _grouped(bad)
     custom = {"workspace": {"repos_dir": "apps"}, "graph": {"out": "map/"}}
     assert layout_problems(custom, ["apps/x.py", "map/graph.json", "repos/x.py"]) == ["repos/x.py"]
+    # the brand build + the docs/ folders that artifact skills write to via brain.config.json
+    artifacts = {"doc_types": [], "releases": {"out": "docs/releases"},
+                 "dashboard": {"inputs": [{"path": "docs/okrs/tracker.html"}]}}
+    assert layout_problems(artifacts, ["DESIGN.md", "brand/brand.css", "docs/releases/1.0.md",
+                                       "docs/okrs/tracker.html", "docs/misc/x.md"]) == ["docs/misc/x.md"]
     raw = b"?? new.txt\0R  new.md\0old.md\0 D gone.md\0 M CLAUDE.md\0"
     assert _porcelain_paths(raw) == ["new.txt", "new.md", "CLAUDE.md"], _porcelain_paths(raw)
     print("pb check selftest: ok")

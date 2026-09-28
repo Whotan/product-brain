@@ -1,6 +1,6 @@
 {
   "name": "stack-flutter",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Flutter conventions: widget composition, state management, async safety and integration_test end-to-end tests.",
   "author": {
     "name": "Product Brain maintainers"

@@ -1,6 +1,6 @@
 {
   "name": "stack-symfony",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Symfony conventions: dependency injection, controllers, Doctrine, the messenger component and Playwright end-to-end tests.",
   "author": {
     "name": "Product Brain maintainers"

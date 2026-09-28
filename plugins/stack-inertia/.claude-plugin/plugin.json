@@ -1,6 +1,6 @@
 {
   "name": "stack-inertia",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Inertia monolith conventions: the Laravel/React seam, typed props, Wayfinder routing, form handling and Playwright end-to-end tests.",
   "author": {
     "name": "Product Brain maintainers"

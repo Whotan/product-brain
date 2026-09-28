@@ -1,6 +1,6 @@
 {
   "name": "git-workflow",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Commit-message and merge-request rules loaded into every session, a hook that rejects malformed commit messages, a ticket-scope gate before MR/PR creation, and skills to verify scope and review an MR before it is marked ready.",
   "author": { "name": "Product Brain maintainers" }
 }

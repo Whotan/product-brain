@@ -1,7 +1,7 @@
 ---
 name: brainify
-version: 0.6.0
-description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", "upgrade the hub", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
+version: 0.7.0
+description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", "upgrade the hub", "create the knowledge docs", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
 ---
 
 # Skill: Brainify
@@ -48,6 +48,14 @@ refresh **for them** and report the result:
    `graph/sync-report.md`. Then invite the next question.
 
 Use `pb sync --rebuild` only if the user explicitly wants a full rebuild from scratch.
+
+---
+
+## Quick action — create the knowledge docs
+
+If the user asks to "create the knowledge docs", "set up the knowledge docs" or "fill in
+`docs/knowledge/`", skip the rest of the setup flow and run **Phase G2** on its own. It fills only
+the missing files of the standard set and never overwrites an existing one.
 
 ---
 
@@ -120,6 +128,11 @@ test -f brain.config.json && echo "config: PRESENT" || echo "config: MISSING"
 # Doc types present
 test -d docs && echo "doc types: $(ls -1 docs 2>/dev/null | tr '\n' ' ')" || echo "docs/: MISSING"
 
+# Knowledge docs — the standard set (a numbered prefix such as 00-overview.md also counts)
+for k in overview stakeholders feature-status metrics ways-of-working; do
+  ls docs/knowledge/*"$k".md >/dev/null 2>&1 && echo "knowledge $k: PRESENT" || echo "knowledge $k: MISSING"
+done
+
 # Layout — stray top-level files/folders, unregistered docs/ folders, missing required types
 pb check | head -30
 
@@ -169,6 +182,7 @@ Render a compact table with ✅ / ⚠️ / ❌ and a one-line note each:
 | Recommended | `domains.md` (graph-assisted) | ✅/⚠️/➖ |
 | Config | `brain.config.json` | ✅/❌ |
 | Docs | registered doc types populated (incl. the required `knowledge`) | ✅/⚠️/❌ |
+| Knowledge | the five standard docs in `docs/knowledge/` (⚠️ when present but mostly `[TODO: confirm]`) | ✅/⚠️/❌ |
 | Layout | nothing outside the hub layout (`pb check`) | ✅/⚠️ |
 | Graph | `graph/graph.json` built & fresh (<7d) | ✅/⚠️/❌ |
 | Tool | graphify installed | ✅/❌ |
@@ -194,6 +208,7 @@ E → Build the vocabulary (graph-assisted — use `pb find`)
 E2 → Set up the brand design system (extract, review, build)
 F → Register doc types & seed docs
 G → Map domains (graph-assisted)
+G2 → Write the knowledge docs (drafted from what the hub knows, gaps asked)
 H → Re-sync to fold the new docs into the graph
 I → Add the CLAUDE.md snippet(s)
 J → Write role workflows
@@ -389,7 +404,7 @@ Confirm the doc types in `brain.config.json`. Offer the shipped templates (`spec
 **`docs/knowledge/` is required.** It holds the stable product facts that aren't rules
 (constitution), terms (vocabulary), or areas (domains): what the product is and who it's for,
 stakeholders and how they work, feature status, metrics, and ways of working. It's the context
-Claude reads first. Offer to seed `docs/knowledge/overview.md` from a short interview.
+Claude reads first. Its files are written in Phase G2, once the domains exist.
 
 **The layout is the standard.** The top level is closed (core files, `docs/`, `workflows/`,
 `templates/`, dot-files, `repos/`, the graph folder). Every other kind of content becomes a
@@ -400,6 +415,39 @@ caught at once. `pb check` lists everything out of place for a cleanup.
 ### Phase G — Map domains (recommended, graph-assisted)
 
 Domains aren't required, and they're partly derivable. Read the graph's Leiden communities and propose them as candidate domains; use `pb find` to confirm the key entities per area. Then use `domains-template.md` to capture, per area: responsibility, owner, status, repos, core features, and key terms.
+
+### Phase G2 — Write the knowledge docs (required)
+
+Every hub gets the same five files in `docs/knowledge/`, each started from `templates/knowledge/`:
+
+| File | Holds | Draft it from |
+|---|---|---|
+| `overview.md` | What the product is, who it's for, apps and environments, business model, integrations | `brain.config.json` repos, each `repos/<id>/README.md`, `domains.md`, `vocabulary.md` |
+| `stakeholders.md` | Who decides what, and how each person likes to work | The user only. Never list people from git history without asking |
+| `feature-status.md` | What's live, in progress, designed or in the backlog | The statuses in `domains.md`, the tracker if connected (`connect-tools`), `pb find` for what is in code |
+| `metrics.md` | The numbers the team watches, their source, value and target | The user; any analytics setup found in the repos |
+| `ways-of-working.md` | Approvals, tickets, releases and announcements, team rhythm | The user; `releases` and `roadmap` in `brain.config.json` if set |
+
+For each file, in the order above:
+
+1. **Draft from facts first.** Fill in everything the hub already knows, and note where each fact
+   came from (for example, "from `repos/web-app/README.md`").
+2. **Ask only for the gaps**, one short question at a time. Offer choices when you can; many users
+   are non-technical.
+3. **Never invent.** Whatever the user hasn't confirmed and no source shows stays `[TODO: confirm]`.
+4. **Show the draft, then write it.** Iterate until the user approves. Set **Last updated** to
+   today.
+
+Rules:
+- **Facts, not plans or decisions.** Plans belong in the tracker and the roadmap, and a decision goes
+  in `docs/decisions/`. Link to `constitution.md`, `vocabulary.md` and `domains.md` rather than
+  copying them.
+- **On an existing hub, add only what is missing.** Never overwrite a knowledge file. Follow the
+  folder's naming: a hub that uses `00-overview.md` keeps its numbering, and new files continue it.
+- If the product facts live somewhere else (for example, a top-level `knowledge/` folder), move them
+  in with `git mv` first, so their history is kept.
+- A team may add more files to `docs/knowledge/` (open questions, research insights). The five
+  above are the minimum.
 
 ### Phase H — Re-sync
 
@@ -423,6 +471,7 @@ Offer `workflows/<role>.md` for the roles the team has (pm, backend, frontend, q
 Required core  ✅ constitution / vocabulary / DESIGN.md
 Brand          ✅ brand/tokens.json built & fresh   [or ⚠️ stale, or ❌ missing]
 Domains        ✅ N domains (graph-assisted)   [or ➖ not mapped yet]
+Knowledge      ✅ 5/5 docs in docs/knowledge/   [or ⚠️ N items still TODO, or ❌ missing]
 Config         ✅ brain.config.json (N repos, M doc types)
 Graph          ✅ built (NNN nodes) — Xd old
 Workflows      ✅ K roles
@@ -433,8 +482,8 @@ Next: [highest-value next action]
 
 ## Upgrade an existing hub
 
-When the audit shows ❌/⚠️/➖ in the *Shared plugins*, *Cross-OS*, *Connections*, *README* or *Sonar
-runbook* rows — or the user says "upgrade the hub" — offer this upgrade.
+When the audit shows ❌/⚠️/➖ in the *Knowledge*, *Shared plugins*, *Cross-OS*, *Connections*,
+*README* or *Sonar runbook* rows — or the user says "upgrade the hub" — offer this upgrade.
 
 **Ask how to deliver it, every time:** commit on the current branch, or work on a new `hub-upgrade`
 branch and open a merge request / pull request. Never commit to `main` directly (it is usually
@@ -468,7 +517,9 @@ you cannot find — never copy values from another hub.
    job → `glab ci trace <job-id>`; look for `QUALITY GATE STATUS` and the dashboard URL. Write
    `docs/runbooks/check-sonarqube-on-mr.md` from `templates/runbooks/check-sonarqube-on-mr.md` with
    the real values and that example.
-7. **Finish** — commit in logical chunks (one per step above). If delivering by MR: push the branch
+7. **Knowledge docs** — if the audit lists any knowledge file as missing, run Phase G2 for just
+   those files. Existing ones stay as they are.
+8. **Finish** — commit in logical chunks (one per step above). If delivering by MR: push the branch
    and open the MR/PR (`glab mr create` / `gh pr create`). Report the link, what you verified,
    anything skipped and why, and which placeholders the user still has to fill in
    `.claude/settings.local.json` themselves.
@@ -519,6 +570,7 @@ the same list. When either reports leftovers:
 | No domains, has graph | "Map domains from the graph's communities (recommended)." |
 | Doc type registered but empty | "Seed the first doc for [type]." |
 | `knowledge` not registered | "Register the required `knowledge` doc type and move your product facts into `docs/knowledge/`." |
+| A knowledge doc is missing | "Create the knowledge docs. I'll draft them from what the hub already knows and ask you only about the gaps." |
 | `pb check` lists files | "Some files are outside the hub layout — I'll propose where each belongs." (Propose; move only once the user agrees.) |
 | No workflows | "Add role workflows so each role has a lens." |
 | Cross-OS / Connections / README / Sonar runbook rows not ✅ | "Upgrade the hub — cross-OS README, UTF-8, tool connections (I'll ask whether to open an MR)." |

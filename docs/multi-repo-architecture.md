@@ -79,7 +79,8 @@ acme-brain/                          ← the hub: its own git repo, single sourc
   DESIGN.md                          product-level design system: brand tokens + artifact styling (CORE, required)
   domains.md                         domain map: area → owner, status, which repos   (recommended, graph-assisted)
   docs/                              extensible, typed knowledge — Markdown-first (multimodal supported)
-    knowledge/                       stable product facts: overview, stakeholders, status, metrics   (required)
+    knowledge/                       stable product facts (required): overview, stakeholders,
+                                     feature-status, metrics, ways-of-working — drafted by brainify
     specs/                           authored however the team likes (Spec Kit, RFC, plain MD…)
     decisions/                       ADRs
     meeting-notes/                   ← teams add types like this freely

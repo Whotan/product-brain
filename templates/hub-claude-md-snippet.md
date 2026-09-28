@@ -127,6 +127,7 @@ never ask the user to paste one into the chat.
 - "Check SonarQube on MR !<n>" → follow `docs/runbooks/check-sonarqube-on-mr.md` if the hub has it, otherwise the `review-mr` skill (git-workflow plugin).
 - "What domains do we have?" → read `domains.md` / query graph communities.
 - "Tidy the hub" / "check the layout" → run `pb check`, then propose where each listed file should go (move nothing until the user agrees).
+- "Create the knowledge docs" → the `brainify` skill's Phase G2: draft the missing `docs/knowledge/` files (overview, stakeholders, feature-status, metrics, ways-of-working) from what the hub already knows, then ask only for the gaps.
 - "Write a spec for X" → check whether `templates/spec-template.md` exists in this hub. If it does, copy it into `docs/specs/` and fill in the details. If not, ask: "Would you like me to copy the Product Brain recommended templates into `templates/`?" If yes, create the `templates/` folder and scaffold `spec-template.md`, `doc-types/decision-template.md`, and `doc-types/meeting-note-template.md` from the Product Brain framework, then proceed with the spec. If no, create the spec using your team's own format.
 
 ### Keeping it fresh

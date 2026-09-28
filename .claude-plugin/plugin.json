@@ -1,7 +1,7 @@
 {
   "name": "product-brain",
   "description": "Set up and maintain a Product Brain hub — a method-agnostic source of truth for product knowledge across your repos. Ships the brainify skill, the pb CLI, a one-brand design system, and artifact skills (delivery roadmap, release notes, product dashboard) that generate documents styled only from it.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "author": { "name": "Product Brain maintainers" },
   "homepage": "https://github.com/Whotan/product-brain",
   "keywords": ["product-brain", "brainify", "knowledge-graph", "docs", "product"]

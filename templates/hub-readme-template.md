@@ -119,9 +119,11 @@ Just ask. Some examples:
 |---|---|---|
 | `constitution.md` | Non-negotiable principles | Yes |
 | `vocabulary.md` | Glossary: product ↔ code terms | Yes |
+| `DESIGN.md` | Design system: brand tokens and how generated documents are styled | Yes |
 | `domains.md` | Domain map and owners | Yes |
 {{DOC_TYPE_ROWS}}
 | `brain.config.json` | Tracked repos, doc types, graph settings | Yes |
+| `brand/` | Compiled brand (`brand.css`, `tokens.json`), built from `DESIGN.md` | Yes |
 | `.claude/settings.json` | Shared Claude settings and plugins for everyone | Yes |
 | `.mcp.json` | Shared tool connections (hosts only, no secrets) | Yes |
 | `.claude/settings.local.example.json` | Template for your personal settings | Yes |
@@ -137,14 +139,6 @@ Nothing else goes at the top level. A new kind of document gets a new doc type i
 
 | Problem | Fix |
 |---|---|
-| `constitution.md` | Non-negotiable principles (required) |
-| `vocabulary.md` | Glossary: product ↔ code terms (required) |
-| `DESIGN.md` | Product-level design system: brand tokens + artifact styling (required) |
-| `domains.md` | Domain map (recommended) |
-| `docs/<type>/` | Team knowledge — registered doc types: {{DOC_TYPES}} |
-| `brain.config.json` | Tracked repos + doc types + graph settings |
-| `brand/` | Compiled brand (`brand.css`, `tokens.json`) — built from `DESIGN.md`, committed |
-| `{{GRAPH}}` | The knowledge graph (built by `pb sync`) |
 | `Permission denied (publickey)` | Your SSH key isn't registered on {{CODE_HOST}} — see step 2. |
 | Windows: typing `python` opens the Microsoft Store | Settings → Apps → Advanced app settings → **App execution aliases** → turn off the two *python* entries. |
 | Windows: "python is not recognized" | Re-run the Python installer, choose **Modify**, and tick **Add Python to environment variables**. Then open a new terminal. |
