@@ -64,9 +64,11 @@ def main():
         assert legacy(hub, home, "/old/pb") == [], "checkout installs are the old copy by design"
 
         legacy.__globals__["framework_root"] = lambda: plugin_root
+        (hub / ".mcp.json").write_text('{"mcpServers": {"jira": {"command": "uvx", "args": ["mcp-atlassian"]}}}')
         found = legacy(hub, home, "/old/pb")
-        assert len(found) == 3, found
+        assert len(found) == 4, found
         assert "0.3.0" in found[0] and "/old/pb" in found[1] and "git-workflow" in found[2]
+        assert "mcp-atlassian" in found[3], "old Jira launch (blocked on Windows) not flagged"
 
         (home / ".local/bin").mkdir(parents=True)
         (home / ".local/bin/pb").write_text("")  # found even when which() misses it (Windows)
@@ -76,7 +78,8 @@ def main():
         shutil.rmtree(old_skill)
         (hub / ".claude/settings.json").write_text(
             '{"enabledPlugins": {"git-workflow@product-brain": true, "guardrails@product-brain": true}}')
-        assert legacy(hub, home, str(plugin_root / "bin/pb")) == []
+        shutil.copy(ROOT / "templates/hub-mcp.template.json", hub / ".mcp.json")
+        assert legacy(hub, home, str(plugin_root / "bin/pb")) == [], "template's Jira launch flagged as old"
 
     # dependency check: warns with an install hint when a program is missing, silent otherwise
     bash = shutil.which("bash")

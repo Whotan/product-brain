@@ -209,7 +209,7 @@ from the plugin and report up to date) and "set up product brain" (the skill sho
 
 ### Versions & updates
 
-The framework version lives in `VERSION` (currently `0.6.0`) and is stamped into the skill's
+The framework version lives in `VERSION` (currently `0.7.1`) and is stamped into the skill's
 frontmatter. Check what you have — and whether your installed skill is current — with:
 
 ```bash
