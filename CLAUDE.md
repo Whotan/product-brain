@@ -22,7 +22,7 @@ separate hub repo created by running `brainify`.
 | Setup/maintenance/upgrade skill | `skills/brainify/SKILL.md` |
 | Tool-connections skill | `skills/connect-tools/SKILL.md` |
 | Shared plugins (rules, hooks, skills, stack conventions) | `plugins/<name>/`, listed in `.claude-plugin/marketplace.json` |
-| Self-checks | `node --test tests/*.mjs`, `python3 tests/test_git_gate.py`, `python3 tests/test_pb_hub_files.py` |
+| Self-checks | `node --test tests/*.mjs`, `python3 tests/test_git_gate.py`, `python3 tests/test_pb_hub_files.py`, `python3 tests/test_epic_facts.py` |
 | Plugin + marketplace manifests (primary install path) | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` |
 | Hub CLI + tooling | `bin/pb`, `bin/package-skill.sh` (Cowork bundle), `bin/install-skill.sh` (fallback) |
 | Hub templates | `templates/` |

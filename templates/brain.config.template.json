@@ -47,6 +47,7 @@
       "apps": { "web-app": { "serve": "npm start -- --port 4200", "base_url": "http://localhost:4200", "base_path": "" } }
     }
   },
+  "approvals": { "out": "docs/approvals" },
   "roadmap": {
     "out": "docs/roadmap/delivery-roadmap.html",
     "facts": "docs/roadmap/.roadmap-facts.json",
