@@ -1,6 +1,6 @@
 {
   "name": "epic-approval",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Gates an epic launch: per repo, finds or creates the release branch, measures what it would merge into main against five criteria — change scope, error and edge cases, security basics, backward compatibility, deployment and configuration risk — and writes per-repo approval reports into the hub.",
   "author": {
     "name": "Product Brain maintainers"
