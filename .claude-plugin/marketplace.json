@@ -20,6 +20,11 @@
       "description": "Approval gate before an epic launches: per hub repo (backend, frontend, mobile), finds or creates the release branch (next version from the latest release and the commit messages on develop), reviews what it would merge into main against five criteria (scope, error & edge cases, security basics, backward compatibility, deployment/config risk) and writes one report per repo plus a summary into the hub."
     },
     {
+      "name": "live-update",
+      "source": "./plugins/live-update",
+      "description": "Files one Jira ticket for a release once its epic-approval reports and release notes exist: links the merge/pull request, uploads the local-only artifacts as attachments, and never files a duplicate. The project and component come from brain.config.json (or are asked for)."
+    },
+    {
       "name": "guardrails",
       "source": "./plugins/guardrails",
       "description": "Blocks Claude writes that violate shared engineering standards (secrets, debug output, unsafe PHP/TS/React patterns and more), for whichever stacks each repo actually contains. Runs as a hook \u2014 nothing is written to your repos."

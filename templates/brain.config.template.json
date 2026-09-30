@@ -48,6 +48,7 @@
     }
   },
   "approvals": { "out": "docs/approvals" },
+  "jira": { "project": "PROD", "component": "Acme", "issue_type": "Production Deployment" },
   "roadmap": {
     "out": "docs/roadmap/delivery-roadmap.html",
     "facts": "docs/roadmap/.roadmap-facts.json",

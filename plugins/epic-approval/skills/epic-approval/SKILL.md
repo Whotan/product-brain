@@ -2,7 +2,7 @@
 name: epic-approval
 description: Approval gate before an epic launches — finds or creates one release branch with the same version in every repo of the hub (backend, frontend, mobile; next version from the latest release and the commit messages on develop), measures what it would merge into main against five criteria (change scope controlled, error & edge cases handled, security basics checked, backward compatibility considered, deployment/configuration risks addressed), and writes one report per repo plus a summary into the hub. Use when the user asks to approve, sign off, gate or review an epic / release before launch, to cut a release branch and check it, or before a release branch is merged into main.
 argument-hint: "[release-branch] [repo-id ...]"
-allowed-tools: [Bash, Read, Write, Edit, Glob, Grep, Agent]
+allowed-tools: [Bash, Read, Write, Edit, Glob, Grep, Agent, Artifact]
 ---
 
 # epic-approval
@@ -237,10 +237,24 @@ migrations before code that reads new columns; "independent" when nothing links 
 
 Write every report and the summary in English.
 
-## Step 6: Show it and offer the next step
+## Step 6: Make it shareable, show it, offer the next step
+
+Render the folder as one shareable page:
+
+```bash
+python3 "${CLAUDE_SKILL_DIR}/scripts/render-approval-page.py" --folder "<approvals.out>/<date> - <release branch>"
+```
+
+It writes `approval.html` next to the reports: the launch summary first, then one section per repo.
+The page has no external resource, so it opens from disk, prints to PDF from a browser, and can be
+published as an Artifact. It uses the hub's compiled brand (`<design.build>/brand.css`) when there
+is one, and a neutral style otherwise (`--no-brand` forces the neutral one). The `.md` reports stay
+the source of truth; re-render after any change to them.
 
 Print the summary in the chat with the path to the folder. Then offer — each only on an explicit
-yes: commit the report folder to the hub (following the git-workflow commit rule), post each
+yes: publish `approval.html` as an Artifact (private until the user shares it; if one already
+exists for this release branch, republish to the **same URL** with a dated `label`) and give the
+user its URL, commit the report folder to the hub (following the git-workflow commit rule), post each
 repo's report to its release merge request (`glab mr note create` / `gh pr comment`). After
 fixes land on a release branch, run the skill again: a new head means a new range and a new report.
 
