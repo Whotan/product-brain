@@ -1,6 +1,6 @@
 ---
 name: "release-notes"
-description: "Use when the user mentions release notes, a changelog, what went out in a release, announcing or communicating a release to clients or customers, a client update or customer-facing update, an internal or engineering release summary, what to tell clients about a new version, or a PDF of a release announcement — and when a release tag has just been cut or is about to be."
+description: "Use when the user mentions release notes, a changelog, what went out in a release, announcing or communicating a release to clients or customers, a client update or customer-facing update, an internal or engineering release summary, what to tell clients about a new version, a PDF of a release announcement, or opening the merge/pull request that ships a release branch to production — and when a release tag has just been cut or is about to be."
 argument-hint: "[tag] [--from <tag>] (default: the latest release tag on releases.primary_repo, against the release before it)"
 compatibility: "Requires a Product Brain hub (brain.config.json with `repos`, `releases` and `design` keys) with the app repos cloned, and the brand-system skill installed alongside this one. git, Python 3.9+, and Chrome or Edge (driven through a clone's playwright-core) for the PDF. Windows/Git Bash safe."
 metadata:
@@ -82,7 +82,8 @@ leave it. Only verify the release you are working on.
 | `releases.version_regex` | optional, one capture group: the version label artifacts show (default: group 1 of `tag_regex` if it has one, else the tag) |
 | `releases.specs_dir` / `roadmap.specs_dir` | where spec folders live, for citations and their claimed ticks |
 | `releases.primary_repo` | whose latest release tag names the release by default |
-| `releases.production_branch` | where release tags are cut from; the gatherer flags a tag that is not on it |
+| `releases.production_branch` | where release tags are cut from; the gatherer flags a tag that is not on it; also the base branch `open-release-mr.py` opens its merge/pull request against |
+| `releases.release_branch_regex` | optional, default `^(release\|hotfix)[-/._]`; which branch `open-release-mr.py` treats as "a release branch" when picking the latest one |
 | `releases.merge_style` | `squash` means "is X in the release" ancestry negatives lie — see *Accuracy rules* |
 | `releases.out` | where release folders live |
 | `releases.client_note` | `locale`, `dir` (`ltr`/`rtl`), `calendar` (`gregorian` default, `jalali`), `i18n` / `i18n_source` (`[{repo, path}]` string files) |
@@ -434,6 +435,39 @@ into a pattern turned a check into a no-op that still reported success.
   spec whose shipped verdict this release changes. Shipped verdicts belong to the
   `delivery-roadmap` skill (plugin form `product-brain:delivery-roadmap`); if one
   moved, re-cut the roadmap with it.
+
+### 9. Open the release merge/pull request (optional)
+
+A separate, English-only, bullet-point document from the two notes above — the
+kind git hosts show on the MR/PR itself, not something a client ever sees. It
+does not require `facts.json` or a cut tag: it reads
+`git log <production>..<release branch>` directly, so it is usable before step 1
+as the thing that actually ships the release branch into
+`releases.production_branch`.
+
+```bash
+python "${CLAUDE_SKILL_DIR}/scripts/open-release-mr.py"              plan only — prints it, opens nothing
+python "${CLAUDE_SKILL_DIR}/scripts/open-release-mr.py" --create      opens it for real
+```
+
+It finds **the latest release branch** — the remote branch matching
+`releases.release_branch_regex` whose tip was committed most recently — and
+groups its commits by Conventional Commits type into `## Added` (`feat`),
+`## Changed` (`perf`/`refactor`/`build`/`ci`/`chore`/`style`/`docs`/`test`) and
+`## Fixed` (`fix`); a subject with no conventional prefix goes under
+`## Other changes` rather than being guessed into one of the three. A commit
+later reverted inside the same range, and the revert commit itself, are both
+dropped — same *Accuracy rules* as the notes above: a reverted change never
+shipped. `--repo <id>` targets a repo other than `releases.primary_repo`;
+`--branch <name>` skips picking "the latest" one.
+
+**Opening an MR/PR is visible to the whole team and not something to silently
+automate.** Without `--create` the script only prints the plan — repo, base,
+head, title, and the full bullet body — so you can read it over (and let the
+user look, if one is present) before anything is opened. `--create` then calls
+`gh pr create` or `glab mr create`, auto-detected from the clone's `origin`
+remote (`--host github|gitlab` overrides when the URL doesn't say); either CLI
+must already be authenticated (`gh auth status` / `glab auth status`).
 
 ## Design system
 

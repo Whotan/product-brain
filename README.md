@@ -369,7 +369,7 @@ compiled brand (see `DESIGN.md` above):
 |---|---|
 | `brand-system` | Extracts and compiles the product-level `DESIGN.md` into `brand/brand.css` + `brand/tokens.json`, and provides `check-brand.py`, the brand gate every other artifact skill runs before publishing. |
 | `delivery-roadmap` | The internal delivery roadmap: one card per feature, a computed timeline, and a conflicts panel — grounded in git, not task lists. It reads a release's headline back out of `release-notes`, but does not write release notes itself. |
-| `release-notes` | Owns release notes: a publishable client note (HTML + PDF, one locale) and a team-only internal note, per release tag. |
+| `release-notes` | Owns release notes: a publishable client note (HTML + PDF, one locale) and a team-only internal note, per release tag. Can also open the merge/pull request that ships a release branch to production, with a bullet-point, English changelog body. |
 | `update-product-hub` | The product dashboard: what to do today, what's at risk, what shipped yesterday — re-derived every run from git, the graph, and the other skills' output. |
 
 Invoke one directly as `/product-brain:<name>` (e.g. `/product-brain:release-notes`), or just ask

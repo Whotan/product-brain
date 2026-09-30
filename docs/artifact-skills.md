@@ -10,7 +10,7 @@ key and an example value, not a silent fallback.
 |---|---|---|
 | `brand-system` | The hub's `DESIGN.md` (drafted by `extract`), plus compiled `brand/brand.css` + `brand/tokens.json` | `design` |
 | `delivery-roadmap` | The internal delivery roadmap (HTML: one card per feature, a computed timeline, a conflicts panel) and its facts JSON. It reads a per-release **headline** back out of `release-notes`' output, but does not write release notes itself. | `repos`, `releases` (partially — see below), `roadmap` |
-| `release-notes` | Per-release folder: `client.html` + `client.pdf` (client locale only, publishable) and `internal.md` (team only) | `repos`, `releases`, `design.logo`/`design.source` |
+| `release-notes` | Per-release folder: `client.html` + `client.pdf` (client locale only, publishable) and `internal.md` (team only). Can also open the merge/pull request that ships the latest release branch to production, with an English, bullet-point, Added/Changed/Fixed body built from git — a separate document from the two notes. | `repos`, `releases`, `design.logo`/`design.source` |
 | `update-product-hub` | The product dashboard (HTML: today's focus, at-risk items, yesterday's activity) and the `dashboard.state` recorded layer | `repos`, `releases.integration_branch`, `dashboard`, `graph.out` |
 
 All four are invoked as `product-brain:<name>` once the plugin is installed, or by asking
@@ -138,7 +138,7 @@ generated README's heading and the dashboard/release-notes wordmark to agree —
 | `primary_repo` | `release-notes` | Yes | — | `"backend-api"` — whose latest matching tag names the release when no tag is given on the command line |
 | `production_branch` | `release-notes`, `delivery-roadmap` | Yes | — | `"main"` — where release tags are cut from |
 | `integration_branch` | `delivery-roadmap`, `update-product-hub` | Yes | — | `"develop"` |
-| `release_branch_regex` | `delivery-roadmap` | No | `"^(release\|hotfix)[-/._]"` | `"^release/"` — classifies merges onto production |
+| `release_branch_regex` | `delivery-roadmap` (classifies merges onto production), `release-notes` (picks "the latest release branch" to open its MR/PR from) | No | `"^(release\|hotfix)[-/._]"` | `"^release/"` |
 | `version_regex` | `release-notes`, `delivery-roadmap` | No | group 1 of `version_regex` if set; else `tag_regex`'s named group `(?P<version>…)` if it has one; else the whole tag | `"^v(\\d+\\.\\d+\\.\\d+)$"` — one capture group; the version label artifacts show instead of the raw tag |
 | `merge_style` | `delivery-roadmap` | Yes | — | `"squash"` — `squash\|merge\|rebase`; squash means a plain ancestry check can give a false negative, so verdicts are checked by content, not ancestry alone. `release-notes`' own Accuracy rules apply the same caution in prose but don't branch on this key in code |
 | `out` | `release-notes` (release folders live here); `delivery-roadmap` (reads a release's headline back from `<out>/<version> - <date>/client.html` if that folder exists) | Yes | — | `"docs/releases"` |
