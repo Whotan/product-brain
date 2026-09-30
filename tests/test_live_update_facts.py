@@ -102,7 +102,7 @@ def main():
         write(ea / "2026-09-20 - release.1.5.0/api.md")
         write(ea / "2026-09-20 - release.1.5.0/README.md")
         write(ea / "2026-09-25 - release.1.4.0/api.md")
-        write(ea / "2026-09-20 - release.1.5.0/approval.html")
+        write(hub / ".work/epic-approval/2026-09-20 - release.1.5.0/approval.html")
         rc, f = run(hub, "--no-vcs-host")
         e = f["epic_approval"]
         check(e["exists"] and e["report_date"] == "2026-09-20", f"newest epic-approval run: {e}")

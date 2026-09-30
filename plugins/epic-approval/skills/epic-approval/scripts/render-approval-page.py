@@ -2,8 +2,9 @@
 """Render an epic-approval report folder as ONE shareable, self-contained HTML page.
 
 The Markdown reports stay the source of truth. This reads `README.md` (the launch summary) and
-every `<repo-id>.md` in one approval folder and writes `approval.html` next to them: the summary
-first, then one section per repo. The page has no external resource (no font, script, image or
+every `<repo-id>.md` in one approval folder and writes `approval.html`: the summary first, then one
+section per repo. The page goes to `<hub>/.work/epic-approval/<folder name>/approval.html` (git-ignored
+scratch), never into the report folder: only the Markdown belongs in the repo. The page has no external resource (no font, script, image or
 stylesheet link), so it opens from disk, prints to PDF from any browser, and can be published as
 an Artifact.
 
@@ -255,7 +256,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--hub", help="hub folder (default: walk up from the current directory)")
     ap.add_argument("--folder", help="the approval folder (default: the newest under approvals.out)")
-    ap.add_argument("--out", help="output file (default: <folder>/approval.html)")
+    ap.add_argument("--out", help="output file (default: <hub>/.work/epic-approval/<folder name>/approval.html)")
     ap.add_argument("--no-brand", action="store_true", help="use the neutral style even if a brand exists")
     args = ap.parse_args()
     try:
@@ -282,7 +283,8 @@ def main():
             if css.is_file():
                 brand_css, style = css.read_text(encoding="utf-8"), "brand"
         page = build_page(folder.resolve(), brand_css)
-        target = Path(args.out) if args.out else folder / "approval.html"
+        target = Path(args.out) if args.out else (hub or Path.cwd()) / ".work/epic-approval" / folder.name / "approval.html"
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(page, encoding="utf-8")
     except Decide as e:
         print(f"decide: {e}", file=sys.stderr)

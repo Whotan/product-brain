@@ -26,7 +26,7 @@ never creates the ticket before the user has seen the draft and said yes.
 | Merge / pull request of the release branch | yes | **link** in the description |
 | Release note published as an Artifact | only if the user supplies it | **link** |
 | epic-approval reports (`<repo>.md`, `README.md`) | no — plain files in the hub | **attachment** |
-| epic-approval page (`approval.html`, made by epic-approval Step 6) | only if published as an Artifact and the user supplies the URL | **link**; **attachment** when no URL is known |
+| epic-approval page (`approval.html` in `.work/epic-approval/`, made by epic-approval Step 6, not committed) | only if published as an Artifact and the user supplies the URL | **link**; **attachment** when no URL is known |
 | release-notes `internal.md`, `client.pdf`, `facts.json` | no | **attachment** |
 | release-notes `client.html` | no, unless published | **attachment**, only when no published URL is known |
 

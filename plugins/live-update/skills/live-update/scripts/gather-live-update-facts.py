@@ -224,7 +224,7 @@ def epic_approval_facts(cfg, release, approval_url, warnings):
         return info, files
     date, _, folder, _ = best
     info.update(folder=rel(cfg.hub, folder), exists=True, report_date=date)
-    page = folder / "approval.html"
+    page = cfg.hub / ".work/epic-approval" / folder.name / "approval.html"  # git-ignored, made by epic-approval Step 6
     if page.is_file():
         info["page_path"] = rel(cfg.hub, page)
     if approval_url:

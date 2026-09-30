@@ -245,11 +245,13 @@ Render the folder as one shareable page:
 python3 "${CLAUDE_SKILL_DIR}/scripts/render-approval-page.py" --folder "<approvals.out>/<date> - <release branch>"
 ```
 
-It writes `approval.html` next to the reports: the launch summary first, then one section per repo.
+It writes `approval.html` to `.work/epic-approval/<date> - <release branch>/` (git-ignored scratch, never
+the report folder): the launch summary first, then one section per repo.
 The page has no external resource, so it opens from disk, prints to PDF from a browser, and can be
 published as an Artifact. It uses the hub's compiled brand (`<design.build>/brand.css`) when there
 is one, and a neutral style otherwise (`--no-brand` forces the neutral one). The `.md` reports stay
-the source of truth; re-render after any change to them.
+the source of truth and the only thing committed; the page is disposable, so re-render it after any
+change to them.
 
 Print the summary in the chat with the path to the folder. Then offer — each only on an explicit
 yes: publish `approval.html` as an Artifact (private until the user shares it; if one already

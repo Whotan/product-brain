@@ -73,7 +73,10 @@ def main():
         # neutral style, newest folder chosen
         rc, out, err = run("--hub", str(hub))
         check(rc == 0, f"render failed: {err}")
-        page = (new / "approval.html").read_text(encoding="utf-8")
+        made = hub / ".work/epic-approval" / new.name / "approval.html"
+        check(made.is_file() and not (new / "approval.html").exists(),
+              "page goes to .work, never into the report folder")
+        page = made.read_text(encoding="utf-8")
         check("old run" not in page and "Launch approval" in page, "newest folder rendered")
         check('<meta charset="utf-8">' in page and "neutral style" in out, "charset first, neutral style")
         check(page.count('<section class="repo"') == 2 and 'id="repo-api"' in page and 'id="repo-web"' in page,
@@ -94,7 +97,7 @@ def main():
         (hub / "brand").mkdir()
         (hub / "brand/brand.css").write_text(":root{--ds-canvas:#fefefe;--ds-ink:#111}\n")
         rc, out, err = run("--hub", str(hub))
-        page = (new / "approval.html").read_text(encoding="utf-8")
+        page = made.read_text(encoding="utf-8")
         check(rc == 0 and "brand style" in out and "BRAND:BEGIN" in page and "--ds-canvas:#fefefe" in page
               and "--bg:var(--ds-canvas)" in page, "brand inlined and mapped")
         rc, out, err = run("--hub", str(hub), "--no-brand")
