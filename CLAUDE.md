@@ -22,7 +22,7 @@ separate hub repo created by running `brainify`.
 | Setup/maintenance/upgrade skill | `skills/brainify/SKILL.md` |
 | Tool-connections skill | `skills/connect-tools/SKILL.md` |
 | Shared plugins (rules, hooks, skills, stack conventions) | `plugins/<name>/`, listed in `.claude-plugin/marketplace.json` |
-| Self-checks | `node --test tests/*.mjs`, `python3 tests/test_git_gate.py`, `python3 tests/test_pb_hub_files.py` |
+| Self-checks | `node --test tests/*.mjs`, `python3 tests/test_git_gate.py`, `python3 tests/test_pb_hub_files.py`, `python3 tests/test_epic_facts.py` |
 | Plugin + marketplace manifests (primary install path) | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` |
 | Hub CLI + tooling | `bin/pb`, `bin/package-skill.sh` (Cowork bundle), `bin/install-skill.sh` (fallback) |
 | Hub templates | `templates/` |
@@ -80,7 +80,7 @@ reintroduce a local-copy/mirror option — it leads to stale code.
 
 ## Skill scripts
 
-The `brand-system`, `delivery-roadmap`, `release-notes`, and `update-product-hub` skills each ship
+The `brand-system`, `delivery-roadmap`, `release-notes`, `update-product-hub`, and `hub-portal` skills each ship
 Python under `skills/<name>/scripts/`; any future skill's scripts follow the same rules:
 
 - **stdlib-only, Python 3.9+.** Optional third-party packages (`fonttools` + `brotli` for font
@@ -100,7 +100,7 @@ Python under `skills/<name>/scripts/`; any future skill's scripts follow the sam
 - **Every checker ships a failing fixture, and it must be re-run whenever the checker changes.**
   `check-brand.py` has `fixtures/off-brand.html` / `off-brand-missing-block.html`, which must fail
   every applicable check; `verify-release-notes.py` has `fixtures/leaky-client-note.html` and
-  `fixtures/hollow-internal-note.md`; `verify-roadmap.py` has `--self-test` against `fixtures/`. A
+  `fixtures/hollow-internal-note.md`; `verify-roadmap.py` has `--self-test` against `fixtures/`; `hub-portal`'s `build.py` is broken one guard at a time by `tests/test_hub_portal.py`. A
   fixture that starts passing means the checker broke, not that the fixture got better — that has
   happened (a case-insensitive placeholder regex once matched the ordinary word "replace"). Re-run
   every fixture as part of any change to the script that reads it, not just once when it's added.

@@ -79,7 +79,8 @@ searchable knowledge sitting right next to the code it affects.
 up names.
 
 **Also required:** **docs/knowledge/** — the stable facts about your product: what it is, who the
-stakeholders are, what's live, how you measure it, and how the team works.
+stakeholders are, what's live, how you measure it, and how the team works. Claude drafts these five
+files from what the hub already knows and asks you only about the gaps.
 
 **Everything else is yours:** a `docs/` folder for specs, decisions, meeting notes, research,
 runbooks — or any type you invent (add it to `brain.config.json` first; nothing else goes at the

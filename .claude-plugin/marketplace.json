@@ -7,11 +7,17 @@
     {
       "name": "product-brain",
       "source": ".",
-      "description": "The brainify skill + pb CLI: create and maintain a Product Brain hub. Installing puts pb on PATH and makes 'set up product brain' available — no manual copy, no PATH editing. Also ships the brand-system skill (one product-level DESIGN.md, compiled to brand/) and the delivery-roadmap, release-notes, and update-product-hub artifact skills, all styled only from that brand."    },
+      "description": "The brainify skill + pb CLI: create and maintain a Product Brain hub. Installing puts pb on PATH and makes 'set up product brain' available — no manual copy, no PATH editing. Also ships the brand-system skill (one product-level DESIGN.md, compiled to brand/) and the delivery-roadmap, release-notes, update-product-hub and hub-portal artifact skills, all styled only from that brand."
+    },
     {
       "name": "git-workflow",
       "source": "./plugins/git-workflow",
       "description": "Commit-message and merge-request rules in every session, a commit-message hook, a ticket-scope gate before MR/PR creation, and verify-ticket-scope / review-mr skills."
+    },
+    {
+      "name": "epic-approval",
+      "source": "./plugins/epic-approval",
+      "description": "Approval gate before an epic launches: per hub repo (backend, frontend, mobile), finds or creates the release branch (next version from the latest release and the commit messages on develop), reviews what it would merge into main against five criteria (scope, error & edge cases, security basics, backward compatibility, deployment/config risk) and writes one report per repo plus a summary into the hub."
     },
     {
       "name": "guardrails",

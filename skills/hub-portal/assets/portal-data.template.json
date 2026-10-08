@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "title": "TODO: the page's name, e.g. Acme Brain Hub",
+  "description": "Where the product stands, every hub document rendered in place, the live artifacts, specs, workflows, skills and brand.",
+  "artifact_url": "",
+  "asOf": "TODO: YYYY-MM-DD",
+  "wordmark": { "local": "", "latin": "TODO", "tagline": "Brain Hub — product knowledge, status and tooling in one place" },
+  "footer": "TODO: name the sources the status section was read from, with their dates.",
+
+  "privacy": {
+    "withhold": {},
+    "redact": [],
+    "allow": [],
+    "patterns": []
+  },
+
+  "status": {
+    "eyebrow": "TODO: Where we stand · <date>",
+    "headline": "TODO: the single most important fact this week",
+    "body": "TODO: two or three sentences of context for the headline",
+    "facts": [],
+    "milestones": [],
+    "releases": [],
+    "krs": { "title": "Key results", "lede": "TODO: which goals and which check-in these figures come from", "rows": [] },
+    "decisions": []
+  },
+
+  "specsLede": "Every spec in the hub, with its delivery state. Open any document straight from the table.",
+  "specStatus": {
+    "released": { "label": "Released", "pill": "p-released" },
+    "progress": { "label": "In progress", "pill": "p-progress" },
+    "branch": { "label": "On a branch", "pill": "p-branch" },
+    "waiting": { "label": "Waiting on input", "pill": "p-waiting" },
+    "spec": { "label": "Spec only", "pill": "p-spec" },
+    "deferred": { "label": "Deferred", "pill": "p-deferred" }
+  },
+  "specs": {},
+  "tasksLede": "Work smaller than a feature, one folder per ticket.",
+  "tasks": {},
+
+  "artifactGroups": ["Status & planning", "Releases", "Security", "Brand & design", "Walkthroughs & mockups", "Ways of working"],
+  "artifacts": [],
+  "flows": [],
+  "skillGroups": [],
+
+  "library": {
+    "intro": "Start with the constitution, the glossary and the domain map.",
+    "start": [],
+    "groupLabels": {},
+    "groupOrder": ["Core", "Specs"]
+  },
+  "ruleCaveats": {},
+
+  "brand": {
+    "designDoc": "DESIGN.md",
+    "northStar": "TODO: the brand's north star, from DESIGN.md",
+    "northStarBody": "TODO: one or two sentences from DESIGN.md's overview",
+    "lineLocal": "",
+    "lineLatin": "",
+    "typeNote": "TODO: the brand's faces and weights, from DESIGN.md",
+    "shapeNote": "TODO: the radius ladder, from DESIGN.md",
+    "roleLabels": {},
+    "do": [],
+    "dont": []
+  },
+
+  "hub": {
+    "lede": "TODO: one sentence on what this hub is",
+    "map": [],
+    "gaps": [],
+    "repos": [],
+    "commands": ["# pull the repos and rebuild the graph", "pb sync", "pb status", "# product term -> code symbols", "pb find <term>"]
+  }
+}

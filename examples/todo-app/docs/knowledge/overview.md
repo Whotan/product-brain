@@ -1,26 +1,31 @@
 # Overview — Todo
 
+> What the product is and who it's for: the context Claude reads first. Rules are in
+> `constitution.md`, terms in `vocabulary.md`, product areas in `domains.md`.
+
 **Last updated:** 2026-06-20
 
-> `docs/knowledge/` holds the stable facts about the product: the context to read first.
+---
 
 ## What it is
+
 A personal task manager: people capture tasks, group them into lists, and tick them off.
 
 ## Who it's for
+
 Individuals managing their own work. Every task belongs to exactly one user (see the constitution).
 
-## Apps
-- **todo-api**: the backend (tasks, lists, users).
-- **todo-web**: the browser app.
+## Apps and environments
 
-## Stakeholders
-- **Product:** Core team PM (owns scope and priorities).
-- **Engineering:** Core team (owns todo-api and todo-web).
+| App | Repo | Who uses it | Where it runs |
+|---|---|---|---|
+| Backend (tasks, lists, users) | `todo-api` | The web app | [TODO: confirm] |
+| Browser app | `todo-web` | Signed-in users | [TODO: confirm] |
 
-## Feature status
-| Feature | Status |
-|---|---|
-| Create / complete / edit tasks | Live |
-| Soft delete (see ADR-001) | Live |
-| Due dates and reminders | In progress |
+## Business model
+
+[TODO: confirm]
+
+## Integrations
+
+None yet.

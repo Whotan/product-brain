@@ -71,6 +71,7 @@ product-brain/
     connect-tools/SKILL.md          ← "set up my connections": MCP servers, tokens only as a fallback
   plugins/                          ← shared plugins in the same marketplace (see below)
     git-workflow/                   commit + MR rules, commit-message hook, MR scope gate, skills
+    epic-approval/                  cuts or finds the release branch, five-criteria approval report per repo
     guardrails/                     blocks writes that break shared engineering standards
     stack-laravel/ stack-inertia/ stack-angular/ stack-symfony/ stack-flutter/
   tests/                            engine + hook self-checks (node --test tests/*.mjs; python3 tests/test_*.py)
@@ -209,7 +210,7 @@ from the plugin and report up to date) and "set up product brain" (the skill sho
 
 ### Versions & updates
 
-The framework version lives in `VERSION` (currently `0.7.1`) and is stamped into the skill's
+The framework version lives in `VERSION` (currently `0.9.1`) and is stamped into the skill's
 frontmatter. Check what you have — and whether your installed skill is current — with:
 
 ```bash
@@ -308,6 +309,7 @@ enforcement runs as Claude hooks from the plugin's own folder.
 | Plugin | What it gives every session in the hub |
 |---|---|
 | `git-workflow` | **Rules** (commit-message format `type(scope): [TASK-ID] description`, branch naming, MR gates) loaded at session start. **Hooks:** rejects a malformed `git commit -m` (steps aside when a repo has its own `commit-msg` hook or commitlint), and blocks `glab mr create` / `gh pr create` until the ticket scope has been checked for the current HEAD. **Skills:** `verify-ticket-scope` (diff vs. the ticket's acceptance criteria — Jira, GitLab or GitHub issues), `review-mr` (pipeline, SonarQube, review-bot notes → triage). **Agent:** `sonar-preflight`. |
+| `epic-approval` | **Skill:** `epic-approval` — before an epic launches, for each repo in the hub (backend, frontend, mobile): uses one release branch with the **same version in every repo**, always named `release.X.Y.Z` (after an old `release-5-5` comes `release.5.6.0`) — the named one, the open one, or the next version (the highest release that reached `main` in any repo — read from its release merge commits, never from tags, highest version wins — bumped by the commit messages on `develop`), created after a yes and pushed only after a second yes. Pins exactly what it would merge into `main` and runs five reviewer agents in parallel per repo: *change scope controlled* (judged from the commit messages — no epic id needed), *error & edge cases handled*, *security basics checked*, *backward compatibility considered*, *deployment/configuration risks addressed*. Writes one English report per repo plus a launch summary and deploy order to `approvals.out` (e.g. `docs/approvals/`) in the hub. Opt-in: enable `epic-approval@product-brain` in the hubs that ship epics. |
 | `guardrails` | A `PreToolUse` hook that blocks writes breaking shared standards — hardcoded secrets, debug output, unsafe PHP/TS/React/Laravel/Angular/Flutter patterns — only for the stacks each repo actually contains, and only in added code. `guardrail info / staged / range` on PATH for manual checks. |
 | `stack-laravel`, `stack-inertia`, `stack-symfony`, `stack-angular`, `stack-flutter` | A conventions skill per stack plus topic rules, read on demand when a change touches that stack — never loaded into every session. |
 
@@ -339,7 +341,7 @@ the graph stays focused. Use `["."]` (the default for adopted repos) to graph th
 
 **Recommended:** `domains.md` — the functional areas, owners, status, and which repos implement them. It's graph-assisted: after a sync, the graph's communities are good candidate domains, so you curate rather than author from scratch.
 
-**Product facts** — `docs/knowledge/` (required): the stable context Claude reads first, such as the product overview, stakeholders, feature status, metrics, and ways of working.
+**Product facts** — `docs/knowledge/` (required): the stable context Claude reads first, in five standard files: `overview`, `stakeholders`, `feature-status`, `metrics` and `ways-of-working`. `brainify` drafts them from what the hub already knows and asks only for the gaps; say "create the knowledge docs" to run just that step.
 
 **Extensible docs** — register any doc types you like in `brain.config.json` (`specs`, `decisions`, `meeting-notes`, `research`, `runbooks`, or your own). Markdown is preferred, and graphify connects it automatically. Registering a type is the one way to add a folder: the top level stays closed, scratch goes in `.work/`, and `pb check` (which also runs automatically when Claude finishes a reply) flags anything out of place.
 
@@ -360,15 +362,16 @@ existing hub gets all of this with "upgrade the hub" (brainify asks whether to o
 
 ## Using the artifact skills
 
-Four sibling skills turn the hub's knowledge into generated documents, all styled from the one
+Five sibling skills turn the hub's knowledge into generated documents, all styled from the one
 compiled brand (see `DESIGN.md` above):
 
 | Skill | Scope |
 |---|---|
 | `brand-system` | Extracts and compiles the product-level `DESIGN.md` into `brand/brand.css` + `brand/tokens.json`, and provides `check-brand.py`, the brand gate every other artifact skill runs before publishing. |
 | `delivery-roadmap` | The internal delivery roadmap: one card per feature, a computed timeline, and a conflicts panel — grounded in git, not task lists. It reads a release's headline back out of `release-notes`, but does not write release notes itself. |
-| `release-notes` | Owns release notes: a publishable client note (HTML + PDF, one locale) and a team-only internal note, per release tag. |
+| `release-notes` | Owns release notes: a publishable client note (HTML + PDF, one locale) and a team-only internal note, per release tag. Can also open the merge/pull request that ships a release branch to production, with a bullet-point, English changelog body. |
 | `update-product-hub` | The product dashboard: what to do today, what's at risk, what shipped yesterday — re-derived every run from git, the graph, and the other skills' output. |
+| `hub-portal` | The hub's front page for anyone on the team: where the product stands, every hub document rendered in place and searchable, the live artifacts, specs, workflows, skills and brand — built from one hand-maintained data file plus everything derivable from the hub, with a privacy scan before every publish. |
 
 Invoke one directly as `/product-brain:<name>` (e.g. `/product-brain:release-notes`), or just ask
 naturally — "refresh the roadmap", "write release notes for this tag", "what's at risk today" —

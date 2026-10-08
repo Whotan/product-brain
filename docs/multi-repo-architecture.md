@@ -79,7 +79,8 @@ acme-brain/                          ← the hub: its own git repo, single sourc
   DESIGN.md                          product-level design system: brand tokens + artifact styling (CORE, required)
   domains.md                         domain map: area → owner, status, which repos   (recommended, graph-assisted)
   docs/                              extensible, typed knowledge — Markdown-first (multimodal supported)
-    knowledge/                       stable product facts: overview, stakeholders, status, metrics   (required)
+    knowledge/                       stable product facts (required): overview, stakeholders,
+                                     feature-status, metrics, ways-of-working — drafted by brainify
     specs/                           authored however the team likes (Spec Kit, RFC, plain MD…)
     decisions/                       ADRs
     meeting-notes/                   ← teams add types like this freely
@@ -118,7 +119,7 @@ The app repos themselves get **nothing added** — see §8.
 
 `brainify` (and any future Product Brain skills) is a **standalone Claude skill**, distributed with the framework (as a plugin / skill bundle), **not** placed inside a team's hub and **not** under a `.specify/` directory.
 
-The same holds for the framework's shared plugins (`plugins/`: `git-workflow`, `guardrails`, `stack-*`). They ship from the Product Brain marketplace, a hub only *enables* them in its committed `.claude/settings.json`, and they reach app repos as session context and Claude hooks, never as files written into those repos. Updating them is a version bump in the framework, not an edit in every hub.
+The same holds for the framework's shared plugins (`plugins/`: `git-workflow`, `epic-approval`, `guardrails`, `stack-*`). They ship from the Product Brain marketplace, a hub only *enables* them in its committed `.claude/settings.json`, and they reach app repos as session context and Claude hooks, never as files written into those repos. Updating them is a version bump in the framework, not an edit in every hub.
 
 Why:
 
