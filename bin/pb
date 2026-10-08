@@ -636,6 +636,17 @@ def legacy_installs(hub: Path, home: Path = None, pb_on_path: str = None) -> lis
         if missing:
             found.append(f"This hub was set up by an older version: {', '.join(missing)} not enabled in "
                          f".claude/settings.json. Say \"audit our setup\" to upgrade it.")
+    mcp = hub / ".mcp.json"
+    if (hub / "brain.config.json").exists() and mcp.exists():
+        try:
+            servers = json.loads(mcp.read_text(encoding="utf-8-sig")).get("mcpServers", {})
+        except ValueError:
+            servers = {}
+        # Windows Application Control blocks the unsigned mcp-atlassian.exe that a bare `uvx` launch runs
+        if any(s.get("args") == ["mcp-atlassian"] for s in servers.values()):
+            found.append("This hub's .mcp.json starts Jira with `uvx mcp-atlassian`, which Windows can block "
+                         "(\"An Application Control policy has blocked this file\"). Say \"audit our setup\" "
+                         "to switch it to the Python launch.")
     return found
 
 

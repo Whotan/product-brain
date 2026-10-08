@@ -1,6 +1,6 @@
 ---
 name: brainify
-version: 0.9.0
+version: 0.9.1
 description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", "upgrade the hub", "create the knowledge docs", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
 ---
 
@@ -163,6 +163,7 @@ echo "plugins: $(grep -o '"[a-z-]*@product-brain"' .claude/settings.json 2>/dev/
 grep -q PYTHONUTF8 .claude/settings.json 2>/dev/null && echo "utf8: PRESENT" || echo "utf8: ABSENT"
 git -c core.excludesFile=/dev/null check-ignore -q .claude/settings.local.json && echo "local settings: IGNORED" || echo "local settings: NOT IGNORED"
 test -f .mcp.json && echo "mcp: PRESENT ($(python3 -c "import json;print(','.join(json.load(open('.mcp.json')).get('mcpServers',{})))"))" || echo "mcp: ABSENT"
+grep -q '"args": *\["mcp-atlassian"\]' .mcp.json 2>/dev/null && echo "jira launch: OLD (Windows can block it)"
 grep -q "product-brain:managed:start" README.md 2>/dev/null && echo "readme: MANAGED" || echo "readme: UNMANAGED"
 ls repos/*/sonar-project.properties >/dev/null 2>&1 && { test -f docs/runbooks/check-sonarqube-on-mr.md && echo "sonar runbook: PRESENT" || echo "sonar runbook: ABSENT"; } || echo "sonar: not used"
 ```
@@ -189,7 +190,7 @@ Render a compact table with ✅ / ⚠️ / ❌ and a one-line note each:
 | Surfaces | `.claude/settings.json` declares the marketplace (loads in IDE/desktop/cloud, not just CLI) | ✅/➖ |
 | Shared plugins | `git-workflow`, `guardrails`, and a `stack-*` plugin per stack in `repos/` are enabled | ✅/⚠️/➖ |
 | Cross-OS | `PYTHONUTF8` in `.claude/settings.json`; `settings.local.json` ignored by the tracked `.gitignore` | ✅/❌ |
-| Connections | `.mcp.json` + `.claude/settings.local.example.json` (run `connect-tools`) | ✅/➖ |
+| Connections | `.mcp.json` + `.claude/settings.local.example.json` (run `connect-tools`); ⚠️ if Jira still uses the bare `uvx mcp-atlassian` launch | ✅/⚠️/➖ |
 | README | managed block present (non-technical guide kept current by `pb sync`) | ✅/⚠️ |
 | Sonar runbook | `docs/runbooks/check-sonarqube-on-mr.md` when any app runs Sonar | ✅/➖ |
 

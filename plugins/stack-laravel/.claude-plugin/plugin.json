@@ -1,6 +1,6 @@
 {
   "name": "stack-laravel",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Laravel conventions: architecture, Eloquent, migrations, validation, queues and Playwright end-to-end tests.",
   "author": {
     "name": "Product Brain maintainers"

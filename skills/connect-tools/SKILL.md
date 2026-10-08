@@ -24,6 +24,10 @@ fill in the file themselves.
 - A project `.mcp.json` server **shadows** a same-named server in the user's `~/.claude.json`.
   Listing its name in `disabledMcpjsonServers` hands control back to the user's own server.
 - A token env var (e.g. `GITLAB_TOKEN`) **overrides** `glab auth login`, and a stale one gives 401.
+- On Windows, Application Control / Smart App Control can block the unsigned `mcp-atlassian.exe`
+  that a bare `uvx mcp-atlassian` runs: `/mcp` shows Jira as failed, and running the command prints
+  "An Application Control policy has blocked this file (os error 4551)". Starting it through Python
+  (`uvx --from mcp-atlassian python -c "..."`, as in the template) avoids that file on every OS.
 
 ## Step 1: Find the hosts
 
@@ -38,7 +42,9 @@ what applies and filling non-secret values in each server's `env`:
 
 - **GitLab host** → `gitlab`: `glab mcp serve`, `env: { "GITLAB_HOST": "<host>" }`.
 - **GitHub host** → no MCP server needed; Claude uses the `gh` CLI (`gh auth login`).
-- **Jira** (only if the team uses it) → `jira`: `uvx mcp-atlassian`, `env: { "JIRA_URL": "<url>" }`.
+- **Jira** (only if the team uses it) → `jira`: the template's Python launch (`uvx --from
+  mcp-atlassian python -c ...`), `env: { "JIRA_URL": "<url>" }`. If an existing `.mcp.json` still
+  has `"args": ["mcp-atlassian"]`, replace just those args with the template's.
 
 Create `.claude/settings.local.example.json` from `templates/hub-settings.local.example.json`,
 keeping only the lines for servers that exist.
@@ -71,6 +77,8 @@ Work out what this user needs, without looking at any value:
    no token for it. Otherwise, if its token variable isn't already set, add it with a placeholder
    (`JIRA_PERSONAL_TOKEN` for Jira Server/DC; `JIRA_USERNAME` + `JIRA_API_TOKEN` for Jira Cloud),
    and add the server to `enabledMcpjsonServers`. Check `uv` is installed for `uvx`.
+   On Windows, if the user's own `jira` in `~/.claude.json` has `"args": ["mcp-atlassian"]`, offer
+   to switch those args to the template's (back up the file first; change nothing else in it).
 3. **SonarQube** — add `SONAR_HOST_URL` / `SONAR_TOKEN` placeholders only if the user wants issue
    details; the pipeline verdict and dashboard link need no token.
 
@@ -85,8 +93,8 @@ claude mcp list
 ```
 
 Report each server as connected / failed / disabled-in-favour-of-yours. For a failure, say which
-check to redo (sign-in, missing placeholder, `uv` not installed). Don't report success for a
-server you couldn't verify.
+check to redo (sign-in, missing placeholder, `uv` not installed, or the Windows block above).
+Don't report success for a server you couldn't verify.
 
 ## Rules
 

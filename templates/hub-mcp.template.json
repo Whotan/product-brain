@@ -7,7 +7,7 @@
     },
     "jira": {
       "command": "uvx",
-      "args": ["mcp-atlassian"],
+      "args": ["--from", "mcp-atlassian", "python", "-c", "import sys;from mcp_atlassian import main;sys.exit(main())"],
       "env": { "JIRA_URL": "<jira-url>" }
     }
   }
