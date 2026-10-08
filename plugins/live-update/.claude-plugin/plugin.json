@@ -1,0 +1,8 @@
+{
+  "name": "live-update",
+  "version": "0.8.0",
+  "description": "Files one Jira ticket for a release once its epic-approval reports and release notes exist: links the merge/pull request, uploads the local-only artifacts as attachments, and never files a duplicate.",
+  "author": {
+    "name": "Product Brain maintainers"
+  }
+}
