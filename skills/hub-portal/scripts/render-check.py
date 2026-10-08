@@ -12,6 +12,9 @@ Each case opens the Library tab and the first document in its list, so a broken 
 renderer error shows up here rather than in front of a reader. Screenshots of every case
 land in <portal.out>-shots/ for the one look before publishing. Exit 1 on any FAIL.
 
+An unreachable CDN (the Markdown renderer loads from cdnjs) is a WARN, not a FAIL: the page
+still renders and shows documents as plain text, but Markdown rendering was not verified.
+
 Needs the Python `playwright` package. If it is not importable, or no browser can be
 launched, it prints a WARN that the render was NOT checked and exits 0 - it never reports
 a pass it did not measure. Browser resolution: $UX_EXECUTABLE_PATH or
@@ -97,12 +100,13 @@ def main():
         def log_message(self, *a):
             pass
 
-    srv = socketserver.TCPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=str(root)))
+    srv = socketserver.ThreadingTCPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=str(root)))
+    srv.daemon_threads = True
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = "http://127.0.0.1:%d/index.html" % srv.server_address[1]
     shots = root.parent / (root.name + "-shots")
     shots.mkdir(exist_ok=True)
-    fails = 0
+    fails = warns = 0
     try:
         with sync_playwright() as pw:
             browser, why = launch(pw)
@@ -115,23 +119,35 @@ def main():
                     ctx = browser.new_context(viewport={"width": width, "height": 900}, color_scheme=theme)
                     pg, errs = ctx.new_page(), []
                     pg.on("pageerror", lambda e, errs=errs: errs.append("page error: %s" % e))
-                    pg.on("console", lambda m, errs=errs: errs.append("console: %s" % m.text) if m.type == "error" else None)
+                    net = []
+                    pg.on("console", lambda m, errs=errs: errs.append("console: %s" % m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
+                    pg.on("requestfailed", lambda r, net=net: net.append(r.url.split("/")[2]) if not r.url.startswith(base.rsplit("/", 1)[0]) else None)
                     name = "render %d %s" % (width, theme)
-                    pg.goto(base + "#status", wait_until="load")
-                    pg.evaluate("t => document.documentElement.setAttribute('data-theme', t)", theme)
-                    pg.wait_for_timeout(300)
-                    ov = pg.evaluate(OVERFLOW_JS)
-                    pg.screenshot(path=str(shots / ("%d-%s-status.png" % (width, theme))))
-                    pg.goto(base + "#library", wait_until="load")
-                    pg.wait_for_timeout(1500)
-                    count = pg.inner_text("#l-count")
-                    first = pg.query_selector("#l-tree .doclink")
-                    rendered = True
-                    if first:
-                        first.click()
-                        pg.wait_for_timeout(700)
+                    try:
+                        # The page renders itself from inline data; external fonts and the
+                        # Markdown library may still be loading, so wait for the page, not the network.
+                        pg.goto(base + "#status", wait_until="commit", timeout=60000)
+                        pg.wait_for_selector("#v-status", timeout=30000)
+                        pg.evaluate("t => document.documentElement.setAttribute('data-theme', t)", theme)
+                        pg.wait_for_timeout(300)
+                        ov = pg.evaluate(OVERFLOW_JS)
+                        pg.screenshot(path=str(shots / ("%d-%s-status.png" % (width, theme))))
+                        pg.evaluate("() => { location.hash = 'library'; }")
+                        pg.wait_for_selector("#l-tree .doclink", timeout=30000)
+                        pg.wait_for_function("() => !/loading/.test(document.querySelector('#l-count').textContent)", timeout=60000)
+                        count = pg.inner_text("#l-count")
+                        pg.click("#l-tree .doclink")
+                        pg.wait_for_selector("#r-body .md, #r-body .withheld", timeout=30000)
                         rendered = bool(pg.query_selector("#r-body .md"))
-                    pg.screenshot(path=str(shots / ("%d-%s-library.png" % (width, theme))))
+                        if not pg.evaluate("() => !!(window.marked && window.DOMPurify)"):
+                            net.append("cdnjs.cloudflare.com (still loading)")
+                        pg.screenshot(path=str(shots / ("%d-%s-library.png" % (width, theme))))
+                    except Exception as exc:
+                        ctx.close()
+                        fails += 1
+                        line("FAIL", name, "the page did not finish rendering: %s" % str(exc).splitlines()[0],
+                             "open the built page in a browser and check its console")
+                        continue
                     ctx.close()
                     if errs:
                         fails += 1
@@ -145,6 +161,11 @@ def main():
                         fails += 1
                         line("FAIL", name, "the library did not load its documents (%s)" % count,
                              "check that md/*.json sits beside index.html")
+                    elif net:
+                        warns += 1
+                        line("WARN", name, "layout and library checked, but %s could not be reached from this machine, "
+                             "so Markdown rendering was NOT verified" % ", ".join(sorted(set(net))),
+                             "re-run when the network is back, or check one document by hand")
                     else:
                         line("PASS", name, "no page errors, no overflow, library loaded")
             browser.close()
