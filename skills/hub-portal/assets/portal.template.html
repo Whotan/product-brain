@@ -1,0 +1,705 @@
+<meta charset="utf-8">
+<title>__TITLE__</title>
+<meta name="description" content="__DESCRIPTION__">
+<style>
+/* BRAND:BEGIN */
+/* BRAND:END */
+
+:root {
+  --gutter: 20px;
+  --maxw: 1200px;
+  --tint: color-mix(in oklab, var(--ds-primary) 7%, var(--ds-surface));
+  --line: var(--ds-border);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: 120px; }
+body {
+  margin: 0;
+  background: var(--ds-canvas);
+  color: var(--ds-ink);
+  font-family: var(--ds-font-latin);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--ds-primary); text-underline-offset: 3px; }
+a:hover { color: var(--ds-primary-strong); }
+code, .mono { font-family: var(--ds-font-mono); font-size: 0.86em; }
+:focus-visible { outline: 2px solid var(--ds-primary); outline-offset: 2px; border-radius: var(--ds-radius-sm); }
+.fa { font-family: var(--ds-font-body); }
+
+/* ── masthead + tabs ───────────────────────────── */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in oklab, var(--ds-canvas) 88%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.top-inner { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--gutter); }
+.brandrow { display: flex; align-items: baseline; gap: 12px; padding-block: 14px 6px; flex-wrap: wrap; }
+.wordmark { font-family: var(--ds-font-body); font-size: 22px; font-weight: var(--ds-weight-bold); color: var(--ds-primary-strong); line-height: 1.2; }
+.wordmark span { color: var(--ds-primary); }
+.brandrow .sub { color: var(--ds-muted); font-size: 13px; }
+.brandrow .asof { margin-inline-start: auto; font-size: 13px; color: var(--ds-muted); }
+.brandrow .asof b { color: var(--ds-ink); font-weight: var(--ds-weight-strong); }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-inline: -6px; }
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs a {
+  flex: none; padding: 9px 12px 11px; font-size: 14px; font-weight: var(--ds-weight-strong);
+  color: var(--ds-muted); text-decoration: none; border-bottom: 2px solid transparent;
+}
+nav.tabs a:hover { color: var(--ds-ink); }
+nav.tabs a[aria-current="page"] { color: var(--ds-primary-strong); border-bottom-color: var(--ds-primary); }
+nav.tabs .n { font-weight: var(--ds-weight-regular); color: var(--ds-muted); font-size: 12px; margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
+
+main { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--gutter); padding-block: 28px 64px; }
+section.view { display: grid; gap: 28px; }
+h1, h2, h3 { color: var(--ds-primary-strong); text-wrap: balance; line-height: 1.3; margin: 0; }
+h2 { font-size: 19px; font-weight: var(--ds-weight-strong); }
+h3 { font-size: 15px; font-weight: var(--ds-weight-strong); }
+.eyebrow { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ds-muted); font-weight: var(--ds-weight-strong); }
+.lede { color: var(--ds-muted); max-width: 70ch; margin: 6px 0 0; }
+.sechead { display: flex; align-items: end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card { background: var(--ds-surface); border: 1px solid var(--line); border-radius: var(--ds-radius-lg); padding: 20px; }
+.muted { color: var(--ds-muted); }
+.small { font-size: 13px; }
+
+/* pills */
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: var(--ds-weight-strong); white-space: nowrap; line-height: 1.6; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.p-released { background: color-mix(in oklab, var(--ds-success) 14%, var(--ds-surface)); color: var(--ds-success-ink); }
+.p-progress { background: var(--ds-primary-soft); color: var(--ds-primary-strong); }
+.p-branch { background: color-mix(in oklab, var(--ds-warning) 16%, var(--ds-surface)); color: var(--ds-warning-ink); }
+.p-waiting { background: color-mix(in oklab, var(--ds-info) 14%, var(--ds-surface)); color: var(--ds-ink); }
+.p-waiting::before { background: var(--ds-info); }
+.p-spec, .p-deferred { background: var(--ds-inset); color: var(--ds-muted); }
+.p-crit { background: color-mix(in oklab, var(--ds-danger) 12%, var(--ds-surface)); color: var(--ds-danger-ink); }
+.p-warn { background: color-mix(in oklab, var(--ds-warning) 16%, var(--ds-surface)); color: var(--ds-warning-ink); }
+.tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: var(--ds-radius-sm); background: var(--ds-inset); color: var(--ds-muted); font-weight: var(--ds-weight-strong); letter-spacing: 0.02em; }
+
+/* ── status ───────────────────────────── */
+.hero {
+  background: var(--ds-wash); border: 1px solid var(--line); border-radius: var(--ds-radius-lg);
+  padding: 28px; box-shadow: var(--ds-shadow-sm); display: grid; gap: 12px;
+}
+.hero h1 { font-size: clamp(22px, 3.2vw, 30px); font-weight: var(--ds-weight-strong); max-width: 30ch; }
+.hero p { margin: 0; max-width: 72ch; }
+.hero .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 6px; font-size: 13px; color: var(--ds-muted); }
+.hero .facts b { color: var(--ds-ink); font-weight: var(--ds-weight-strong); font-variant-numeric: tabular-nums; }
+.notice { border-radius: var(--ds-radius-md); background: var(--ds-surface); border: 1px solid var(--line); padding: 10px 14px; font-size: 13px; color: var(--ds-muted); }
+.notice b { color: var(--ds-ink); }
+
+.grid3 { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 16px; align-items: start; }
+.miles { list-style: none; margin: 12px 0 0; padding: 0; display: grid; }
+.miles li { display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding-block: 9px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.miles li:last-child { border-bottom: 0; }
+.miles .d { font-variant-numeric: tabular-nums; color: var(--ds-muted); font-size: 13px; }
+.miles li.today .d { color: var(--ds-primary); font-weight: var(--ds-weight-strong); }
+.miles li.promise .d { color: var(--ds-accent); font-weight: var(--ds-weight-strong); }
+.miles li.promise b { color: var(--ds-ink); }
+.rel dl { margin: 10px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; }
+.rel dt { color: var(--ds-muted); }
+.rel dd { margin: 0; }
+.rel ul { margin: 8px 0 0; padding-inline-start: 18px; font-size: 14px; display: grid; gap: 3px; }
+.big { font-size: 26px; font-weight: var(--ds-weight-bold); color: var(--ds-primary-strong); font-variant-numeric: tabular-nums; line-height: 1.2; }
+
+.krs { display: grid; gap: 0; margin-top: 4px; }
+.kr { display: grid; grid-template-columns: 74px minmax(150px, 1.1fr) 150px minmax(0, 2.4fr); gap: 16px; align-items: start; padding-block: 14px; border-top: 1px solid var(--line); }
+.kr .id { font-family: var(--ds-font-mono); font-size: 13px; color: var(--ds-muted); padding-top: 2px; }
+.kr .nm { font-weight: var(--ds-weight-strong); }
+.kr .nm small { display: block; font-weight: var(--ds-weight-regular); color: var(--ds-muted); font-size: 12px; }
+.bar { height: 8px; border-radius: 999px; background: var(--ds-inset); overflow: hidden; margin-top: 7px; }
+.bar i { display: block; height: 100%; border-radius: 999px; background: var(--ds-primary); }
+.kr .pct { font-size: 13px; font-variant-numeric: tabular-nums; display: flex; justify-content: space-between; gap: 6px; }
+.kr .note { font-size: 14px; color: var(--ds-ink); }
+.kr .note .pill { margin-inline-end: 6px; }
+.obj { font-size: 13px; color: var(--ds-muted); padding: 14px 0 4px; font-weight: var(--ds-weight-strong); }
+
+.decisions { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.decisions li { background: var(--ds-surface); border: 1px solid var(--line); border-radius: var(--ds-radius-md); padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.decisions .who { font-size: 12px; color: var(--ds-muted); }
+.decisions b { color: var(--ds-primary-strong); font-weight: var(--ds-weight-strong); }
+
+/* ── artifacts ───────────────────────────── */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--ds-surface); color: var(--ds-ink); cursor: pointer; }
+.chip:hover { border-color: color-mix(in oklab, var(--ds-primary) 45%, var(--line)); }
+.chip[aria-pressed="true"] { background: var(--ds-primary); border-color: var(--ds-primary); color: var(--ds-on-primary); }
+.chip .n { opacity: 0.7; margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
+.search { font: inherit; font-size: 14px; padding: 8px 12px; border-radius: var(--ds-radius-md); border: 1px solid var(--line); background: var(--ds-surface); color: var(--ds-ink); min-width: 0; width: 100%; max-width: 320px; }
+.search::placeholder { color: var(--ds-muted); }
+.agroup { display: grid; gap: 10px; }
+.agroup > h3 { display: flex; gap: 8px; align-items: baseline; }
+.agroup > h3 .n { color: var(--ds-muted); font-weight: var(--ds-weight-regular); font-size: 13px; }
+.acards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+a.acard { display: grid; gap: 6px; align-content: start; text-decoration: none; color: var(--ds-ink); background: var(--ds-surface); border: 1px solid var(--line); border-radius: var(--ds-radius-lg); padding: 14px 16px; transition: border-color .15s, transform .15s; }
+a.acard:hover { border-color: color-mix(in oklab, var(--ds-primary) 50%, var(--line)); transform: translateY(-1px); color: var(--ds-ink); }
+.acard .t { font-weight: var(--ds-weight-strong); color: var(--ds-primary-strong); line-height: 1.45; }
+.acard .t[dir="rtl"] { font-family: var(--ds-font-body); }
+.acard .d { font-size: 13px; color: var(--ds-muted); }
+.acard .meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--ds-muted); margin-top: 2px; }
+.acard .meta .stale { color: var(--ds-warning-ink); }
+.acard .src { font-family: var(--ds-font-mono); font-size: 11px; color: var(--ds-muted); overflow-wrap: anywhere; }
+
+/* ── library ───────────────────────────── */
+.lib { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; align-items: start; }
+.libside { position: sticky; top: 118px; max-height: calc(100vh - 140px); display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 10px; background: var(--ds-surface); border: 1px solid var(--line); border-radius: var(--ds-radius-lg); padding: 14px; }
+.libside .search { max-width: none; }
+.libside .count { font-size: 12px; color: var(--ds-muted); }
+.tree { overflow-y: auto; margin-inline: -6px; padding-inline: 6px; }
+.tree details { border-bottom: 1px solid var(--line); }
+.tree details details { border: 0; margin-inline-start: 10px; }
+.tree summary { cursor: pointer; padding: 8px 4px; font-weight: var(--ds-weight-strong); font-size: 14px; color: var(--ds-primary-strong); display: flex; gap: 8px; align-items: baseline; list-style: none; }
+.tree summary::-webkit-details-marker { display: none; }
+.tree summary::before { content: "›"; color: var(--ds-muted); transition: transform .15s; display: inline-block; width: 8px; }
+.tree details[open] > summary::before { transform: rotate(90deg); }
+.tree summary .n { margin-inline-start: auto; color: var(--ds-muted); font-weight: var(--ds-weight-regular); font-size: 12px; font-variant-numeric: tabular-nums; }
+.tree details details summary { font-size: 13px; color: var(--ds-ink); font-weight: var(--ds-weight-strong); padding-block: 5px; }
+.doclink { display: block; width: 100%; text-align: start; font: inherit; background: none; border: 0; cursor: pointer; padding: 5px 8px 5px 16px; border-radius: var(--ds-radius-sm); color: var(--ds-ink); font-size: 13.5px; line-height: 1.45; }
+.doclink:hover { background: var(--tint); }
+.doclink[aria-current="true"] { background: var(--ds-primary-soft); color: var(--ds-primary-strong); }
+.doclink .p { display: block; font-family: var(--ds-font-mono); font-size: 11px; color: var(--ds-muted); overflow-wrap: anywhere; }
+.doclink .snip { display: block; font-size: 12px; color: var(--ds-muted); margin-top: 2px; }
+.doclink mark { background: color-mix(in oklab, var(--ds-warning) 35%, var(--ds-surface)); color: inherit; border-radius: 2px; }
+.reader { background: var(--ds-surface); border: 1px solid var(--line); border-radius: var(--ds-radius-lg); min-height: 60vh; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.rhead { display: flex; gap: 10px 14px; flex-wrap: wrap; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+.rhead .rt { flex: 1 1 260px; min-width: 0; }
+.rhead .rt h2 { font-size: 18px; }
+.rhead .rt .p { font-family: var(--ds-font-mono); font-size: 12px; color: var(--ds-muted); overflow-wrap: anywhere; }
+.btn { font: inherit; font-size: 13px; font-weight: var(--ds-weight-strong); padding: 6px 12px; border-radius: var(--ds-radius-sm); border: 1px solid var(--line); background: var(--ds-surface); color: var(--ds-primary-strong); cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn:hover { border-color: var(--ds-primary); color: var(--ds-primary-strong); }
+.btn.primary { background: var(--ds-primary); color: var(--ds-on-primary); border-color: var(--ds-primary); }
+.btn.close { display: none; }
+.rbody { padding: 8px 28px 40px; overflow-wrap: anywhere; }
+.empty { display: grid; place-content: center; text-align: center; gap: 8px; padding: 60px 20px; color: var(--ds-muted); }
+.empty .quick { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+
+/* rendered markdown */
+.md { font-family: var(--ds-font-body); line-height: var(--ds-leading-body); max-width: 82ch; font-size: 15px; }
+.md h1, .md h2, .md h3, .md h4 { margin: 1.4em 0 0.5em; scroll-margin-top: 130px; }
+.md h1 { font-size: 24px; }
+.md h2 { font-size: 19px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.md h3 { font-size: 16px; }
+.md h4 { font-size: 14.5px; color: var(--ds-ink); }
+.md p, .md ul, .md ol, .md blockquote, .md pre, .md .tw { margin: 0 0 0.9em; }
+.md ul, .md ol { padding-inline-start: 1.4em; }
+.md li { margin: 0.2em 0; }
+.md code { background: var(--ds-inset); padding: 1px 5px; border-radius: var(--ds-radius-sm); }
+.md pre { background: var(--ds-inset); padding: 12px 14px; border-radius: var(--ds-radius-md); overflow-x: auto; line-height: 1.5; direction: ltr; text-align: left; }
+.md pre code { background: none; padding: 0; font-size: 12.5px; }
+.md blockquote { border-inline-start: 3px solid var(--ds-primary); padding: 4px 14px; color: var(--ds-muted); background: var(--tint); border-radius: var(--ds-radius-sm); }
+.md .tw { overflow-x: auto; }
+.md table { border-collapse: collapse; font-size: 13.5px; min-width: 100%; }
+.md th { text-align: start; color: var(--ds-primary-strong); font-weight: var(--ds-weight-strong); border-bottom: 1px solid var(--ds-primary); padding: 6px 10px; vertical-align: bottom; }
+.md td { border-bottom: 1px solid var(--line); padding: 6px 10px; vertical-align: top; }
+.md hr { border: 0; border-top: 1px solid var(--line); margin: 1.6em 0; }
+.md img { max-width: 100%; }
+.md a.ext::after { content: " ↗"; font-size: 0.8em; }
+.fm { font-family: var(--ds-font-latin); font-size: 13px; background: var(--tint); border-radius: var(--ds-radius-md); padding: 10px 14px; margin: 14px 0; color: var(--ds-muted); display: grid; gap: 4px; }
+.fm b { color: var(--ds-ink); font-weight: var(--ds-weight-strong); }
+.withheld { margin: 24px 0; padding: 16px; border-radius: var(--ds-radius-md); background: color-mix(in oklab, var(--ds-danger) 8%, var(--ds-surface)); color: var(--ds-danger-ink); }
+
+/* ── specs table ───────────────────────────── */
+.tablewrap { overflow-x: auto; background: var(--ds-surface); border: 1px solid var(--line); border-radius: var(--ds-radius-lg); }
+table.specs { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 760px; }
+.specs th { text-align: start; font-size: 12px; color: var(--ds-muted); font-weight: var(--ds-weight-strong); text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.specs td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.specs tr:last-child td { border-bottom: 0; }
+.specs .num { font-family: var(--ds-font-mono); color: var(--ds-muted); font-size: 13px; white-space: nowrap; }
+.specs .nm { font-weight: var(--ds-weight-strong); color: var(--ds-primary-strong); }
+.specs .docs { display: flex; gap: 4px; flex-wrap: wrap; }
+.linkbtn { font: inherit; font-size: 12px; background: var(--tint); border: 0; border-radius: var(--ds-radius-sm); padding: 2px 8px; color: var(--ds-primary-strong); cursor: pointer; }
+.linkbtn:hover { background: var(--ds-primary-soft); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 13px; color: var(--ds-muted); }
+.tally { display: flex; gap: 22px; flex-wrap: wrap; }
+.tally div { display: grid; }
+.tally .big { font-size: 22px; }
+
+/* ── workflows / skills ───────────────────────────── */
+.flows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.flow { display: grid; gap: 10px; align-content: start; }
+.flow ol { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 0; }
+.flow li { counter-increment: s; display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding-block: 8px; position: relative; }
+.flow li::before { content: counter(s); width: 24px; height: 24px; border-radius: 50%; background: var(--ds-primary-soft); color: var(--ds-primary-strong); font-size: 12px; font-weight: var(--ds-weight-bold); display: grid; place-content: center; font-variant-numeric: tabular-nums; }
+.flow li:not(:last-child)::after { content: ""; position: absolute; inset-inline-start: 12px; top: 34px; bottom: -6px; border-inline-start: 1px dashed color-mix(in oklab, var(--ds-primary) 35%, var(--line)); }
+.flow li div { font-size: 14px; }
+.flow li code { background: var(--ds-inset); padding: 1px 6px; border-radius: var(--ds-radius-sm); color: var(--ds-primary-strong); }
+.flow .foot { display: flex; gap: 8px; flex-wrap: wrap; }
+.skills { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.skill { font: inherit; text-align: start; background: var(--ds-surface); border: 1px solid var(--line); border-radius: var(--ds-radius-md); padding: 12px 14px; display: grid; gap: 4px; align-content: start; color: var(--ds-ink); }
+button.skill { cursor: pointer; }
+button.skill:hover { border-color: color-mix(in oklab, var(--ds-primary) 50%, var(--line)); }
+.skill .cmd { font-family: var(--ds-font-mono); font-size: 13px; color: var(--ds-primary-strong); font-weight: var(--ds-weight-strong); }
+.skill .d { font-size: 13px; color: var(--ds-muted); }
+
+/* ── brand ───────────────────────────── */
+.brandgrid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+.quote { font-family: var(--ds-font-body); font-size: clamp(20px, 2.6vw, 26px); color: var(--ds-primary-strong); font-weight: var(--ds-weight-strong); line-height: 1.5; margin: 0; }
+.ramp { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); border-radius: var(--ds-radius-md); overflow: hidden; margin-top: 12px; }
+.ramp div { height: 52px; display: flex; align-items: end; padding: 4px; font-size: 10px; font-family: var(--ds-font-mono); }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 12px; }
+.sw { border: 1px solid var(--line); border-radius: var(--ds-radius-md); overflow: hidden; font-size: 12px; background: var(--ds-surface); }
+.sw i { display: block; height: 44px; }
+.sw div { padding: 6px 8px; }
+.sw .r { font-family: var(--ds-font-mono); color: var(--ds-muted); font-size: 11px; }
+.specimen { display: grid; gap: 10px; margin-top: 10px; }
+.specimen .fa-big { font-family: var(--ds-font-body); font-size: 28px; color: var(--ds-primary-strong); line-height: 1.7; }
+.specimen .la-big { font-family: var(--ds-font-latin); font-size: 22px; color: var(--ds-ink); }
+.radii { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+.radii div { width: 84px; height: 60px; border: 1px solid var(--ds-primary); background: var(--ds-primary-soft); display: grid; place-content: center; font-size: 11px; color: var(--ds-primary-strong); font-family: var(--ds-font-mono); }
+.dd { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dd ul { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 4px; font-size: 14px; }
+
+/* ── hub ───────────────────────────── */
+.rules { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+.rules li { display: grid; grid-template-columns: 30px 1fr; gap: 8px; padding-block: 9px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.rules .k { font-family: var(--ds-font-mono); color: var(--ds-primary); font-weight: var(--ds-weight-bold); }
+.rules .x { display: block; font-size: 12.5px; color: var(--ds-warning-ink); margin-top: 2px; }
+.map { width: 100%; border-collapse: collapse; font-size: 14px; }
+.map td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.map td:first-child { font-family: var(--ds-font-mono); font-size: 12.5px; color: var(--ds-primary-strong); white-space: nowrap; }
+pre.cmds { background: var(--ds-inset); border-radius: var(--ds-radius-md); padding: 12px 14px; font-family: var(--ds-font-mono); font-size: 12.5px; overflow-x: auto; margin: 10px 0 0; line-height: 1.7; }
+pre.cmds .c { color: var(--ds-muted); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.gaps { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 6px; font-size: 14px; }
+
+footer { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--gutter); padding-block: 0 40px; font-size: 12px; color: var(--ds-muted); }
+
+@media (max-width: 980px) {
+  .grid3 { grid-template-columns: 1fr 1fr; }
+  .grid3 > :first-child { grid-column: 1 / -1; }
+  .kr { grid-template-columns: 64px 1fr 120px; }
+  .kr .note { grid-column: 2 / -1; }
+  .lib { grid-template-columns: 1fr; }
+  .libside { position: static; max-height: none; }
+  .tree { max-height: 60vh; }
+  .reader { display: none; position: fixed; inset: 0; z-index: 40; border-radius: 0; border: 0; padding-top: env(safe-area-inset-top, 0px); }
+  .reader.open { display: grid; }
+  .reader .rbody { overflow-y: auto; padding-inline: 18px; }
+  .btn.close { display: inline-block; }
+  .flows, .brandgrid, .two, .dd, .rules, .decisions { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  :root { --gutter: 16px; }
+  .grid3 { grid-template-columns: 1fr; }
+  .hero { padding: 20px; }
+  .kr { grid-template-columns: 1fr 110px; gap: 6px 12px; }
+  .kr .id { grid-column: 1 / -1; }
+  .kr .note { grid-column: 1 / -1; }
+  .miles li { grid-template-columns: 96px 1fr; }
+  .ramp div { font-size: 0; }
+  .brandrow .asof { margin-inline-start: 0; width: 100%; }
+  .brandrow .sub { display: none; }
+  .brandrow { padding-block: 10px 2px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brandrow">
+      <div class="wordmark" id="wm"></div>
+      <div class="sub" id="tagline"></div>
+      <div class="asof" id="asof"></div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<footer id="footer"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script>
+/* Generated by the hub-portal skill. Edit the hub's data file (brain.config.json -> portal.data), not this page. */
+(function () {
+  "use strict";
+  var DOCS = /*__DOCS__*/[];
+  var DATA = /*__DATA__*/{};
+  var AUTO = /*__AUTO__*/{};
+  var SRC = AUTO.source;
+  var S = DATA.status;
+
+  /* ── helpers ─────────────────────────────────────────── */
+  function $(s, r) { return (r || document).querySelector(s); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); }
+  function isRtl(s) { return /[؀-ۿ]/.test(s); }
+  function srcUrl(base, p) { return base + p.split("/").map(encodeURIComponent).join("/"); }
+  var DOC_BY_PATH = {};
+  DOCS.forEach(function (d) { DOC_BY_PATH[d.p] = d; });
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function fmtDate(iso) { if (!iso) return ""; var p = iso.split("-"); return (+p[2]) + " " + MONTHS[+p[1] - 1]; }
+  function daysOld(iso) { return iso ? Math.round((Date.parse(DATA.asOf + "T00:00:00Z") - Date.parse(iso + "T00:00:00Z")) / 864e5) : null; }
+  function docBtn(path, label) {
+    if (!DOC_BY_PATH[path]) return "";
+    return '<button class="linkbtn" data-doc="' + esc(path) + '">' + esc(label) + "</button>";
+  }
+  function artUrl(id) { return /^https?:/.test(id) ? id : "https://claude.ai/artifact/" + id; }
+  function extBtn(href, label, primary) { return '<a class="btn' + (primary ? " primary" : "") + '" href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(label) + "</a>"; }
+  function num(n) { return Number(n).toLocaleString("en-US"); }
+
+  $("#wm").innerHTML = DATA.wordmark.local ? esc(DATA.wordmark.local) + " <span>· " + esc(DATA.wordmark.latin) + "</span>" : "<span>" + esc(DATA.wordmark.latin) + "</span>";
+  $("#tagline").textContent = DATA.wordmark.tagline;
+  $("#asof").innerHTML = "As of <b>" + esc(AUTO.asOfLabel) + "</b>" + (AUTO.asOfLocal ? " · " + esc(AUTO.asOfLocal) : "");
+  $("#footer").innerHTML = esc(DATA.footer || "") + " Page built " + esc(AUTO.built) + " from hub branch <span class=\"mono\">" + esc(AUTO.branch) + "</span>." +
+    (AUTO.withheld ? " " + AUTO.withheld + " document" + (AUTO.withheld > 1 ? "s are" : " is") + " withheld for privacy." : "");
+
+  /* ── tabs + routing ─────────────────────────────────── */
+  var SKILL_COUNT = DATA.skillGroups.reduce(function (n, g) { return n + g.items.length; }, 0);
+  var VIEWS = [
+    ["status", "Where we stand"], ["artifacts", "Artifacts", DATA.artifacts.length], ["library", "Library", DOCS.length],
+    ["specs", "Specs", AUTO.specs.length], ["workflows", "Workflows"], ["skills", "Skills", SKILL_COUNT],
+    ["brand", "Brand"], ["hub", "The hub"]
+  ];
+  $("#tabs").innerHTML = VIEWS.map(function (v) {
+    return '<a href="#' + v[0] + '" data-view="' + v[0] + '">' + v[1] + (v[2] ? '<span class="n">' + v[2] + "</span>" : "") + "</a>";
+  }).join("");
+  var main = $("#main"), rendered = {}, RENDER = {};
+
+  function show(view) {
+    if (!RENDER[view]) view = "status";
+    VIEWS.forEach(function (v) { var el = document.getElementById("v-" + v[0]); if (el) el.hidden = v[0] !== view; });
+    if (!rendered[view]) {
+      var sec = document.createElement("section");
+      sec.className = "view"; sec.id = "v-" + view;
+      main.appendChild(sec); RENDER[view](sec); rendered[view] = true;
+    }
+    Array.prototype.forEach.call(document.querySelectorAll("#tabs a"), function (a) {
+      if (a.dataset.view === view) { a.setAttribute("aria-current", "page"); a.scrollIntoView({ block: "nearest", inline: "nearest" }); }
+      else a.removeAttribute("aria-current");
+    });
+  }
+  window.addEventListener("hashchange", function () { show(location.hash.slice(1)); window.scrollTo(0, 0); });
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-doc]");
+    if (b) { e.preventDefault(); openDoc(b.dataset.doc); }
+  });
+
+  /* ── Where we stand ─────────────────────────────────── */
+  RENDER.status = function (el) {
+    var miles = S.milestones.map(function (m) {
+      return '<li class="' + (m.kind || "") + '"><span class="d">' + esc(m.d) + "</span><span>" + m.t + "</span></li>";
+    }).join("");
+    var krs = S.krs.rows.map(function (k) {
+      if (k.objective) return '<div class="obj">' + esc(k.objective) + "</div>";
+      var bar = k.pct == null ? '<div class="bar"></div>' : '<div class="bar"><i style="width:' + Math.max(0, Math.min(100, k.pct)) + '%"></i></div>';
+      var flag = k.overdue ? '<span class="pill p-crit">' + k.overdue + " overdue</span>" : "";
+      return '<div class="kr"><div class="id">' + esc(k.id) + '</div><div class="nm">' + esc(k.name) + "<small>" + esc(k.owner) + " · " + esc(k.target) + "</small></div>" +
+        '<div><div class="pct"><span>' + (k.pct == null ? "not reported" : k.pct + "%") + "</span></div>" + bar + "</div>" +
+        '<div class="note">' + flag + esc(k.note) + "</div></div>";
+    }).join("");
+    var dec = S.decisions.map(function (d) {
+      return "<li><b>" + esc(d.title) + '</b><span class="small">' + esc(d.body) + '</span><span class="who">' + esc(d.who) + "</span></li>";
+    }).join("");
+    var facts = S.facts.concat([["Specs", AUTO.specs.length], ["Hub documents", DOCS.length]]).map(function (f) {
+      return "<span>" + esc(f[0]) + " <b>" + esc(f[1]) + "</b>" + (f[2] ? " · " + esc(f[2]) : "") + "</span>";
+    }).join("");
+    function relCard(r) {
+      return '<div class="card rel"><div class="eyebrow">' + esc(r.eyebrow) + '</div><div class="big">' + esc(r.big) + '</div><div class="small muted">' + esc(r.sub) + "</div>" +
+        (r.items ? "<ul>" + r.items.map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul>" : "") +
+        (r.rows ? "<dl>" + r.rows.map(function (i) { return "<dt>" + esc(i[0]) + "</dt><dd>" + esc(i[1]) + "</dd>"; }).join("") + "</dl>" : "") + "</div>";
+    }
+    el.innerHTML =
+      '<div class="hero"><div class="eyebrow">' + esc(S.eyebrow) + "</div><h1>" + esc(S.headline) + "</h1><p>" + esc(S.body) + '</p><div class="facts">' + facts + "</div></div>" +
+      (S.notice ? '<div class="notice"><b>' + esc(S.notice.lead) + "</b> " + esc(S.notice.text) + "</div>" : "") +
+      '<div class="grid3"><div class="card"><h2>Next milestones</h2><ul class="miles">' + miles + "</ul></div>" + S.releases.map(relCard).join("") + "</div>" +
+      '<div class="card"><div class="sechead"><div><h2>' + esc(S.krs.title) + '</h2><p class="lede small">' + esc(S.krs.lede) + "</p></div>" +
+        (S.krs.link ? extBtn(artUrl(S.krs.link.id), S.krs.link.label) : "") + '</div><div class="krs">' + krs + "</div></div>" +
+      '<div><div class="sechead"><h2>Waiting on a decision or an answer</h2></div><ul class="decisions">' + dec + "</ul></div>";
+  };
+
+  /* ── Artifacts ─────────────────────────────────────── */
+  RENDER.artifacts = function (el) {
+    var A = DATA.artifacts, G = DATA.artifactGroups, state = { g: "All", q: "" };
+    el.innerHTML =
+      '<div class="sechead"><div><h2>Live artifacts</h2><p class="lede">Every published page about the product, grouped. Pages marked “shared” belong to a teammate; whether you can open them depends on how they were shared.</p></div></div>' +
+      '<div class="toolbar"><input class="search" id="a-q" type="search" placeholder="Filter artifacts…" aria-label="Filter artifacts">' +
+      ["All"].concat(G).map(function (g) {
+        var n = g === "All" ? A.length : A.filter(function (a) { return a.group === g; }).length;
+        return '<button class="chip" data-g="' + esc(g) + '" aria-pressed="' + (g === "All") + '">' + esc(g) + '<span class="n">' + n + "</span></button>";
+      }).join("") + '</div><div id="a-list" style="display:grid;gap:26px"></div>';
+    function draw() {
+      var q = state.q.toLowerCase();
+      var html = G.filter(function (g) { return state.g === "All" || state.g === g; }).map(function (g) {
+        var items = A.filter(function (a) { return a.group === g && (!q || (a.title + " " + a.desc + " " + (a.src || "")).toLowerCase().indexOf(q) >= 0); })
+          .sort(function (x, y) { return (y.updated || "").localeCompare(x.updated || ""); });
+        if (!items.length) return "";
+        return '<div class="agroup"><h3>' + esc(g) + '<span class="n">' + items.length + '</span></h3><div class="acards">' + items.map(function (a) {
+          var age = daysOld(a.updated), meta = [];
+          if (a.updated) meta.push('<span class="' + (age > 30 ? "stale" : "") + '">Updated ' + fmtDate(a.updated) + (age > 30 ? " · may be out of date" : "") + "</span>");
+          if (a.shared) meta.push('<span class="tag">shared</span>');
+          if (isRtl(a.title)) meta.push('<span class="tag">فارسی</span>');
+          return '<a class="acard" href="' + esc(artUrl(a.id)) + '" target="_blank" rel="noopener"><span class="t" dir="auto">' + esc(a.title) + '</span><span class="d">' + esc(a.desc) + "</span>" +
+            '<span class="meta">' + meta.join("") + "</span>" + (a.src ? '<span class="src">' + esc(a.src) + "</span>" : "") + "</a>";
+        }).join("") + "</div></div>";
+      }).join("");
+      $("#a-list", el).innerHTML = html || '<p class="muted">No artifact matches that filter.</p>';
+    }
+    el.addEventListener("click", function (e) {
+      var c = e.target.closest(".chip"); if (!c) return;
+      state.g = c.dataset.g;
+      Array.prototype.forEach.call(el.querySelectorAll(".chip"), function (x) { x.setAttribute("aria-pressed", x === c); });
+      draw();
+    });
+    $("#a-q", el).addEventListener("input", function (e) { state.q = e.target.value; draw(); });
+    draw();
+  };
+
+  /* ── Library + reader ───────────────────────────────── */
+  var GROUP_ORDER = DATA.library.groupOrder || [];
+  var bundleCache = {};
+  function loadBundle(k) {
+    if (!bundleCache[k]) {
+      bundleCache[k] = fetch("md/" + k + ".json").then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+      bundleCache[k].catch(function () { delete bundleCache[k]; });
+    }
+    return bundleCache[k];
+  }
+  function loadAll() { return Promise.all(AUTO.bundles.map(loadBundle)); }
+  var contentIndex = null, rawBodies = {}, currentDoc = null;
+  var baseCount = DOCS.length + " documents · loading full text…";
+
+  RENDER.library = function (el) {
+    el.innerHTML =
+      '<div class="sechead"><div><h2>Library</h2><p class="lede">Every Markdown file in the hub, rendered in place. Search matches titles and paths at once, and the full text once the documents have loaded.</p></div></div>' +
+      '<div class="lib"><aside class="libside"><input class="search" id="l-q" type="search" placeholder="Search the hub…" aria-label="Search documents">' +
+      '<div class="count" id="l-count"></div><div class="tree" id="l-tree"></div></aside>' +
+      '<article class="reader" id="reader" aria-live="polite"><div class="rhead" id="r-head"></div><div class="rbody" id="r-body"></div></article></div>';
+    drawTree(""); readerEmpty();
+    $("#l-q", el).addEventListener("input", function (e) { drawTree(e.target.value); });
+    loadAll().then(function (all) {
+      contentIndex = {};
+      all.forEach(function (b) { for (var p in b) { rawBodies[p] = b[p]; contentIndex[p] = b[p].toLowerCase(); } });
+      baseCount = DOCS.length + " documents · full text loaded";
+      var q = $("#l-q", el).value; if (q) drawTree(q); else $("#l-count").textContent = baseCount;
+    }).catch(function () { baseCount = DOCS.length + " documents · full text could not load, titles only"; $("#l-count").textContent = baseCount; });
+  };
+
+  function drawTree(q) {
+    var tree = $("#l-tree"); if (!tree) return;
+    q = q.trim().toLowerCase();
+    if (q) {
+      var hits = [];
+      DOCS.forEach(function (d) {
+        var inTitle = (d.t + " " + d.p).toLowerCase().indexOf(q) >= 0;
+        var body = contentIndex && contentIndex[d.p], at = body ? body.indexOf(q) : -1;
+        if (inTitle || at >= 0) {
+          var n = 0, i = at; while (i >= 0 && n < 99) { n++; i = body.indexOf(q, i + q.length); }
+          hits.push({ d: d, rank: (inTitle ? 1000 : 0) + n, at: at, n: n });
+        }
+      });
+      hits.sort(function (a, b) { return b.rank - a.rank; });
+      $("#l-count").textContent = hits.length + " match" + (hits.length === 1 ? "" : "es") + (contentIndex ? "" : " in titles (full text still loading)");
+      var rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      tree.innerHTML = hits.slice(0, 200).map(function (h) {
+        var snip = "";
+        if (h.at >= 0 && rawBodies[h.d.p]) {
+          var s = Math.max(0, h.at - 50), frag = rawBodies[h.d.p].slice(s, h.at + q.length + 70).replace(/\s+/g, " ");
+          snip = '<span class="snip" dir="auto">' + (s ? "…" : "") + esc(frag).replace(rx, function (m) { return "<mark>" + m + "</mark>"; }) + "… · " + h.n + "×</span>";
+        }
+        return docLink(h.d, snip);
+      }).join("") || '<p class="muted small" style="padding:8px">Nothing matches. Try a shorter word, or a spec number.</p>';
+      return;
+    }
+    $("#l-count").textContent = baseCount;
+    var groups = {};
+    DOCS.forEach(function (d) { (groups[d.g] = groups[d.g] || []).push(d); });
+    var seen = Object.keys(groups);
+    var order = GROUP_ORDER.filter(function (g) { return groups[g]; }).concat(seen.filter(function (g) { return GROUP_ORDER.indexOf(g) < 0; }));
+    tree.innerHTML = order.map(function (g, gi) {
+      var docs = groups[g], flat = docs.filter(function (d) { return !d.n; }), sub = {};
+      docs.forEach(function (d) { if (d.n) (sub[d.n] = sub[d.n] || []).push(d); });
+      var inner = flat.map(function (d) { return docLink(d); }).join("") + Object.keys(sub).sort().map(function (k) {
+        return "<details><summary><span>" + esc(k) + '</span><span class="n">' + sub[k].length + "</span></summary>" + sub[k].map(function (d) { return docLink(d); }).join("") + "</details>";
+      }).join("");
+      return "<details" + (gi === 0 ? " open" : "") + "><summary><span>" + esc(g) + '</span><span class="n">' + docs.length + "</span></summary>" + inner + "</details>";
+    }).join("");
+    if (currentDoc) markCurrent(currentDoc);
+  }
+  function docLink(d, extra) {
+    return '<button class="doclink" data-doc="' + esc(d.p) + '"><span dir="auto">' + esc(d.t) + '</span><span class="p">' + esc(d.p) + "</span>" + (extra || "") + "</button>";
+  }
+  function markCurrent(p) {
+    Array.prototype.forEach.call(document.querySelectorAll(".doclink"), function (b) {
+      if (b.dataset.doc === p) {
+        b.setAttribute("aria-current", "true");
+        var det = b.closest("details"); while (det) { det.open = true; det = det.parentElement.closest("details"); }
+      } else b.removeAttribute("aria-current");
+    });
+  }
+  function readerEmpty() {
+    $("#r-head").innerHTML = '<div class="rt"><h2>Pick a document</h2><div class="p">or start with one of these</div></div>';
+    $("#r-body").innerHTML = '<div class="empty"><span>' + esc(DATA.library.intro) + '</span><div class="quick">' +
+      DATA.library.start.map(function (p) { return DOC_BY_PATH[p] ? '<button class="btn" data-doc="' + esc(p) + '">' + esc(DOC_BY_PATH[p].t) + "</button>" : ""; }).join("") + "</div></div>";
+  }
+
+  function openDoc(path, anchor) {
+    var d = DOC_BY_PATH[path]; if (!d) return;
+    if (location.hash !== "#library") { history.replaceState(null, "", "#library"); show("library"); }
+    currentDoc = path; markCurrent(path);
+    var reader = $("#reader"); reader.classList.add("open");
+    $("#r-head").innerHTML = '<div class="rt"><div class="eyebrow">' + esc(d.g) + '</div><h2 dir="auto">' + esc(d.t) + '</h2><div class="p">' + esc(d.p) + "</div></div>" +
+      (!SRC ? "" : d.m ? '<a class="btn" href="' + srcUrl(SRC.blob, d.p) + '" target="_blank" rel="noopener">Open in ' + esc(SRC.label) + "</a>"
+        : '<span class="tag" title="This file is not on the hub\'s ' + esc(SRC.branch) + ' branch yet">not on ' + esc(SRC.branch) + " yet</span>") +
+      '<button class="btn" id="r-copy">Copy path</button><button class="btn close" id="r-close">Close</button>';
+    $("#r-close").onclick = function () { reader.classList.remove("open"); };
+    $("#r-copy").onclick = function (e) {
+      var btn = e.currentTarget, done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy path"; }, 1400); };
+      try { navigator.clipboard.writeText(d.p).then(done, function () { btn.textContent = d.p; }); } catch (_) { btn.textContent = d.p; }
+    };
+    var body = $("#r-body");
+    if (d.w) { body.innerHTML = '<div class="withheld">' + esc(d.w) + "</div>"; return; }
+    body.innerHTML = '<p class="muted" style="padding:20px 0">Loading…</p>';
+    loadBundle(d.k).then(function (b) {
+      if (currentDoc !== path) return;
+      renderMd(body, b[path] || "", path);
+      if (anchor) { var t = document.getElementById(anchor); if (t) { t.scrollIntoView(); return; } }
+      if (window.matchMedia("(max-width: 980px)").matches) body.scrollTop = 0; else reader.scrollIntoView({ block: "start" });
+    }).catch(function () {
+      body.innerHTML = '<p class="withheld">This document could not load.' + (SRC && d.m ? " Open it in " + esc(SRC.label) + " instead." : "") + "</p>";
+    });
+  }
+
+  function slug(s) { return s.toLowerCase().trim().replace(/[^\w؀-ۿ\s-]/g, "").replace(/\s+/g, "-"); }
+  function resolve(base, rel) {
+    var parts = base.split("/"); parts.pop();
+    rel.split("/").forEach(function (seg) { if (seg === "..") parts.pop(); else if (seg && seg !== ".") parts.push(seg); });
+    return parts.join("/");
+  }
+  function renderMd(target, text, path) {
+    var fmHtml = "", fm = text.match(/^---\n([\s\S]*?)\n---\n/);
+    if (fm) {
+      text = text.slice(fm[0].length);
+      var rows = fm[1].split("\n").filter(function (l) { return /^[\w-]+:\s*\S/.test(l); }).slice(0, 6).map(function (l) {
+        var i = l.indexOf(":"); return "<div><b>" + esc(l.slice(0, i)) + "</b> " + esc(l.slice(i + 1).trim().replace(/^["']|["']$/g, "")) + "</div>";
+      });
+      if (rows.length) fmHtml = '<div class="fm">' + rows.join("") + "</div>";
+    }
+    var html = (window.marked && window.DOMPurify) ? DOMPurify.sanitize(marked.parse(text, { gfm: true, breaks: false })) : "<pre>" + esc(text) + "</pre>";
+    target.innerHTML = '<div class="md">' + fmHtml + html + "</div>";
+    var md = target.firstChild, seen = {};
+    Array.prototype.forEach.call(md.querySelectorAll("h1,h2,h3,h4,p,li,td,th,blockquote"), function (n) { n.setAttribute("dir", "auto"); });
+    Array.prototype.forEach.call(md.querySelectorAll("h1,h2,h3,h4"), function (h) {
+      var s = slug(h.textContent) || "section"; if (seen[s]) s += "-" + (++seen[s]); else seen[s] = 1; h.id = s;
+    });
+    Array.prototype.forEach.call(md.querySelectorAll("table"), function (t) {
+      var w = document.createElement("div"); w.className = "tw"; t.parentNode.insertBefore(w, t); w.appendChild(t);
+    });
+    Array.prototype.forEach.call(md.querySelectorAll("a[href]"), function (a) {
+      var href = a.getAttribute("href");
+      if (/^#/.test(href)) {
+        a.addEventListener("click", function (e) { e.preventDefault(); var t = document.getElementById(decodeURIComponent(href.slice(1))); if (t) t.scrollIntoView({ block: "start" }); });
+        return;
+      }
+      if (/^[a-z]+:/i.test(href)) { a.target = "_blank"; a.rel = "noopener"; a.classList.add("ext"); return; }
+      var clean = decodeURIComponent(href.split("#")[0]), anchor = href.split("#")[1];
+      var abs = clean.charAt(0) === "/" ? clean.slice(1) : resolve(path, clean);
+      if (DOC_BY_PATH[abs]) a.addEventListener("click", function (e) { e.preventDefault(); openDoc(abs, anchor); });
+      else if (SRC) {
+        a.href = srcUrl(/\.\w+$/.test(abs) && abs.indexOf("repos/") !== 0 ? SRC.blob : SRC.tree, abs);
+        a.target = "_blank"; a.rel = "noopener"; a.classList.add("ext");
+      } else { a.removeAttribute("href"); a.title = abs; }
+    });
+  }
+
+  /* ── Specs ─────────────────────────────────────────── */
+  RENDER.specs = function (el) {
+    var ST = DATA.specStatus, counts = {};
+    AUTO.specs.forEach(function (s) { counts[s.status] = (counts[s.status] || 0) + 1; });
+    var tally = Object.keys(ST).filter(function (k) { return counts[k]; }).map(function (k) {
+      return '<div><span class="big">' + counts[k] + '</span><span class="pill ' + ST[k].pill + '">' + esc(ST[k].label) + "</span></div>";
+    }).join("");
+    var rows = AUTO.specs.map(function (s) {
+      var files = s.docs.map(function (x) { return docBtn(x[0], x[1]); }).join("");
+      var st = ST[s.status] || { label: s.status, pill: "p-spec" }, num = (s.key.match(/^\d+/) || [""])[0];
+      return '<tr><td class="num">' + esc(num) + '</td><td><div class="nm" dir="auto">' + esc(s.name) + '</div><div class="mono muted" style="font-size:11px">' + esc(s.key) + "</div></td>" +
+        '<td><span class="pill ' + st.pill + '">' + esc(st.label) + '</span></td><td class="small">' + esc(s.note) + '</td><td><div class="docs">' + files + "</div></td></tr>";
+    }).join("");
+    var tasks = (AUTO.tasks || []).map(function (t) {
+      return '<div class="toolbar"><b>' + esc(t.key) + '</b><span class="small muted" dir="auto">' + esc(t.note) + "</span>" +
+        t.docs.map(function (x) { return docBtn(x[0], x[1]); }).join("") + "</div>";
+    }).join("");
+    el.innerHTML =
+      '<div class="sechead"><div><h2>Feature specs</h2><p class="lede">' + esc(DATA.specsLede || "") + "</p></div>" +
+      (DATA.specsLink ? extBtn(artUrl(DATA.specsLink.id), DATA.specsLink.label) : "") + "</div>" +
+      '<div class="tally">' + tally + "</div>" +
+      '<div class="tablewrap"><table class="specs"><thead><tr><th>#</th><th>Feature</th><th>State</th><th>Where it is</th><th>Documents</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
+      (AUTO.tasks ? '<div class="card" style="display:grid;gap:10px"><h3>Task-size work</h3><p class="small" style="margin:0">' + esc(DATA.tasksLede || "") +
+        (AUTO.tasks.length ? "" : " None are in the hub right now.") + "</p>" + tasks + "</div>" : "");
+  };
+
+  /* ── Workflows ─────────────────────────────────────── */
+  RENDER.workflows = function (el) {
+    el.innerHTML = '<div class="sechead"><div><h2>How work moves</h2><p class="lede">The loops the team runs, each with the command that drives a step. The runbooks hold the full procedure.</p></div></div>' +
+      '<div class="flows">' + DATA.flows.map(function (f) {
+        return '<div class="card flow"><h3>' + esc(f.title) + '</h3><p class="small muted" style="margin:0">' + esc(f.desc) + "</p><ol>" +
+          f.steps.map(function (s) { return "<li><div>" + s + "</div></li>"; }).join("") + '</ol><div class="foot">' +
+          f.docs.map(function (p) { return docBtn(p, p.split("/").pop()); }).join("") + "</div></div>";
+      }).join("") + "</div>";
+  };
+
+  /* ── Skills ────────────────────────────────────────── */
+  RENDER.skills = function (el) {
+    el.innerHTML = '<div class="sechead"><div><h2>Skills, commands and agents</h2><p class="lede">Hub tooling for Claude Code. Type the command in a session opened at the hub root; select a card to read its instructions.</p></div></div>' +
+      DATA.skillGroups.map(function (g) {
+        return '<div class="agroup"><h3>' + esc(g.group) + '<span class="n">' + g.items.length + '</span></h3><div class="skills">' + g.items.map(function (s) {
+          var inner = '<span class="cmd">' + esc(s.cmd) + '</span><span class="d">' + esc(s.desc) + "</span>";
+          return s.path && DOC_BY_PATH[s.path] ? '<button class="skill" data-doc="' + esc(s.path) + '">' + inner + "</button>" : '<div class="skill">' + inner + "</div>";
+        }).join("") + "</div></div>";
+      }).join("");
+  };
+
+  /* ── Brand ─────────────────────────────────────────── */
+  RENDER.brand = function (el) {
+    var B = DATA.brand;
+    var steps = AUTO.ramp, half = Math.floor(steps.length / 2);
+    var ramp = steps.map(function (s, i) {
+      return '<div style="background:' + s[1] + ";color:" + (i < half ? "var(--ds-primary-strong)" : "var(--ds-on-primary)") + '">' + s[0] + "</div>";
+    }).join("");
+    var ROLES = [["primary", "var(--ds-primary)"], ["primary-strong", "var(--ds-primary-strong)"], ["primary-soft", "var(--ds-primary-soft)"], ["accent", "var(--ds-accent)"],
+      ["canvas", "var(--ds-canvas)"], ["surface", "var(--ds-surface)"], ["inset", "var(--ds-inset)"], ["success", "var(--ds-success)"], ["warning", "var(--ds-warning)"], ["info", "var(--ds-info)"]];
+    var sw = ROLES.map(function (r) {
+      return '<div class="sw"><i style="background:' + r[1] + '"></i><div><div>' + esc((B.roleLabels || {})[r[0]] || r[0]) + '</div><div class="r">--ds-' + r[0] + "</div></div></div>";
+    }).join("");
+    el.innerHTML =
+      '<div class="brandgrid"><div class="card" style="display:grid;gap:12px;align-content:start"><div class="eyebrow">North star</div><p class="quote">' + esc(B.northStar) + "</p>" +
+        '<p class="small" style="margin:0">' + esc(B.northStarBody) + '</p><div class="toolbar">' + (B.designDoc ? docBtn(B.designDoc, "Read " + B.designDoc) : "") +
+        (B.bookId ? extBtn(artUrl(B.bookId), "Brand identity book", true) : "") + "</div></div>" +
+        '<div class="card"><div class="eyebrow">Type</div><div class="specimen"><div class="fa-big" dir="auto">' + esc(B.lineLocal || "") + '</div><div class="la-big">' + esc(B.lineLatin || "") + "</div>" +
+        '<div class="small muted">' + esc(B.typeNote) + "</div></div></div></div>" +
+      '<div class="card"><div class="eyebrow">' + (steps.length ? "Primary ramp and roles" : "Roles") + "</div>" +
+        (steps.length ? '<div class="ramp" style="grid-template-columns:repeat(' + steps.length + ',minmax(0,1fr))">' + ramp + "</div>" : "") + '<div class="swatches">' + sw + "</div></div>" +
+      '<div class="two"><div class="card"><div class="eyebrow">Shape</div><div class="radii"><div style="border-radius:var(--ds-radius-sm)">sm · chips</div><div style="border-radius:var(--ds-radius-md)">md · notices</div><div style="border-radius:var(--ds-radius-lg)">lg · cards</div></div>' +
+        '<p class="small muted" style="margin:12px 0 0">' + esc(B.shapeNote) + "</p></div>" +
+        '<div class="card dd"><div><h3>Do</h3><ul>' + (B.do || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div>" +
+        "<div><h3>Don’t</h3><ul>" + (B.dont || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div></div></div>" +
+      (B.notice ? '<div class="notice"><b>' + esc(B.notice.lead) + "</b> " + esc(B.notice.text) + "</div>" : "");
+  };
+
+  /* ── The hub ───────────────────────────────────────── */
+  RENDER.hub = function (el) {
+    var H = DATA.hub;
+    var map = H.map.map(function (r) { return "<tr><td>" + esc(r[0]) + "</td><td>" + esc(r[1]) + (r[2] ? " " + docBtn(r[2], "read") : "") + "</td></tr>"; }).join("");
+    var rules = AUTO.rules.map(function (r) {
+      return '<li><span class="k">' + esc(r.n) + "</span><span>" + esc(r.title) + (r.caveat ? '<span class="x">' + esc(r.caveat) + "</span>" : "") + "</span></li>";
+    }).join("");
+    var g = AUTO.graph;
+    el.innerHTML =
+      '<div class="sechead"><div><h2>The hub</h2><p class="lede">' + esc(H.lede) + '</p></div><div class="toolbar">' + docBtn("README.md", "README") + docBtn("CLAUDE.md", "CLAUDE.md") + "</div></div>" +
+      (rules ? '<div class="card"><div class="sechead"><h3>Constitution at a glance</h3>' + docBtn("constitution.md", "Read the constitution") + '</div><ul class="rules">' + rules + "</ul></div>" : "") +
+      '<div class="two"><div class="card"><h3>What lives where</h3><div style="overflow-x:auto"><table class="map">' + map + "</table></div></div>" +
+        '<div style="display:grid;gap:16px;align-content:start"><div class="card"><h3>Knowledge graph</h3>' +
+          (g ? '<div class="tally" style="margin-top:8px"><div><span class="big">' + num(g.nodes) + '</span><span class="small muted">nodes</span></div><div><span class="big">' + num(g.edges) + '</span><span class="small muted">edges</span></div></div>' +
+            '<p class="small" style="margin:10px 0 0">Last sync ' + esc(g.synced) + ". Built from: " + esc(g.built) + "." + (g.codeOnly ? " Code only: no provider key is set, so hub prose (constitution, specs, runbooks) is not in it." : "") + "</p>"
+            : '<p class="small">No sync report found. Run pb sync to show graph stats.</p>') +
+          '<pre class="cmds">' + (H.commands || ["pb sync", "pb status", "pb find <term>"]).map(function (c) { return /^#/.test(c) ? '<span class="c">' + esc(c) + "</span>" : esc(c); }).join("\n") + "</pre></div>" +
+        ((H.gaps || []).length ? '<div class="card"><h3>Known gaps in the hub</h3><ul class="gaps">' + H.gaps.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div>" : "") + "</div></div>" +
+      ((H.repos || []).length ? '<div class="card"><h3>Code repos</h3><table class="map" style="margin-top:6px">' + H.repos.map(function (r) { return "<tr><td>" + esc(r[0]) + "</td><td>" + esc(r[1]) + "</td></tr>"; }).join("") + "</table></div>" : "");
+  };
+
+  show(location.hash.slice(1) || "status");
+})();
+</script>

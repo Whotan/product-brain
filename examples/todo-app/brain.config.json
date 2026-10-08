@@ -39,5 +39,8 @@
     "inputs": [
       { "id": "roadmap", "path": "docs/roadmap/.roadmap-facts.json", "produced_by": "delivery-roadmap" }
     ]
+  },
+  "portal": {
+    "data": "docs/dashboard/hub-portal.json"
   }
 }

@@ -600,6 +600,7 @@ default.
 | `delivery-roadmap` | A git-grounded delivery roadmap (HTML) and its facts JSON | `roadmap` |
 | `release-notes` | Per-release client + internal notes (HTML/PDF/Markdown) | `releases` |
 | `update-product-hub` | The product dashboard (HTML) and its state JSON | `dashboard` |
+| `hub-portal` | The hub's front page (HTML + Markdown bundles): status, every doc, artifacts, specs, skills | `portal` |
 
 Every one of them runs `check-brand.py` (from `brand-system`) in its verify step before it's
 considered done — see the "Brand design system" constitution principle.

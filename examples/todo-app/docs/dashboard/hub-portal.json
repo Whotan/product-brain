@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "title": "Todo Brain Hub",
+  "description": "Where the product stands, every hub document rendered in place, the live artifacts, specs, workflows, skills and brand.",
+  "artifact_url": "",
+  "asOf": "2026-06-22",
+  "wordmark": {
+    "local": "",
+    "latin": "Todo",
+    "tagline": "Brain Hub — product knowledge, status and tooling in one place"
+  },
+  "footer": "Status from the kickoff notes of 17 Jun and the feature-status doc of 20 Jun.",
+  "privacy": {
+    "withhold": {},
+    "redact": [],
+    "allow": [],
+    "patterns": []
+  },
+  "status": {
+    "eyebrow": "Where we stand · 22 June 2026",
+    "headline": "Create-a-task is approved; the first release is on track for 30 June.",
+    "body": "Spec 001 is approved and both repos have started on it. Soft delete is decided (ADR-001). The open question is whether due dates ship in the first release.",
+    "facts": [
+      [
+        "Last release",
+        "none yet"
+      ],
+      [
+        "Specs approved",
+        "1 of 1"
+      ]
+    ],
+    "milestones": [
+      {
+        "d": "Mon 22 Jun",
+        "t": "Status check-in.",
+        "kind": "today"
+      },
+      {
+        "d": "Tue 30 Jun",
+        "t": "<b>First release</b> with quick-add.",
+        "kind": "promise"
+      }
+    ],
+    "releases": [
+      {
+        "eyebrow": "Next release",
+        "big": "v1.0.0",
+        "sub": "planned 30 Jun",
+        "items": [
+          "Create a task (001)"
+        ]
+      }
+    ],
+    "krs": {
+      "title": "Goals, Q3",
+      "lede": "From docs/knowledge/metrics.md, 20 Jun.",
+      "rows": [
+        {
+          "objective": "Make capture effortless"
+        },
+        {
+          "id": "G1",
+          "name": "Median time to add a task",
+          "owner": "Product",
+          "pct": null,
+          "target": "under 3 s",
+          "overdue": 0,
+          "note": "Not measured yet; instrumented with 001."
+        }
+      ]
+    },
+    "decisions": [
+      {
+        "title": "Due dates in v1.0.0?",
+        "body": "001 allows an optional due date; the web team asked to ship title-only first.",
+        "who": "Product"
+      }
+    ]
+  },
+  "specsLede": "Every spec in the hub, with its delivery state. Open any document straight from the table.",
+  "specStatus": {
+    "released": {
+      "label": "Released",
+      "pill": "p-released"
+    },
+    "progress": {
+      "label": "In progress",
+      "pill": "p-progress"
+    },
+    "branch": {
+      "label": "On a branch",
+      "pill": "p-branch"
+    },
+    "waiting": {
+      "label": "Waiting on input",
+      "pill": "p-waiting"
+    },
+    "spec": {
+      "label": "Spec only",
+      "pill": "p-spec"
+    },
+    "deferred": {
+      "label": "Deferred",
+      "pill": "p-deferred"
+    }
+  },
+  "specs": {
+    "001-create-task": {
+      "name": "Create a task",
+      "status": "progress",
+      "note": "Approved 20 Jun; api and web both in progress."
+    }
+  },
+  "tasksLede": "Work smaller than a feature, one folder per ticket.",
+  "tasks": {},
+  "artifactGroups": [
+    "Status & planning",
+    "Releases",
+    "Security",
+    "Brand & design",
+    "Walkthroughs & mockups",
+    "Ways of working"
+  ],
+  "artifacts": [],
+  "flows": [
+    {
+      "title": "Record a decision",
+      "desc": "Decisions that outlive a sprint become ADRs.",
+      "steps": [
+        "Write the ADR under <code>docs/decisions/</code>.",
+        "Link it from the spec it changes."
+      ],
+      "docs": [
+        "docs/decisions/ADR-001-soft-delete.md"
+      ]
+    }
+  ],
+  "skillGroups": [],
+  "library": {
+    "intro": "Start with the constitution, the glossary and the domain map.",
+    "start": [
+      "constitution.md",
+      "vocabulary.md",
+      "domains.md",
+      "DESIGN.md"
+    ],
+    "groupLabels": {},
+    "groupOrder": [
+      "Core",
+      "Specs"
+    ]
+  },
+  "ruleCaveats": {},
+  "brand": {
+    "designDoc": "DESIGN.md",
+    "northStar": "Fast to capture, calm to review.",
+    "northStarBody": "The brand in DESIGN.md: one primary ramp, quiet surfaces, no decoration.",
+    "lineLocal": "",
+    "lineLatin": "",
+    "typeNote": "System stacks from DESIGN.md; no web fonts are embedded.",
+    "shapeNote": "Radii from DESIGN.md: small for chips, medium for notices, large for cards.",
+    "roleLabels": {},
+    "do": [
+      "Style every artifact from brand/brand.css."
+    ],
+    "dont": [
+      "Invent a colour for one page."
+    ]
+  },
+  "hub": {
+    "lede": "The Product Brain hub for Todo: knowledge for the todo-api and todo-web repos.",
+    "map": [
+      [
+        "constitution.md",
+        "Constitution — Todo",
+        "constitution.md"
+      ],
+      [
+        "vocabulary.md",
+        "Vocabulary — Todo",
+        "vocabulary.md"
+      ],
+      [
+        "domains.md",
+        "Domain Map — Todo",
+        "domains.md"
+      ],
+      [
+        "DESIGN.md",
+        "Design System: Todo",
+        "DESIGN.md"
+      ]
+    ],
+    "gaps": [],
+    "repos": [
+      [
+        "todo-api",
+        "The backend API."
+      ],
+      [
+        "todo-web",
+        "The web app."
+      ]
+    ],
+    "commands": [
+      "# pull the repos and rebuild the graph",
+      "pb sync",
+      "pb status",
+      "# product term -> code symbols",
+      "pb find <term>"
+    ]
+  }
+}
