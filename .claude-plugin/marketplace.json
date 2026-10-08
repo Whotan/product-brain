@@ -7,7 +7,7 @@
     {
       "name": "product-brain",
       "source": ".",
-      "description": "The brainify skill + pb CLI: create and maintain a Product Brain hub. Installing puts pb on PATH and makes 'set up product brain' available — no manual copy, no PATH editing. Also ships the brand-system skill (one product-level DESIGN.md, compiled to brand/) and the delivery-roadmap, release-notes, and update-product-hub artifact skills, all styled only from that brand."
+      "description": "The brainify skill + pb CLI: create and maintain a Product Brain hub. Installing puts pb on PATH and makes 'set up product brain' available — no manual copy, no PATH editing. Also ships the brand-system skill (one product-level DESIGN.md, compiled to brand/) and the delivery-roadmap, release-notes, update-product-hub and hub-portal artifact skills, all styled only from that brand."
     },
     {
       "name": "git-workflow",

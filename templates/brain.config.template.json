@@ -63,5 +63,18 @@
       { "id": "roadmap", "path": "docs/roadmap/.roadmap-facts.json", "produced_by": "delivery-roadmap" },
       { "id": "goals", "path": "docs/okrs/tracker.html", "produced_by": null, "kind": "goals", "max_age_days": 7 }
     ]
+  },
+  "portal": {
+    "data": "docs/dashboard/hub-portal.json",
+    "specs_dir": "docs/specs",
+    "tasks": {
+      "dir": "tasks",
+      "key_regex": "^PROJ-\\d+$"
+    },
+    "source": {
+      "blob": "https://github.com/acme/acme-brain/blob/main/",
+      "tree": "https://github.com/acme/acme-brain/tree/main/",
+      "branch": "main"
+    }
   }
 }

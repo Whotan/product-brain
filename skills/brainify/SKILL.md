@@ -1,6 +1,6 @@
 ---
 name: brainify
-version: 0.8.0
+version: 0.9.0
 description: Set up, refresh, and maintain a Product Brain hub — a single, method-agnostic source of truth for product knowledge across one or more code repos. Use when the user says "set up product brain", "brainify", "create a hub", "audit our setup", "what's missing from our brain", "what should I do next", "upgrade the hub", "create the knowledge docs", or wants to refresh/update the brain — e.g. "update me", "update the brain", "refresh the brain", "sync the graph", "rebuild the graph", "pull the latest" — in a Product Brain context.
 ---
 
@@ -600,6 +600,7 @@ default.
 | `delivery-roadmap` | A git-grounded delivery roadmap (HTML) and its facts JSON | `roadmap` |
 | `release-notes` | Per-release client + internal notes (HTML/PDF/Markdown) | `releases` |
 | `update-product-hub` | The product dashboard (HTML) and its state JSON | `dashboard` |
+| `hub-portal` | The hub's front page (HTML + Markdown bundles): status, every doc, artifacts, specs, skills | `portal` |
 
 Every one of them runs `check-brand.py` (from `brand-system`) in its verify step before it's
 considered done — see the "Brand design system" constitution principle.

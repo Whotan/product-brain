@@ -1,7 +1,7 @@
 # Artifact skills
 
-Four skills that turn a hub's knowledge into generated documents: the brand design system, the
-delivery roadmap, release notes, and the product dashboard. They ship in the Product Brain plugin
+Five skills that turn a hub's knowledge into generated documents: the brand design system, the
+delivery roadmap, release notes, the product dashboard, and the hub portal. They ship in the Product Brain plugin
 (`skills/<name>/`), work in **any** hub, and read every product-specific fact from
 `brain.config.json` — never a hardcoded default. A missing config key is a clear error naming the
 key and an example value, not a silent fallback.
@@ -12,8 +12,9 @@ key and an example value, not a silent fallback.
 | `delivery-roadmap` | The internal delivery roadmap (HTML: one card per feature, a computed timeline, a conflicts panel) and its facts JSON. It reads a per-release **headline** back out of `release-notes`' output, but does not write release notes itself. | `repos`, `releases` (partially — see below), `roadmap` |
 | `release-notes` | Per-release folder: `client.html` + `client.pdf` (client locale only, publishable) and `internal.md` (team only). Can also open the merge/pull request that ships the latest release branch to production, with an English, bullet-point, Added/Changed/Fixed body built from git — a separate document from the two notes. | `repos`, `releases`, `design.logo`/`design.source` |
 | `update-product-hub` | The product dashboard (HTML: today's focus, at-risk items, yesterday's activity) and the `dashboard.state` recorded layer | `repos`, `releases.integration_branch`, `dashboard`, `graph.out` |
+| `hub-portal` | The hub's front page (HTML plus `md/*.json` bundles): a status section, every hub Markdown file rendered in place and searchable, live artifacts, specs, workflows, skills, brand and hub map. Facts a person decides live in one data file; everything derivable is derived on each build, and a privacy scan gates every publish | `portal`, `roadmap.specs_dir`/`releases.specs_dir` (fallbacks), `graph.out`, `design.build` |
 
-All four are invoked as `product-brain:<name>` once the plugin is installed, or by asking
+All five are invoked as `product-brain:<name>` once the plugin is installed, or by asking
 naturally ("refresh the roadmap", "write release notes for this tag") — see
 [Migrating from hub-local copies](#migrating-from-hub-local-copies) below.
 
@@ -182,6 +183,17 @@ generated README's heading and the dashboard/release-notes wordmark to agree —
 | `inputs[].check` | No | — | `"docs/checks/goals-match-audit.py"` — hub-relative `.py`, run as `python <check> <hub-root> <page-path> <input-path>`, must print `PASS\|WARN\|FAIL name — detail — remedy` lines and exit 0 |
 | `inputs[].max_age_days` | No | `0` for an input the refresh re-runs itself, `7` otherwise | `7` |
 
+### `portal` (read by `hub-portal`)
+
+| Key | Required? | Default | Example |
+|---|---|---|---|
+| `data` | Yes | — | `"docs/dashboard/hub-portal.json"` — the hand-maintained data file; start one with `scripts/init-data.py`. Contract: `skills/hub-portal/references/data-contract.md` |
+| `out` | No | `".work/hub-portal"` | where `index.html` and `md/*.json` are built (git-ignored; never committed) |
+| `specs_dir` | No | `roadmap.specs_dir`, then `releases.specs_dir`; a clear error if none is set | `"docs/specs"` — one folder or one `.md` file per spec |
+| `tasks` | No | — (no task section) | `{ "dir": "tasks", "key_regex": "^PROJ-\\d+$" }` |
+| `source` | No | — (no "Open in …" button) | `{ "blob": "https://github.com/acme/hub/blob/main/", "tree": "https://github.com/acme/hub/tree/main/", "branch": "main" }` |
+| `calendar` | No | Gregorian only | `"jalali"` — adds the Jalali date beside the Gregorian one |
+
 Workers and the skills themselves never edit `brain.config.json` — a missing or wrong key stops
 the script with the key's name and an example value; the user (or Claude, on their behalf) edits
 the file.
@@ -220,15 +232,15 @@ Written by `brand.py build` under `<design.build>/tokens.json`. Consumed by `che
 
 ## Migrating from hub-local copies
 
-Development on these four skills can start as hub-local copies under
+Development on these five skills can start as hub-local copies under
 `.claude/skills/<name>/` while they're being written or customized for one team. Once the plugin
 ships the same skill under `skills/<name>/`, migrate:
 
 1. Confirm the Product Brain plugin is installed and up to date (`/plugin marketplace update
    product-brain`, `/reload-plugins`), and that `product-brain:<name>` responds for each of the
-   four skills.
+   five skills.
 2. Delete the hub-local copy: `rm -rf .claude/skills/<name>` for each of `brand-system`,
-   `delivery-roadmap`, `release-notes`, `update-product-hub`. **A hub-local skill of the same name
+   `delivery-roadmap`, `release-notes`, `update-product-hub`, `hub-portal`. **A hub-local skill of the same name
    shadows the plugin's** — Claude Code resolves the more specific one first — so leaving the old
    copy in place silently keeps running the stale version even after the plugin updates.
 3. Plugin skills are namespaced `product-brain:<name>` (e.g. `product-brain:brand-system`) —

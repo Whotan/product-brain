@@ -210,7 +210,7 @@ from the plugin and report up to date) and "set up product brain" (the skill sho
 
 ### Versions & updates
 
-The framework version lives in `VERSION` (currently `0.8.0`) and is stamped into the skill's
+The framework version lives in `VERSION` (currently `0.9.0`) and is stamped into the skill's
 frontmatter. Check what you have — and whether your installed skill is current — with:
 
 ```bash
@@ -362,7 +362,7 @@ existing hub gets all of this with "upgrade the hub" (brainify asks whether to o
 
 ## Using the artifact skills
 
-Four sibling skills turn the hub's knowledge into generated documents, all styled from the one
+Five sibling skills turn the hub's knowledge into generated documents, all styled from the one
 compiled brand (see `DESIGN.md` above):
 
 | Skill | Scope |
@@ -371,6 +371,7 @@ compiled brand (see `DESIGN.md` above):
 | `delivery-roadmap` | The internal delivery roadmap: one card per feature, a computed timeline, and a conflicts panel — grounded in git, not task lists. It reads a release's headline back out of `release-notes`, but does not write release notes itself. |
 | `release-notes` | Owns release notes: a publishable client note (HTML + PDF, one locale) and a team-only internal note, per release tag. Can also open the merge/pull request that ships a release branch to production, with a bullet-point, English changelog body. |
 | `update-product-hub` | The product dashboard: what to do today, what's at risk, what shipped yesterday — re-derived every run from git, the graph, and the other skills' output. |
+| `hub-portal` | The hub's front page for anyone on the team: where the product stands, every hub document rendered in place and searchable, the live artifacts, specs, workflows, skills and brand — built from one hand-maintained data file plus everything derivable from the hub, with a privacy scan before every publish. |
 
 Invoke one directly as `/product-brain:<name>` (e.g. `/product-brain:release-notes`), or just ask
 naturally — "refresh the roadmap", "write release notes for this tag", "what's at risk today" —
