@@ -467,6 +467,13 @@ head, title, and the full bullet body — so you can read it over (and let the
 user look, if one is present) before anything is opened. `--json` prints the same
 plan as JSON.
 
+**Never open a second one.** The script asks the host (read-only, through `gh` / `glab` when installed)
+whether a merge request from the release branch into production is already open. If so it prints
+`already open: <url>`, creates nothing, and that is the answer to give the user. `--json` carries the
+same as `existing_mr` (`url`, and `checked`). When `checked` is false there is no CLI to ask, so before
+creating through an MCP tool, look up open merge requests with that source and target branch
+yourself; if one exists, report it and stop.
+
 **No particular tool is required to open it.** After the user's yes, use whichever of
 these this session has, in this order, and say which one you used:
 

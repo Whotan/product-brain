@@ -242,6 +242,13 @@ migrations before code that reads new columns; "independent" when nothing links 
 
 ## Not reviewed
 <repos skipped in Step 1, with the reason>
+
+## Next step
+<one line that tells a product owner what to do now, from the launch decision:
+✅ APPROVED / ⚠️ APPROVED WITH CONDITIONS -> "Ready for the merge request: ask Claude to open the
+release merge request (release-notes, step 9)" — plus, for ⚠️, "once the conditions above are met or
+knowingly accepted"; ❌ NOT APPROVED -> "Not ready: fix the items under *What failed*, then run
+epic-approval again — a new head means a new report">
 ```
 
 The summary's *What failed* section is built from the same verdicts and findings as the repo
@@ -265,7 +272,8 @@ is one, and a neutral style otherwise (`--no-brand` forces the neutral one). The
 the source of truth and the only thing committed; the page is disposable, so re-render it after any
 change to them.
 
-Print the summary in the chat with the path to the folder. Then offer — each only on an explicit
+Print the summary in the chat with the path to the folder, ending with the summary's *Next step* line,
+so the person reading knows what to ask for next without knowing the skill names. Then offer — each only on an explicit
 yes: publish `approval.html` as an Artifact (private until the user shares it; if one already
 exists for this release branch, republish to the **same URL** with a dated `label`) and give the
 user its URL, commit the report folder to the hub (following the git-workflow commit rule), post each

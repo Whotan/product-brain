@@ -35,6 +35,11 @@ Usage:
 Opening a merge/pull request is a visible, hard-to-undo action, so this prints
 the plan and stops there unless you pass --create.
 
+It never opens a second merge request: before creating, it asks the host (read-only, through gh /
+glab when installed) whether one from the release branch into production is already open, and if so
+prints its URL and creates nothing. With no CLI it cannot ask; `--json` then says `checked: false`,
+and whoever opens the request through an MCP tool must look first.
+
 No particular tool is required to open it. The plan carries everything a merge request needs
 (base, head, title, body); `--json` prints it as JSON so an agent can create it through a GitLab
 or GitHub MCP tool. `--create` uses `gh` / `glab` only if one is installed; when it is not, the
@@ -198,6 +203,34 @@ def host_of(repo: Path, override: str | None):
     return "gitlab" if "gitlab" in url else "github" if "github" in url else None
 
 
+def open_mr(repo: Path, host, base: str, head: str):
+    """(checked, url): is a merge/pull request from `head` into `base` already open? Read-only.
+
+    `checked` is False when this could not be asked (no CLI, no host, an unreadable answer) - the
+    caller must then not assume there is none."""
+    cli = {"github": "gh", "gitlab": "glab"}.get(host)
+    if not cli or shutil.which(cli) is None:
+        return False, None
+    cmd = ([cli, "pr", "list", "--head", head, "--base", base, "--state", "open", "--json", "url"]
+           if cli == "gh" else
+           [cli, "mr", "list", "--source-branch", head, "--target-branch", base, "-F", "json"])
+    proc = subprocess.run(cmd, cwd=str(repo), capture_output=True, text=True,
+                          encoding="utf-8", errors="replace")
+    if proc.returncode != 0:
+        return False, None
+    try:
+        data = json.loads(proc.stdout or "[]")
+    except json.JSONDecodeError:
+        return False, None
+    if not isinstance(data, list):
+        return False, None
+    for item in data:
+        url = item.get("url") or item.get("web_url") if isinstance(item, dict) else None
+        if url:
+            return True, url
+    return True, None
+
+
 def create_mr(repo: Path, host, base: str, head: str, title: str, body: str) -> int:
     if host is None:
         print("could not tell GitHub from GitLab from origin's URL - pass --host github|gitlab, or "
@@ -268,9 +301,11 @@ def main() -> int:
     body = build_body(sections)
 
     host = host_of(repo, args.host)
+    checked, existing = open_mr(repo, host, production, release_branch)
     if args.json:
         print(json.dumps({"repo": repo_id, "base": production, "head": release_branch, "title": title,
                           "body": body, "host": host,
+                          "existing_mr": {"checked": checked, "url": existing},
                           "cli": {"gh": shutil.which("gh") is not None, "glab": shutil.which("glab") is not None}},
                          indent=2, ensure_ascii=False))
         return 0
@@ -281,7 +316,15 @@ def main() -> int:
     print(f"title:  {title}")
     print("body:")
     print(body)
+    if existing:
+        print(f"already open: {existing}")
+    elif not checked:
+        print("existing: could not check (no gh/glab) - look for an open merge request from "
+              f"{release_branch} into {production} before creating one")
 
+    if existing:
+        print("A merge request for this release branch is already open - nothing was created.")
+        return 0
     if not args.create:
         print("(plan only - pass --create to open it with gh / glab, or create it with your "
               "GitLab/GitHub MCP tool from this plan)")
