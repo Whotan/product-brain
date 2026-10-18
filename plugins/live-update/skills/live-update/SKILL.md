@@ -1,7 +1,7 @@
 ---
 name: live-update
 description: File the Jira Service Desk request (for example "Production Deployment") for a release once its epic-approval reports and release notes exist — checks that both are there, then fills in the customer-portal form in the user's signed-in browser (summary, description, the Component/s that says which product, attachments), links the release's merge/pull request, and never files a duplicate. Use when the user asks to raise, file or create the Jira ticket, production-deployment request or deployment ticket for a release, to attach the epic-approval report or release notes to a ticket, or after epic-approval and release-notes have run and the ticket is still missing.
-argument-hint: "[release-branch] [--client-note-url <url>] [--approval-url <url>]"
+argument-hint: "[release-branch] [--client-note-url <url>] [--approval-url <url>] [--mr-url <url>]"
 allowed-tools: [Bash, Read, Edit, Glob, Grep]
 ---
 
@@ -53,17 +53,23 @@ Create before the user has seen the filled-in form and said yes.
 ### 1. Gather the facts
 
 ```bash
-python3 "${CLAUDE_SKILL_DIR}/scripts/gather-live-update-facts.py" [--branch <name>] [--client-note-url <url>] [--approval-url <url>]
+python3 "${CLAUDE_SKILL_DIR}/scripts/gather-live-update-facts.py" [--branch <name>] [--client-note-url <url>] [--approval-url <url>] [--mr-url <url>]
 ```
 
 Read-only; it does not touch Jira or a browser. Prints one JSON object: the release (`branch`,
 `version_label`, `source`, `branch_state`), what epic-approval and release-notes produced, the merge
-request (`merge_request.url`, from `gh` / `glab`), `attachments[]` (local files that must be
+request (`merge_request.url`, from `gh` / `glab`, or from `--mr-url`), `attachments[]` (local files that must be
 uploaded), `links`, the `request` block (`portal_url`, `request_type`, `create_url`, `requests_url`,
 `component`, `marker`, `suggested_summary`, `missing_keys`), the `gate` block (`require`, `missing`,
 `satisfied`, and `pipeline`: the steps in release order, each `done` or not) and `warnings[]`. Show the user every
 warning. Exit 2 means the release could not be identified — ask which branch or version, and re-run
 with `--branch` / `--version`.
+
+**The merge request does not need a CLI.** If `merge_request.url` is null because `gh` / `glab` is not
+installed or not signed in, find the release branch's open merge/pull request yourself with a
+connected GitLab (or GitHub) MCP tool — a read-only lookup by source branch, never creating one — and
+re-run Step 1 with `--mr-url <url>`. If no such tool exists either, say the merge request is unknown;
+the release-notes skill (step 9) opens it.
 
 ### 2. Walk the release's steps, in order
 

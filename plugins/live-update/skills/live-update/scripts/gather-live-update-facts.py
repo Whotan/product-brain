@@ -29,7 +29,8 @@ Keys read from brain.config.json (all optional; a missing one becomes a warning,
                                         the request may not be filed until each one exists (a hard gate)
 
     gather-live-update-facts.py [--hub DIR] [--repo ID] [--branch NAME | --version LABEL]
-                                [--client-note-url URL] [--approval-url URL] [--host github|gitlab]
+                                [--client-note-url URL] [--approval-url URL] [--mr-url URL]
+                                [--host github|gitlab]
                                 [--no-fetch] [--no-vcs-host]
 
 Exit codes: 0 facts printed (missing artifacts are data), 2 a person must decide, 1 error.
@@ -299,8 +300,12 @@ def detect_host(repo):
     return "gitlab" if "gitlab" in url else "github" if "github" in url else None
 
 
-def merge_request_facts(repo, branch, host, skip):
+def merge_request_facts(repo, branch, host, skip, mr_url=None):
     info = {"branch": branch, "host": None, "url": None, "state": None, "found_via": ""}
+    if mr_url:
+        # found by the agent with a GitLab/GitHub MCP tool: no CLI is needed to know it
+        info.update(host=host or detect_host(repo), url=mr_url, found_via="cli-arg")
+        return info
     if skip:
         info["found_via"] = "skipped (--no-vcs-host)"
         return info
@@ -410,9 +415,10 @@ def run(args):
 
     epic, epic_files = epic_approval_facts(cfg, release, args.approval_url, warnings)
     notes, notes_files = release_notes_facts(cfg, release, args.client_note_url, warnings)
-    mr = merge_request_facts(repo, release["branch"], args.host, args.no_vcs_host)
+    mr = merge_request_facts(repo, release["branch"], args.host, args.no_vcs_host, args.mr_url)
     if not args.no_vcs_host and release["branch"] and not mr["url"]:
-        warnings.append(f"no merge/pull request found for '{release['branch']}' ({mr['found_via']})")
+        warnings.append(f"no merge/pull request found for '{release['branch']}' ({mr['found_via']}); "
+                        "look it up with a GitLab/GitHub MCP tool and re-run with --mr-url")
 
     return {
         "hub": str(hub),
@@ -440,10 +446,15 @@ def main():
     which.add_argument("--version", help="the release version label, when there is no branch")
     ap.add_argument("--client-note-url", help="URL of the client note published as an Artifact")
     ap.add_argument("--approval-url", help="URL of the epic-approval page (approval.html) published as an Artifact")
+    ap.add_argument("--mr-url", help="URL of the release's merge/pull request, when gh / glab cannot find it "
+                                     "(e.g. found with a GitLab/GitHub MCP tool)")
     ap.add_argument("--host", choices=["github", "gitlab"], help="override host detection")
     ap.add_argument("--no-fetch", action="store_true", help="skip git fetch")
     ap.add_argument("--no-vcs-host", action="store_true", help="do not call gh / glab")
     args = ap.parse_args()
+    if args.mr_url and not re.match(r"https?://\S+$", args.mr_url):
+        print("decide: --mr-url must be an http(s) URL", file=sys.stderr)
+        return 2
     try:
         facts = run(args)
     except Decide as e:

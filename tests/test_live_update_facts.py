@@ -168,6 +168,18 @@ def main():
         check(f["merge_request"]["url"] is None and f["merge_request"]["found_via"] == "not found", "no mr found")
         check(any("no merge/pull request" in w for w in f["warnings"]), "missing mr warned about")
 
+        # 4b. gh / glab cannot find it, but the agent did with an MCP tool: --mr-url is trusted, no CLI is run
+        shim(shims, "gh", "exit 1")
+        rc, f = run(hub, "--mr-url", "https://gitlab.example/o/r/-/merge_requests/12", path=str(shims))
+        m = f["merge_request"]
+        check(m["url"].endswith("/merge_requests/12") and m["found_via"] == "cli-arg"
+              and f["links"]["merge_request_url"] == m["url"], f"--mr-url used as given: {m}")
+        check(not any("no merge/pull request" in w for w in f["warnings"]), "no missing-MR warning when it is given")
+        rc, f = run(hub, path=str(shims))
+        check(any("--mr-url" in w for w in f["warnings"]), "the warning points at --mr-url")
+        rc, err = run(hub, "--mr-url", "javascript:alert(1)")
+        check(rc == 2 and "http" in err, "a non-http --mr-url is refused")
+
         # 5. release branch merged and deleted -> latest tag; artifacts found by version
         git(api, "push", "-q", "origin", "--delete", "release.1.5.0")
         git(api, "tag", "v1.5.0", "main")
