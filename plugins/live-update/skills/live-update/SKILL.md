@@ -1,7 +1,7 @@
 ---
 name: live-update
 description: File the Jira Service Desk request (for example "Production Deployment") for a release once its epic-approval reports and release notes exist — checks that both are there, then fills in the customer-portal form in the user's signed-in browser (summary, description, the Component/s that says which product, attachments), links the release's merge/pull request, and never files a duplicate. Use when the user asks to raise, file or create the Jira ticket, production-deployment request or deployment ticket for a release, to attach the epic-approval report or release notes to a ticket, or after epic-approval and release-notes have run and the ticket is still missing.
-argument-hint: "[release-branch] [--client-note-url <url>] [--approval-url <url>] [--mr-url <url>]"
+argument-hint: "[release-branch] [--client-note-url <url>] [--approval-url <url>] [--merge-request-url <url>]"
 allowed-tools: [Bash, Read, Edit, Glob, Grep]
 ---
 
@@ -53,23 +53,33 @@ Create before the user has seen the filled-in form and said yes.
 ### 1. Gather the facts
 
 ```bash
-python3 "${CLAUDE_SKILL_DIR}/scripts/gather-live-update-facts.py" [--branch <name>] [--client-note-url <url>] [--approval-url <url>] [--mr-url <url>]
+python3 "${CLAUDE_SKILL_DIR}/scripts/gather-live-update-facts.py" [--branch <name>] [--client-note-url <url>] [--approval-url <url>] [--merge-request-url <url>]
 ```
 
 Read-only; it does not touch Jira or a browser. Prints one JSON object: the release (`branch`,
 `version_label`, `source`, `branch_state`), what epic-approval and release-notes produced, the merge
-request (`merge_request.url`, from `gh` / `glab`, or from `--mr-url`), `attachments[]` (local files that must be
+request (`merge_request.url`; see 1b), `attachments[]` (local files that must be
 uploaded), `links`, the `request` block (`portal_url`, `request_type`, `create_url`, `requests_url`,
 `component`, `marker`, `suggested_summary`, `missing_keys`), the `gate` block (`require`, `missing`,
 `satisfied`, and `pipeline`: the steps in release order, each `done` or not) and `warnings[]`. Show the user every
 warning. Exit 2 means the release could not be identified — ask which branch or version, and re-run
 with `--branch` / `--version`.
 
-**The merge request does not need a CLI.** If `merge_request.url` is null because `gh` / `glab` is not
-installed or not signed in, find the release branch's open merge/pull request yourself with a
-connected GitLab (or GitHub) MCP tool — a read-only lookup by source branch, never creating one — and
-re-run Step 1 with `--mr-url <url>`. If no such tool exists either, say the merge request is unknown;
-the release-notes skill (step 9) opens it.
+### 1b. Find the merge request through any connection
+
+No particular tool is required. The script uses `gh` / `glab` only when they are installed and signed
+in. When `merge_request.url` is null and `merge_request.lookup` is set, find the MR/PR yourself, with
+the first connection that answers:
+
+1. **A GitLab or GitHub MCP server**, if this session has one: list the merge/pull requests of
+   `lookup.project` whose source branch is `lookup.source_branch` (any state).
+2. **The browser**: open `lookup.search_url`, the host's MR/PR list filtered to that branch.
+3. **The user**: ask for the link.
+
+Then re-run Step 1 with `--merge-request-url <url>`. That URL counts as found, including for
+`live_update.require`. Pass only a URL that you read from the host or that the user gave you, never
+one you built yourself. If no connection finds an MR, the branch has none yet, and Step 2 offers to
+open one.
 
 ### 2. Walk the release's steps, in order
 
@@ -146,6 +156,7 @@ Request key and URL; what was linked, what was attached, what was skipped and wh
 - Never press Create before the user has seen the filled-in form and said yes.
 - Never invent a URL. A published release-note or epic-approval page link is one the user
   supplied (`--client-note-url`, `--approval-url`) or that `facts.json` records (release note only).
+  A merge request link is one `gh` / `glab` returned, or one that Step 1b read from the host or got from the user.
 - Never attach anything that could hold a secret; these artifacts should not, but check the
   filenames in `attachments[]` before uploading.
 - Never create a second request for a release whose marker already appears in the user's requests.

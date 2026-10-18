@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Collect the facts needed to file one Jira Service Desk request for a release (live-update only).
 
-Read-only: it reads git and hub files, and asks `gh` / `glab` (never `create`) for the release's
-merge/pull request. It makes NO Jira call, opens no browser and reads no credential - the skill's
+Read-only: it reads git and hub files. The release's merge/pull request comes from whichever
+connection the agent has: a URL it looked up itself (a GitLab / GitHub MCP server, the browser, the
+user) and passes as --merge-request-url, else `gh` / `glab` when installed (`view` only, never
+`create`). When neither answers, `merge_request.lookup` says where to look. It makes NO Jira call, opens no browser and reads no credential - the skill's
 agent fills in the Jira Service Desk customer-portal form itself, in a browser the user is already
 signed in to. This script only answers: which release is this, which artifacts exist for it, which
 have a URL, which are local files that must be attached, and what the form should say.
@@ -29,9 +31,8 @@ Keys read from brain.config.json (all optional; a missing one becomes a warning,
                                         the request may not be filed until each one exists (a hard gate)
 
     gather-live-update-facts.py [--hub DIR] [--repo ID] [--branch NAME | --version LABEL]
-                                [--client-note-url URL] [--approval-url URL] [--mr-url URL]
-                                [--host github|gitlab]
-                                [--no-fetch] [--no-vcs-host]
+                                [--client-note-url URL] [--approval-url URL] [--merge-request-url URL]
+                                [--host github|gitlab] [--no-fetch] [--no-vcs-host]
 
 Exit codes: 0 facts printed (missing artifacts are data), 2 a person must decide, 1 error.
 """
@@ -45,7 +46,7 @@ import json
 import re
 import shutil
 import subprocess
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -114,9 +115,9 @@ def version_of(text):
 
 def rel(hub, path):
     try:
-        return str(Path(path).resolve().relative_to(hub))
+        return Path(path).resolve().relative_to(Path(hub).resolve()).as_posix()
     except ValueError:
-        return str(path)
+        return Path(path).as_posix()
 
 
 # ------------------------------------------------------------------------ finding the release
@@ -295,16 +296,38 @@ def release_notes_facts(cfg, release, client_url, warnings):
     return info, files
 
 
+def origin_project(repo):
+    """(web base URL, project path) of origin, e.g. ("https://gitlab.example.com", "group/app")."""
+    url = git(repo, "remote", "get-url", "origin").stdout.strip()
+    m = (re.match(r"^[a-z][a-z0-9+.-]*://(?:[^@/]+@)?([^/:]+)(?::\d+)?/(.+?)(?:\.git)?/?$", url, re.I)
+         or re.match(r"^(?:[^@/]+@)?([^/:]+):(?!//)(.+?)(?:\.git)?/?$", url))
+    if not m or "." not in m.group(1):
+        return None, None
+    return f"https://{m.group(1)}", m.group(2)
+
+
 def detect_host(repo):
     url = git(repo, "remote", "get-url", "origin").stdout.strip().lower()
     return "gitlab" if "gitlab" in url else "github" if "github" in url else None
 
 
-def merge_request_facts(repo, branch, host, skip, mr_url=None):
-    info = {"branch": branch, "host": None, "url": None, "state": None, "found_via": ""}
-    if mr_url:
-        # found by the agent with a GitLab/GitHub MCP tool: no CLI is needed to know it
-        info.update(host=host or detect_host(repo), url=mr_url, found_via="cli-arg")
+def lookup_hint(host, base, project, branch):
+    """Where the agent can find the MR itself, through whatever connection it has."""
+    hint = {"host": host, "web_base": base, "project": project, "source_branch": branch, "search_url": None}
+    if base and project:
+        b = quote(branch, safe="")
+        hint["search_url"] = (f"{base}/{project}/-/merge_requests?scope=all&state=all&source_branch={b}"
+                              if host == "gitlab" else
+                              f"{base}/{project}/pulls?q=is%3Apr+head%3A{b}" if host == "github" else None)
+    return hint
+
+
+def merge_request_facts(repo, branch, host, skip, supplied_url=None):
+    info = {"branch": branch, "host": None, "url": None, "state": None, "found_via": "", "lookup": None}
+    if supplied_url:
+        if urlsplit(supplied_url).scheme not in ("http", "https"):
+            raise Decide(f"--merge-request-url must be an http(s) URL, got {supplied_url!r}")
+        info.update(host=host or detect_host(repo), url=supplied_url, found_via="supplied (--merge-request-url)")
         return info
     if skip:
         info["found_via"] = "skipped (--no-vcs-host)"
@@ -314,28 +337,31 @@ def merge_request_facts(repo, branch, host, skip, mr_url=None):
         return info
     host = host or detect_host(repo)
     info["host"] = host
+    base, project = origin_project(repo)
+    info["lookup"] = lookup_hint(host, base, project, branch)
     if not host:
         info["found_via"] = "host not detected (origin names neither github nor gitlab; pass --host)"
         return info
     cli = "gh" if host == "github" else "glab"
-    if not shutil.which(cli):
-        info["found_via"] = f"{cli} not available"
+    exe = shutil.which(cli)
+    if not exe:
+        info["found_via"] = f"{cli} not installed"
         return info
-    cmd = ([cli, "pr", "view", branch, "--json", "url,state"] if host == "github"
-           else [cli, "mr", "view", branch, "-F", "json"])
+    cmd = ([exe, "pr", "view", branch, "--json", "url,state"] if host == "github"
+           else [exe, "mr", "view", branch, "-F", "json"])
     proc = subprocess.run(cmd, cwd=str(repo), capture_output=True, text=True,
                           encoding="utf-8", errors="replace")
     if proc.returncode != 0:
-        info["found_via"] = "not found"
+        info["found_via"] = f"not found by {cli} (not signed in to this host, or no MR)"
         return info
     try:
         data = json.loads(proc.stdout)
     except json.JSONDecodeError:
-        info["found_via"] = "unreadable output"
+        info["found_via"] = f"unreadable {cli} output"
         return info
     state = str(data.get("state") or "").lower()
     info.update(url=data.get("url") or data.get("web_url"),
-                state={"opened": "open"}.get(state, state) or None, found_via=f"{cli} view")
+                state={"opened": "open"}.get(state, state) or None, found_via=f"{cli} view", lookup=None)
     return info
 
 
@@ -415,10 +441,11 @@ def run(args):
 
     epic, epic_files = epic_approval_facts(cfg, release, args.approval_url, warnings)
     notes, notes_files = release_notes_facts(cfg, release, args.client_note_url, warnings)
-    mr = merge_request_facts(repo, release["branch"], args.host, args.no_vcs_host, args.mr_url)
-    if not args.no_vcs_host and release["branch"] and not mr["url"]:
-        warnings.append(f"no merge/pull request found for '{release['branch']}' ({mr['found_via']}); "
-                        "look it up with a GitLab/GitHub MCP tool and re-run with --mr-url")
+    mr = merge_request_facts(repo, release["branch"], args.host, args.no_vcs_host, args.merge_request_url)
+    if mr["lookup"] and not mr["url"]:
+        warnings.append(f"no merge/pull request found for '{release['branch']}' ({mr['found_via']}) - "
+                        "look it up through any connection you have (GitLab/GitHub MCP, the browser at "
+                        "merge_request.lookup.search_url, or the user) and re-run with --merge-request-url")
 
     return {
         "hub": str(hub),
@@ -446,15 +473,12 @@ def main():
     which.add_argument("--version", help="the release version label, when there is no branch")
     ap.add_argument("--client-note-url", help="URL of the client note published as an Artifact")
     ap.add_argument("--approval-url", help="URL of the epic-approval page (approval.html) published as an Artifact")
-    ap.add_argument("--mr-url", help="URL of the release's merge/pull request, when gh / glab cannot find it "
-                                     "(e.g. found with a GitLab/GitHub MCP tool)")
+    ap.add_argument("--merge-request-url",
+                    help="URL of the release's merge/pull request, found through any connection (MCP, browser, user)")
     ap.add_argument("--host", choices=["github", "gitlab"], help="override host detection")
     ap.add_argument("--no-fetch", action="store_true", help="skip git fetch")
-    ap.add_argument("--no-vcs-host", action="store_true", help="do not call gh / glab")
+    ap.add_argument("--no-vcs-host", action="store_true", help="do not call gh / glab (--merge-request-url still counts)")
     args = ap.parse_args()
-    if args.mr_url and not re.match(r"https?://\S+$", args.mr_url):
-        print("decide: --mr-url must be an http(s) URL", file=sys.stderr)
-        return 2
     try:
         facts = run(args)
     except Decide as e:

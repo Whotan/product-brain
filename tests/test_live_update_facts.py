@@ -41,10 +41,16 @@ def run(hub, *args, path=None):
     return proc.returncode, (json.loads(proc.stdout) if proc.returncode == 0 else proc.stderr)
 
 
-def shim(folder, name, body):
-    p = folder / name
-    p.write_text("#!/bin/sh\n" + body + "\n")
-    p.chmod(p.stat().st_mode | stat.S_IEXEC)
+def shim(folder, name, out="", code=0):
+    """A fake CLI on PATH that prints `out` and exits `code` - a .cmd on Windows, a sh script elsewhere."""
+    py = folder / f"{name}_shim.py"
+    py.write_text(f"import sys\nsys.stdout.write({out!r})\nsys.exit({code})\n")
+    if os.name == "nt":
+        (folder / f"{name}.cmd").write_text(f'@"{sys.executable}" "{py}" %*\r\n')
+    else:
+        p = folder / name
+        p.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{py}" "$@"\n')
+        p.chmod(p.stat().st_mode | stat.S_IEXEC)
 
 
 def check(cond, what):
@@ -153,32 +159,50 @@ def main():
         # 4. merge request lookup through a fake gh / glab on PATH
         shims = tmp / "shims"
         shims.mkdir()
-        shim(shims, "gh", 'echo \'{"url":"https://github.com/o/r/pull/7","state":"OPEN"}\'')
+        shim(shims, "gh", '{"url":"https://github.com/o/r/pull/7","state":"OPEN"}')
         rc, f = run(hub, path=str(shims))
         m = f["merge_request"]
         check(m["host"] == "github" and m["url"] == "https://github.com/o/r/pull/7" and m["state"] == "open"
               and m["found_via"] == "gh view", f"gh lookup: {m}")
         check(f["links"]["merge_request_url"] == m["url"], "mr link in links")
-        shim(shims, "glab", 'echo \'{"web_url":"https://gitlab.example/o/r/-/merge_requests/3","state":"opened"}\'')
+        shim(shims, "glab", '{"web_url":"https://gitlab.example/o/r/-/merge_requests/3","state":"opened"}')
         rc, f = run(hub, "--host", "gitlab", path=str(shims))
         check(f["merge_request"]["url"].endswith("/merge_requests/3") and f["merge_request"]["state"] == "open",
               "glab lookup")
-        shim(shims, "gh", "exit 1")
+        shim(shims, "gh", code=1)
         rc, f = run(hub, path=str(shims))
-        check(f["merge_request"]["url"] is None and f["merge_request"]["found_via"] == "not found", "no mr found")
-        check(any("no merge/pull request" in w for w in f["warnings"]), "missing mr warned about")
+        check(f["merge_request"]["url"] is None and f["merge_request"]["found_via"].startswith("not found by gh"),
+              "no mr found")
+        check(any("no merge/pull request" in w and "--merge-request-url" in w for w in f["warnings"]),
+              "missing mr warned about, with the way to supply it")
+        check(f["merge_request"]["lookup"]["source_branch"] == "release.1.5.0"
+              and f["merge_request"]["lookup"]["search_url"] is None, "lookup hint; no web base for a local origin")
 
-        # 4b. gh / glab cannot find it, but the agent did with an MCP tool: --mr-url is trusted, no CLI is run
-        shim(shims, "gh", "exit 1")
-        rc, f = run(hub, "--mr-url", "https://gitlab.example/o/r/-/merge_requests/12", path=str(shims))
+        # 4b. any connection: the agent looked the MR up itself (MCP, browser, user) and passes the URL
+        mr_url = "https://gitlab.example.com/acme/api/-/merge_requests/12"
+        rc, f = run(hub, "--no-vcs-host", "--merge-request-url", mr_url)
         m = f["merge_request"]
-        check(m["url"].endswith("/merge_requests/12") and m["found_via"] == "cli-arg"
-              and f["links"]["merge_request_url"] == m["url"], f"--mr-url used as given: {m}")
-        check(not any("no merge/pull request" in w for w in f["warnings"]), "no missing-MR warning when it is given")
+        check(m["url"] == mr_url and m["found_via"] == "supplied (--merge-request-url)" and m["lookup"] is None
+              and f["links"]["merge_request_url"] == mr_url, f"supplied mr url: {m}")
+        check(not any("no merge/pull request" in w for w in f["warnings"]), "no missing-mr warning when supplied")
+        rc, f = run(hub, "--merge-request-url", mr_url, path=str(shims))
+        check(f["merge_request"]["url"] == mr_url, "supplied url wins over the CLI")
+        rc, err = run(hub, "--no-vcs-host", "--merge-request-url", "javascript:alert(1)")
+        check(rc == 2 and "http(s)" in err, f"non-http mr url refused: {rc} {err}")
+
+        # 4c. the lookup hint names the project and a search page on the real host
+        git(api, "remote", "set-url", "origin", "ssh://git@gitlab.example.com:2222/acme/api.git")
+        shim(shims, "glab", code=1)
         rc, f = run(hub, path=str(shims))
-        check(any("--mr-url" in w for w in f["warnings"]), "the warning points at --mr-url")
-        rc, err = run(hub, "--mr-url", "javascript:alert(1)")
-        check(rc == 2 and "http" in err, "a non-http --mr-url is refused")
+        h = f["merge_request"]["lookup"]
+        check(h["host"] == "gitlab" and h["web_base"] == "https://gitlab.example.com" and h["project"] == "acme/api"
+              and h["search_url"] == "https://gitlab.example.com/acme/api/-/merge_requests"
+                                     "?scope=all&state=all&source_branch=release.1.5.0", f"gitlab lookup hint: {h}")
+        git(api, "remote", "set-url", "origin", "git@github.com:acme/api.git")
+        rc, f = run(hub, path=str(shims))
+        check(f["merge_request"]["lookup"]["search_url"]
+              == "https://github.com/acme/api/pulls?q=is%3Apr+head%3Arelease.1.5.0", "github lookup hint")
+        git(api, "remote", "set-url", "origin", str(origin))
 
         # 5. release branch merged and deleted -> latest tag; artifacts found by version
         git(api, "push", "-q", "origin", "--delete", "release.1.5.0")
