@@ -65,13 +65,19 @@
       { "id": "goals", "path": "docs/okrs/tracker.html", "produced_by": null, "kind": "goals", "max_age_days": 7 }
     ]
   },
+  "tasks": {
+    "dir": "tasks",
+    "key_regex": "^PROJ-\\d+$",
+    "drafts": "drafts",
+    "tracker": { "kind": "jira", "url": "https://jira.example.com", "project": "PROJ" },
+    "branch": "task/{key_lower}",
+    "areas": { "backend-api": "BE", "web-app": "FE" },
+    "locales": ["en"],
+    "conventions": "docs/runbooks/task-conventions.md"
+  },
   "portal": {
     "data": "docs/dashboard/hub-portal.json",
     "specs_dir": "docs/specs",
-    "tasks": {
-      "dir": "tasks",
-      "key_regex": "^PROJ-\\d+$"
-    },
     "source": {
       "blob": "https://github.com/acme/acme-brain/blob/main/",
       "tree": "https://github.com/acme/acme-brain/tree/main/",

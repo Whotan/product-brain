@@ -809,9 +809,22 @@ LAYOUT_HELP = """Where things go in a Product Brain hub:
     (registered: {types})
   - a new kind of doc -> add its type to doc_types in brain.config.json first; never a new
     top-level folder
-  - scratch, command output, API/JSON dumps -> .work/ (git-ignored); put the finding in a doc
+  - scratch, command output, API/JSON dumps -> .work/ (git-ignored); put the finding in a doc{tasks}
   - the top level holds only: {root},
-    docs/, workflows/, templates/ (plus dot-files and the repos/graph folders)"""
+    {dirs} (plus dot-files)"""
+
+TASKS_HELP = """
+  - task work -> {dir}/<KEY>/, named by the ticket key alone; a draft with no key yet ->
+    {dir}/{drafts}/<slug>/, one folder per draft, moved to {dir}/<KEY>/ when its ticket exists"""
+
+
+def tasks_config(cfg: dict) -> dict:
+    """The hub's task folders, or {} when it has none: `tasks` in brain.config.json, else the older
+    `portal.tasks`. dir/<KEY>/ is a ticketed task; dir/<drafts>/<slug>/ is a draft without a key."""
+    t = cfg.get("tasks") or (cfg.get("portal") or {}).get("tasks") or {}
+    if not (isinstance(t, dict) and isinstance(t.get("dir"), str) and t["dir"].strip("/")):
+        return {}
+    return {**t, "dir": t["dir"].strip("/"), "drafts": (t.get("drafts") or "drafts").strip("/")}
 
 
 def _config_doc_dirs(v) -> set:
@@ -825,14 +838,21 @@ def _config_doc_dirs(v) -> set:
     return set()
 
 
+def layout_dirs(cfg: dict) -> set:
+    """The top-level folders a hub may hold: the fixed ones, the repos/graph/brand folders, and the
+    specs + tasks folders brain.config.json declares (a Spec Kit hub keeps specs/ at the root)."""
+    design = cfg.get("design", {})
+    declared = [cfg.get("workspace", {}).get("repos_dir", "repos"), cfg.get("graph", {}).get("out", "graph/"),
+                design.get("build", "brand"), tasks_config(cfg).get("dir")]
+    declared += [(cfg.get(k) or {}).get("specs_dir") for k in ("portal", "roadmap", "releases")]
+    return ROOT_DIRS | {d.strip("/").split("/")[0] for d in declared if isinstance(d, str) and d.strip("/")}
+
+
 def layout_problems(cfg: dict, paths) -> list:
     """The hub-relative (POSIX) paths that sit outside the hub layout."""
     types = set(cfg.get("doc_types", [])) | _config_doc_dirs(cfg)
-    design = cfg.get("design", {})
-    dirs = ROOT_DIRS | {cfg.get("workspace", {}).get("repos_dir", "repos"),
-                        cfg.get("graph", {}).get("out", "graph/").strip("/").split("/")[0],
-                        design.get("build", "brand").strip("/").split("/")[0]}
-    files = ROOT_FILES | {design.get("system", "DESIGN.md")}
+    dirs = layout_dirs(cfg)
+    files = ROOT_FILES | {cfg.get("design", {}).get("system", "DESIGN.md")}
     bad = []
     for p in paths:
         top, _, rest = p.partition("/")
@@ -891,8 +911,11 @@ def _grouped(bad: list) -> list:
 
 
 def layout_help(cfg: dict) -> str:
+    t = tasks_config(cfg)
     return LAYOUT_HELP.format(types=", ".join(cfg.get("doc_types", [])) or "none",
-                              root=", ".join(sorted(ROOT_FILES)))
+                              tasks=TASKS_HELP.format(**t) if t else "",
+                              root=", ".join(sorted(ROOT_FILES)),
+                              dirs=", ".join(f"{d}/" for d in sorted(layout_dirs(cfg))))
 
 
 def layout_report(hub: Path, cfg: dict):
@@ -968,7 +991,18 @@ def selftest():
                  "dashboard": {"inputs": [{"path": "docs/okrs/tracker.html"}]}}
     assert layout_problems(artifacts, ["DESIGN.md", "brand/brand.css", "docs/releases/1.0.md",
                                        "docs/okrs/tracker.html", "docs/misc/x.md"]) == ["docs/misc/x.md"]
-    raw = b"?? new.txt\0R  new.md\0old.md\0 D gone.md\0 M CLAUDE.md\0"
+    # the specs + tasks folders the config declares, at the top level (several drafts at once)
+    work = {"doc_types": [], "tasks": {"dir": "tasks", "key_regex": "^CH-\\d+$"},
+            "portal": {"specs_dir": "specs/"}}
+    assert layout_problems(work, ["specs/001-a/spec.md", "tasks/CH-1/plan.md",
+                                  "tasks/drafts/sms-limit/description.md",
+                                  "tasks/drafts/otp-retry/description.md", "tasks.md",
+                                  "jobs/x.md"]) == ["tasks.md", "jobs/x.md"]
+    legacy = {"portal": {"tasks": {"dir": "work/items", "key_regex": "^P-\\d+$"}},
+              "roadmap": {"specs_dir": "docs/specs"}}
+    assert layout_problems(legacy, ["work/items/P-1/plan.md", "docs/specs/001.md"]) == []
+    assert tasks_config(legacy)["dir"] == "work/items" and tasks_config(work)["drafts"] == "drafts"
+    raw =b"?? new.txt\0R  new.md\0old.md\0 D gone.md\0 M CLAUDE.md\0"
     assert _porcelain_paths(raw) == ["new.txt", "new.md", "CLAUDE.md"], _porcelain_paths(raw)
     print("pb check selftest: ok")
 

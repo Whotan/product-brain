@@ -160,9 +160,10 @@ def main():
     if not specs_dir:
         die('no specs folder configured. Set portal.specs_dir (or roadmap.specs_dir), e.g. "docs/specs"')
     specs_dir = specs_dir.strip("/")
-    tasks_cfg = portal.get("tasks")
+    tasks_key = "tasks" if cfg.get("tasks") is not None else "portal.tasks"  # portal.tasks: the older place
+    tasks_cfg = cfg.get("tasks") if cfg.get("tasks") is not None else portal.get("tasks")
     if tasks_cfg is not None and not (isinstance(tasks_cfg, dict) and tasks_cfg.get("dir") and tasks_cfg.get("key_regex")):
-        die('portal.tasks needs "dir" and "key_regex", e.g. {"dir": "tasks", "key_regex": "^PROJ-\\\\d+$"}')
+        die('%s needs "dir" and "key_regex", e.g. {"dir": "tasks", "key_regex": "^PROJ-\\\\d+$"}' % tasks_key)
     source = portal.get("source") or {}
     if source and not all(source.get(k) for k in ("blob", "tree", "branch")):
         die('portal.source needs "blob", "tree" and "branch", e.g. {"blob": "https://github.com/org/hub/blob/main/", '

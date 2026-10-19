@@ -40,11 +40,16 @@ tokens — every artifact skill runs it before publishing.
 Keep the hub in this layout. It is what keeps the graph, the docs, and every teammate's Claude in sync.
 
 - **The top level is closed.** It holds only the files and folders above, plus `README.md`,
-  `CLAUDE.md`, `templates/`, dot-files (`.claude/`, `.mcp.json`, `.gitignore`, …) and `repos/`.
+  `CLAUDE.md`, `templates/`, dot-files (`.claude/`, `.mcp.json`, `.gitignore`, …), `repos/`, and
+  the specs and tasks folders `brain.config.json` names (`specs_dir`, `tasks.dir`).
   Never create another file or folder there.
 - **Team knowledge goes in `docs/<type>/`**, and `<type>` must be listed in `doc_types` in
   `brain.config.json`. Pick the closest existing type. A genuinely new kind of doc? Add its type to
   `doc_types` first (tell the user), then create `docs/<type>/`.
+- **Task work goes in the `tasks.dir` folder** when `brain.config.json` has a `tasks` block:
+  `tasks/<KEY>/` per ticket, named by the key alone, and `tasks/drafts/<slug>/` for each task
+  that has no ticket yet (one folder per draft, moved to `tasks/<KEY>/` once the ticket exists).
+  Never write a draft straight into `tasks/` or into a single shared draft folder.
 - **Scratch goes in `.work/`.** Command output, API/JSON exports, and temp files (linter logs, audit
   dumps, downloaded tickets) go in `.work/`, which is git-ignored. Put the *finding* in a doc; don't
   commit the raw dump.

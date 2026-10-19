@@ -145,7 +145,28 @@ def main():
         results.append(expect("folder and file specs both listed", '"key":"001-create-task"' in page and '"key":"002-due-dates"' in page
                               and "Status in the spec: draft" in page, out))
 
-    spec = importlib.util.spec_from_file_location("hub_portal_build", SCRIPTS / "build.py")
+        # top-level `tasks` (portal.tasks is the older place): drafts wait beside ticketed tasks
+        cfg_path = hub / "brain.config.json"
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+        cfg["tasks"] = {"dir": "tasks", "key_regex": "^PROJ-\\d+$"}
+        cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+        for folder in ("PROJ-7", "drafts/sms-limit", "drafts/otp-retry"):
+            (hub / "tasks" / folder).mkdir(parents=True)
+            (hub / "tasks" / folder / "description.md").write_text("# Task: %s\n" % folder, encoding="utf-8")
+        edit(data, lambda d: d.__setitem__("tasks", {"PROJ-7": "Seven"}))
+        code, out = run("build.py", hub, "--no-fetch", "--no-brand")
+        page = (hub / ".work/hub-portal/index.html").read_text(encoding="utf-8")
+        results.append(expect("top-level tasks: one row per ticket, drafts skipped",
+                              code == 0 and "1 tasks" in out and '"key":"PROJ-7"' in page
+                              and '"key":"drafts"' not in page, out))
+        cfg["tasks"] = {"dir": "tasks"}
+        cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+        code, out = run("build.py", hub, "--no-fetch", "--no-brand")
+        results.append(expect("top-level tasks without key_regex fails by name",
+                              code == 1 and 'tasks needs "dir" and "key_regex"' in out
+                              and "portal.tasks" not in out, out))
+
+    spec =importlib.util.spec_from_file_location("hub_portal_build", SCRIPTS / "build.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     results.append(expect("jalali conversion", mod.to_jalali(2026, 10, 7) == (1405, 7, 15) and mod.to_jalali(2026, 3, 21) == (1405, 1, 1)))

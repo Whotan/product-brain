@@ -33,7 +33,7 @@ build.
 | `specsLede`, `specsLink?` | string; `{label, id}` | Stable. The link is usually the delivery roadmap artifact. |
 | `specStatus` | `{key: {label, pill}}` | Stable. `pill` is one of `p-released p-progress p-branch p-waiting p-spec p-deferred`. |
 | `specs` | `{key: {name, status, note}}` | The delivery roadmap's verdict per spec. `key` is the spec's folder name, or its file name without `.md`. |
-| `tasksLede`, `tasks` | string; `{KEY: note}` | One line per task folder (only with `portal.tasks`). |
+| `tasksLede`, `tasks` | string; `{KEY: note}` | One line per task folder (only when `brain.config.json` has `tasks`, or the older `portal.tasks`). Drafts under `<tasks.dir>/<tasks.drafts>/` have no key and get no row. |
 | `artifactGroups` | `[group]` | Add a group only for a new kind of page. |
 | `artifacts` | `[{group, title, id, updated?, desc, src?, shared?}]` | The Artifact tool's `list`. `id` is the short id or the full URL; `src` is the hub file the page is generated from. |
 | `flows` | `[{title, desc, steps[], docs[]}]` | The hub's runbooks. `docs` must be hub Markdown paths. |
@@ -50,7 +50,7 @@ build.
 | Document index, titles, groups, bundles `md/{core,docs,specs,skills}.json` | `git ls-files` for `*.md`, excluding `repos/`, `graph/`, `graphify-out/`, `logs/`, `.worktrees/`, `.work/` |
 | "Open in …" vs "not on <branch> yet" | `git ls-tree origin/<portal.source.branch>`, fetched first (`--no-fetch` skips the fetch) |
 | Spec rows and their document buttons | Folders and `.md` files in the specs folder, merged with `specs` |
-| Task rows | Folders in `portal.tasks.dir` matching `key_regex`, merged with `tasks` |
+| Task rows | Folders in `tasks.dir` (else `portal.tasks.dir`) matching `key_regex`, merged with `tasks` |
 | Constitution principles | `## 1. Title` or `### 1 — Title` headings in `constitution.md`, plus `ruleCaveats` |
 | Graph stats | `<graph.out>/sync-report.md`, written by `pb sync` |
 | Brand ramp | The `--ds-color-primary-<n>` steps in `<design.build>/tokens.json` |

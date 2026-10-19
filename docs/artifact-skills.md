@@ -190,13 +190,48 @@ generated README's heading and the dashboard/release-notes wordmark to agree —
 | `data` | Yes | — | `"docs/dashboard/hub-portal.json"` — the hand-maintained data file; start one with `scripts/init-data.py`. Contract: `skills/hub-portal/references/data-contract.md` |
 | `out` | No | `".work/hub-portal"` | where `index.html` and `md/*.json` are built (git-ignored; never committed) |
 | `specs_dir` | No | `roadmap.specs_dir`, then `releases.specs_dir`; a clear error if none is set | `"docs/specs"` — one folder or one `.md` file per spec |
-| `tasks` | No | — (no task section) | `{ "dir": "tasks", "key_regex": "^PROJ-\\d+$" }` |
+| `tasks` | No | — | The older place for the top-level `tasks` block below; read only when that block is absent |
 | `source` | No | — (no "Open in …" button) | `{ "blob": "https://github.com/acme/hub/blob/main/", "tree": "https://github.com/acme/hub/tree/main/", "branch": "main" }` |
 | `calendar` | No | Gregorian only | `"jalali"` — adds the Jalali date beside the Gregorian one |
 
 Workers and the skills themselves never edit `brain.config.json` — a missing or wrong key stops
 the script with the key's name and an example value; the user (or Claude, on their behalf) edits
 the file.
+
+### `tasks` (read by `pb check`, `hub-portal` and the `task-workflow` plugin)
+
+Work smaller than a spec, one folder per ticket. Without this block a hub has no tasks folder,
+and `pb check` reports one as outside the layout. `pb check` and `hub-portal` read only `dir`,
+`key_regex` and `drafts`; the rest is for the `task-workflow` skills, and
+`plugins/task-workflow/scripts/task-facts.py config` prints the resolved values.
+
+| Key | Required? | Default | Example |
+|---|---|---|---|
+| `dir` | Yes | — | `"tasks"` — a top-level folder; `pb check` allows everything under it |
+| `key_regex` | Yes | — | `"^PROJ-\\d+$"` — a ticketed task is `<dir>/<KEY>/`, named by the key alone; the portal lists only folders that match. End it with the issue number |
+| `drafts` | No | `"drafts"` | Where tasks without a ticket yet go: `<dir>/<drafts>/<slug>/`, one folder per draft, so several can wait at once. When a ticket is created, its folder moves to `<dir>/<KEY>/` |
+| `tracker` | For `task-ticket` | — | `{"kind": "jira", "url": "https://jira.example.com", "project": "PROJ"}`; `kind` is `jira`, `gitlab` or `github`. Optional `types`, `fields`, `setup`: see `plugins/task-workflow/references/trackers.md` |
+| `placeholder` | No | `"<tracker.project>-NNN"`, else `"KEY-NNN"` | The key written into a draft's files until the ticket exists |
+| `branch` | No | `"{key_lower}"` | `"task/{key_lower}"` — the task branch; `{key}`, `{key_lower}`, `{n}` (the issue number) |
+| `base_branch` | No | `releases.integration_branch`, else `"main"` | where task branches start and merge |
+| `areas` | No | — (no summary prefix) | `{"backend-api": "BE", "web-app": "FE"}` — a ticket summary starts `BE - FE \| …` |
+| `locales` | No | `["en"]` | `["fa", "en"]` — every locale copy and screenshots cover; the first is primary |
+| `conventions` | No | the hub's `CLAUDE.md` | `"docs/runbooks/task-conventions.md"` — the team's own task rules: apps and screen widths, test / lint / static-analysis commands, each repo's full and light review, E2E catalogue paths |
+| `source` | No | `portal.source`, else derived from the hub's `origin` remote | `{"blob": "…/blob/main/", "tree": "…/tree/main/", "branch": "main"}` — the hub URLs every ticket link is built from |
+
+A draft folder's `<slug>` is short kebab-case naming the change (`sms-limit-international`). Whether
+drafts are committed is the hub's choice; either way `pb check` accepts them.
+
+**Templates.** The plugin ships `task-description.md`, `task-plan.md`, `task-report.md` and
+`task-ticket-blocks.md` (the "How to finish" and "Manual steps" text every ticket ends with). A
+hub file of the same name under `templates/` replaces the plugin's. Copy `task-report.md` into the
+hub in any case: an implementing agent that works from the git server reads the hub, not the plugin.
+
+**Moving from hub-local task skills.** Enable `task-workflow@product-brain`, add the keys above, move
+the team-specific prose of the old skills (commands, app names, widths, review rules) into the
+conventions file, keep the hub's templates, and delete `.claude/skills/{task-description,task-plan,task-ticket,quality-gate}`
+— a hub-local skill of the same name shadows the plugin's. Plugin skills are invoked as
+`/task-workflow:task-description` and so on.
 
 ### Hub name: `hub.name` or `hub_name`
 
