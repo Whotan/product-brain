@@ -224,8 +224,17 @@ And `README.md`, the summary a product owner reads first:
 |---|---|---|---|---|---|---|---|---|
 | [<id>](<id>.md) | backend | release/1.5.0 | ⚠️ | ✅ | ⚠️ | ✅ | ✅ | ⚠️ |
 
+## What failed
+<every item that keeps the launch from being a clean ✅, across all repos, worst first — one line
+each, so the reader never has to open a repo report to learn *why* the table is not green:
+`<repo> · <criterion> · BLOCKER | MAJOR | NOT ASSESSABLE · <finding> — <commit sha or file:line>`;
+a merge conflict is its own line (`<repo> · merge · CONFLICT · <files>`). Every `BLOCKER`, every
+`MAJOR` and every `NOT ASSESSABLE` criterion appears here, none is summarised away. When nothing
+failed, write "Nothing — all five criteria passed in every repo."; leave `MINOR` findings to the
+repo reports.>
+
 ## Conditions to launch
-<every repo's conditions, prefixed with the repo id>
+<every repo's conditions, prefixed with the repo id — what must be done about the items above>
 
 ## Deploy order
 <which repo deploys first and why — backend before the frontend that needs its new API,
@@ -233,7 +242,17 @@ migrations before code that reads new columns; "independent" when nothing links 
 
 ## Not reviewed
 <repos skipped in Step 1, with the reason>
+
+## Next step
+<one line that tells a product owner what to do now, from the launch decision:
+✅ APPROVED / ⚠️ APPROVED WITH CONDITIONS -> "Ready for the merge request: ask Claude to open the
+release merge request (release-notes, step 9)" — plus, for ⚠️, "once the conditions above are met or
+knowingly accepted"; ❌ NOT APPROVED -> "Not ready: fix the items under *What failed*, then run
+epic-approval again — a new head means a new report">
 ```
+
+The summary's *What failed* section is built from the same verdicts and findings as the repo
+reports — copy them, never re-judge. A repo report and the summary must never disagree.
 
 Write every report and the summary in English.
 
@@ -253,12 +272,27 @@ is one, and a neutral style otherwise (`--no-brand` forces the neutral one). The
 the source of truth and the only thing committed; the page is disposable, so re-render it after any
 change to them.
 
-Print the summary in the chat with the path to the folder. Then offer — each only on an explicit
+Print the summary in the chat with the path to the folder, ending with the summary's *Next step* line,
+so the person reading knows what to ask for next without knowing the skill names. Then offer — each only on an explicit
 yes: publish `approval.html` as an Artifact (private until the user shares it; if one already
 exists for this release branch, republish to the **same URL** with a dated `label`) and give the
 user its URL, commit the report folder to the hub (following the git-workflow commit rule), post each
-repo's report to its release merge request (`glab mr note create` / `gh pr comment`). After
-fixes land on a release branch, run the skill again: a new head means a new range and a new report.
+repo's report to its release merge request (see below). After fixes land on a release branch, run the
+skill again: a new head means a new range and a new report.
+
+**Posting to a merge request needs no particular tool.** Use whichever of these this session has, in
+this order, and say which one you used:
+
+1. a connected **GitLab (or GitHub) MCP tool** that finds a merge/pull request by its source branch
+   and adds a note to it — its sign-in is already done, so nothing has to be installed;
+2. the CLI the repo's host uses, if it is installed and signed in — `glab mr note create` (GitLab) or
+   `gh pr comment` (GitHub);
+3. neither: print each repo's comment in the chat so the user can paste it into the merge request.
+
+Never require, install or sign in a CLI for this, and never fail the skill because one is missing.
+Only post to a merge request that already exists for the release branch; if there is none, say so
+and do not open one (the release-notes skill opens it). Post one comment per repo, the repo's report
+as written.
 
 ## Rules
 

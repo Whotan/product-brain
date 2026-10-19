@@ -1,6 +1,6 @@
 {
   "name": "task-workflow",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Task-size work, from idea to merge: describe a task (with mockups a team member approves), plan it against the knowledge graph, create its Jira, GitLab or GitHub ticket and move its draft folder to the key, and bring a playground task up to the full quality bar. Several drafts can wait for a ticket at once.",
   "author": { "name": "Product Brain maintainers" }
 }

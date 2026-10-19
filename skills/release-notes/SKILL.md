@@ -464,10 +464,29 @@ shipped. `--repo <id>` targets a repo other than `releases.primary_repo`;
 **Opening an MR/PR is visible to the whole team and not something to silently
 automate.** Without `--create` the script only prints the plan — repo, base,
 head, title, and the full bullet body — so you can read it over (and let the
-user look, if one is present) before anything is opened. `--create` then calls
-`gh pr create` or `glab mr create`, auto-detected from the clone's `origin`
-remote (`--host github|gitlab` overrides when the URL doesn't say); either CLI
-must already be authenticated (`gh auth status` / `glab auth status`).
+user look, if one is present) before anything is opened. `--json` prints the same
+plan as JSON.
+
+**Never open a second one.** The script asks the host (read-only, through `gh` / `glab` when installed)
+whether a merge request from the release branch into production is already open. If so it prints
+`already open: <url>`, creates nothing, and that is the answer to give the user. `--json` carries the
+same as `existing_mr` (`url`, and `checked`). When `checked` is false there is no CLI to ask, so before
+creating through an MCP tool, look up open merge requests with that source and target branch
+yourself; if one exists, report it and stop.
+
+**No particular tool is required to open it.** After the user's yes, use whichever of
+these this session has, in this order, and say which one you used:
+
+1. a connected **GitLab (or GitHub) MCP tool** that creates a merge/pull request — give it the
+   plan's `head` as the source branch, `base` as the target, `title`, and `body` as the
+   description (its sign-in is already done, nothing to install);
+2. the script's `--create`, which calls `gh pr create` / `glab mr create` (auto-detected from the
+   clone's `origin`; `--host github|gitlab` overrides when the URL doesn't say) — only if that CLI
+   is installed and signed in (`gh auth status` / `glab auth status`);
+3. neither: show the plan and let the user paste the body into the merge request form.
+
+Never require or install a CLI for this. When `--create` finds no CLI it opens nothing, prints the
+plan, and exits 3 — treat that as "use another route", not as a failure.
 
 ## Design system
 
