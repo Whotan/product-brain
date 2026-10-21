@@ -7,7 +7,7 @@
     {
       "name": "product-brain",
       "source": ".",
-      "description": "The brainify skill + pb CLI: create and maintain a Product Brain hub. Installing puts pb on PATH and makes 'set up product brain' available — no manual copy, no PATH editing. Also ships the brand-system skill (one product-level DESIGN.md, compiled to brand/) and the delivery-roadmap, release-notes, update-product-hub and hub-portal artifact skills, all styled only from that brand."
+      "description": "The brainify skill + pb CLI: create and maintain a Product Brain hub. Installing puts pb on PATH and makes 'set up product brain' available \u2014 no manual copy, no PATH editing. Also ships the brand-system skill (one product-level DESIGN.md, compiled to brand/) and the delivery-roadmap, release-notes, update-product-hub and hub-portal artifact skills, all styled only from that brand."
     },
     {
       "name": "git-workflow",
@@ -58,6 +58,11 @@
       "name": "stack-flutter",
       "source": "./plugins/stack-flutter",
       "description": "Flutter conventions: widget composition, state management, async safety and integration_test end-to-end tests."
+    },
+    {
+      "name": "repo-docs",
+      "source": "./plugins/repo-docs",
+      "description": "One documentation standard for every app repo: short AGENTS.md + CLAUDE.md entry points, a README that indexes fifteen docs (runbook, environment, testing, conventions, MR guide, architecture, data model, integrations, known issues, security and more), a session rule that keeps them current, and a repo-docs skill with an audit script."
     }
   ]
 }

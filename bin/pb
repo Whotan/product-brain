@@ -54,7 +54,7 @@ CORE_DOCS = ["constitution.md", "vocabulary.md", "DESIGN.md", "domains.md"]
 # The hub layout (checked by `pb check`). The top level is closed: only these files and folders,
 # plus dot-entries (.claude/, .mcp.json, .gitignore, … — tooling, always allowed) and the repos +
 # graph folders from brain.config.json. Team content goes under docs/<registered doc type>/.
-ROOT_FILES = set(CORE_DOCS) | {"brain.config.json", "CLAUDE.md", "README.md"}
+ROOT_FILES = set(CORE_DOCS) | {"brain.config.json", "AGENTS.md", "CLAUDE.md", "README.md"}
 ROOT_DIRS = {"docs", "workflows", "templates"}
 REQUIRED_DOC_TYPES = ["knowledge"]
 

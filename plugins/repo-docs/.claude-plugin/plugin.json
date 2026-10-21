@@ -1,0 +1,8 @@
+{
+  "name": "repo-docs",
+  "version": "1.4.0",
+  "description": "One documentation standard for every app repo: a short agent entry point, a README that indexes fifteen docs (runbook, environment, testing, conventions, MR guide, architecture, data model, integrations, known issues, security and more), a session rule that keeps them current, and a repo-docs skill with an audit script to scaffold, fill and check them.",
+  "author": {
+    "name": "Product Brain maintainers"
+  }
+}

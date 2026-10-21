@@ -1,6 +1,6 @@
 {
   "name": "live-update",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Files one Jira Service Desk request (e.g. Production Deployment) for a release once its epic-approval reports and release notes exist, by filling in the customer-portal form in the user's signed-in browser: links the merge/pull request, uploads the local-only artifacts, and never files a duplicate.",
   "author": {
     "name": "Product Brain maintainers"
