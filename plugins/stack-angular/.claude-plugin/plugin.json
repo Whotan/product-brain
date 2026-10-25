@@ -1,6 +1,6 @@
 {
   "name": "stack-angular",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Angular conventions: signals, standalone components, change detection, RxJS lifetime, typed forms and Playwright end-to-end tests.",
   "author": {
     "name": "Product Brain maintainers"
