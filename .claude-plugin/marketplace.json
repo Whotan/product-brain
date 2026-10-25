@@ -30,6 +30,11 @@
       "description": "Task-size work in a Product Brain hub: task-description, task-plan, task-ticket and quality-gate skills. One folder per ticket (<tasks.dir>/<KEY>/), one per draft until its ticket exists (<tasks.dir>/drafts/<slug>/), mockups a team member approves in their own words, plans grounded in the graph, tickets in Jira, GitLab or GitHub, and a quality gate before a playground task merges. Team rules come from tasks.* in brain.config.json and the hub's conventions file."
     },
     {
+      "name": "finance",
+      "source": "./plugins/finance",
+      "description": "Month-end billing for a Jira Server/Data Center + Tempo project: compares Tempo worklogs with the project's tab in a shared finance workbook, writes only new data after one review the PM approves (missing month rows and people's columns included, totals fixed on the written row, earlier months audited, not changed), and plans next month as Tempo allocations. Optional epic split, client worklog CSV, invoice tab and SLA invoiceable hours. Config per hub in brain.config.json > finance."
+    },
+    {
       "name": "guardrails",
       "source": "./plugins/guardrails",
       "description": "Blocks Claude writes that violate shared engineering standards (secrets, debug output, unsafe PHP/TS/React patterns and more), for whichever stacks each repo actually contains. Runs as a hook \u2014 nothing is written to your repos."
