@@ -32,7 +32,7 @@ def make_hub(tmp, reports):
     """A git hub with a tasks folder and the given {relative path: text} reports."""
     hub = Path(tmp)
     subprocess.run(["git", "init", "-q", str(hub)], check=True)
-    cfg = {"doc_types": ["knowledge"], "tasks": {"dir": "tasks"}}
+    cfg = {"doc_types": ["knowledge"], "tasks": {"dir": "tasks", "report_check": True}}
     (hub / "brain.config.json").write_text(json.dumps(cfg), encoding="utf-8")
     (hub / "docs/knowledge").mkdir(parents=True)
     (hub / "docs/knowledge/.gitkeep").write_text("")
@@ -67,6 +67,20 @@ def test_archived_drafted_and_absorbed_reports_are_skipped():
     with tempfile.TemporaryDirectory() as tmp:
         hub, cfg = make_hub(tmp, reports)
         assert PB["report_problems"](hub, cfg, list(reports)) == []
+
+
+def test_report_check_is_off_unless_the_hub_opts_in():
+    text = "# CH-9: report\n\n| Status | Ready |\n"
+    with tempfile.TemporaryDirectory() as tmp:
+        hub, cfg = make_hub(tmp, {"tasks/CH-9/report.md": text})
+        del cfg["tasks"]["report_check"]
+        assert PB["report_problems"](hub, cfg, ["tasks/CH-9/report.md"]) == []
+        (hub / "brain.config.json").write_text(json.dumps(cfg), encoding="utf-8")
+        event = json.dumps({"cwd": str(hub), "stop_hook_active": False})
+        env = {k: v for k, v in os.environ.items() if k != "CLAUDE_PROJECT_DIR"}
+        out = subprocess.run([sys.executable, str(ROOT / "bin/pb"), "check", "--hook"], input=event,
+                             capture_output=True, text=True, cwd=hub, env=env)
+    assert out.returncode == 0, (out.returncode, out.stderr)
 
 
 def test_pb_report_check_cli():
@@ -170,7 +184,7 @@ def test_codeowners_sections():
         "/database/migrations/\n"
         "/app/Models/\n"
         "\n"
-        "[API contracts] @Saeed.y @Ashkan\n"
+        "[API contracts][2] @Saeed.y @Ashkan\n"
         "/routes/api.php\n"
     )
 

@@ -84,9 +84,19 @@ def test_gate_agent_run_denies_commit_and_push():
         assert bash(cmd, agent_run=True) == "deny", cmd
 
 
-def test_gate_agent_run_allows_other_git():
-    for cmd in ["git status", "git diff --stat", 'echo "git commit -m x"', "git log --oneline -3",
-                "git add -A"]:
+def test_gate_agent_run_denies_wrapped_and_history_writing_git():
+    for cmd in ["env FOO=1 git commit -m x", "timeout 60 git push", "nohup git push &",
+                "command git commit -m x", "exec git push", "xargs git push",
+                "if git commit -m x; then echo ok; fi", "! git push", "{ git push; }", "`git push`",
+                "bash -lc 'git push'", "git --no-pager commit -m x", "git --git-dir=.git commit -m x",
+                'git -C "my repo" push', "git merge origin/develop", "git rebase develop",
+                "git cherry-pick abc123", "git revert HEAD", "git am < fix.patch"]:
+        assert bash(cmd, agent_run=True) == "deny", cmd
+
+
+def test_gate_agent_run_allows_read_only_git():
+    for cmd in ["git status", "git diff --stat", "git log --oneline -3", "git add -A",
+                "git fetch origin", "git show HEAD"]:
         assert bash(cmd, agent_run=True) is None, cmd
 
 
