@@ -10,6 +10,19 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Agent|Task|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/harness_gate.py\"",
+            "timeout": 20,
+            "statusMessage": "Checking the brain harness rules..."
+          }
+        ]
+      }
     ]
   }
 }

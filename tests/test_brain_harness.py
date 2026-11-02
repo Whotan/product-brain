@@ -7,6 +7,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,6 +49,83 @@ def test_marketplace_lists_brain_harness():
     assert entries["brain-harness"]["source"] == "./plugins/brain-harness"
     manifest = json.loads((PLUGIN / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
     assert manifest["name"] == "brain-harness"
+
+
+GATE = PLUGIN / "hooks/harness_gate.py"
+AGENT_RUN = {"PB_AGENT_RUN": "1"}
+
+
+def gate(tool, tool_input, agent_run=False, raw=None):
+    """The gate's decision for one tool call: "deny", or None when it stays silent (allow)."""
+    env = {k: v for k, v in os.environ.items() if k != "PB_AGENT_RUN"}
+    if agent_run:
+        env.update(AGENT_RUN)
+    payload = raw if raw is not None else json.dumps(
+        {"tool_name": tool, "tool_input": tool_input, "cwd": str(ROOT)})
+    out = subprocess.run([sys.executable, str(GATE)], input=payload, capture_output=True,
+                         text=True, env=env).stdout
+    return json.loads(out)["hookSpecificOutput"]["permissionDecision"] if out.strip() else None
+
+
+def bash(cmd, agent_run=False):
+    return gate("Bash", {"command": cmd}, agent_run)
+
+
+def test_gate_local_session_may_commit_and_push():
+    assert bash('git commit -m "x"') is None
+    assert bash("git push origin ch-1") is None
+    assert bash("git push --force-with-lease origin ch-1") is None
+
+
+def test_gate_agent_run_denies_commit_and_push():
+    for cmd in ['git commit -m "x"', "git push origin ai-ch-1", "cd repo && git commit -am x",
+                "git -C repo push origin ai-ch-1", "FOO=1 git commit -m x", 'bash -c "git push"',
+                "sh -c 'git commit -m x'", "git status; git push", "/usr/bin/git push"]:
+        assert bash(cmd, agent_run=True) == "deny", cmd
+
+
+def test_gate_agent_run_allows_other_git():
+    for cmd in ["git status", "git diff --stat", 'echo "git commit -m x"', "git log --oneline -3",
+                "git add -A"]:
+        assert bash(cmd, agent_run=True) is None, cmd
+
+
+def test_gate_denies_force_push_everywhere():
+    assert bash("git push --force origin ch-1") == "deny"
+    assert bash("git push -f origin ch-1") == "deny"
+    assert bash("git push origin ch-1 --force") == "deny"
+
+
+def test_hooks_register_gate_for_every_gated_tool():
+    hooks = json.loads((PLUGIN / "hooks/hooks.json").read_text(encoding="utf-8"))["hooks"]
+    [entry] = hooks["PreToolUse"]
+    assert set(entry["matcher"].split("|")) == {"Bash", "Agent", "Task", "Edit", "Write", "MultiEdit"}
+    assert "harness_gate.py" in entry["hooks"][0]["command"]
+
+
+def test_gate_agent_run_requires_typed_subagents():
+    for tool in ("Agent", "Task"):
+        assert gate(tool, {"prompt": "x"}, agent_run=True) == "deny"
+        assert gate(tool, {"subagent_type": "", "prompt": "x"}, agent_run=True) == "deny"
+        assert gate(tool, {"subagent_type": "general-purpose", "prompt": "x"}, agent_run=True) == "deny"
+        assert gate(tool, {"subagent_type": "impl-careful", "prompt": "x"}, agent_run=True) is None
+
+
+def test_gate_local_session_may_use_untyped_subagents():
+    assert gate("Agent", {"subagent_type": "Explore", "prompt": "x"}) is None
+    assert gate("Agent", {"prompt": "x"}) is None
+
+
+def test_gate_denies_writes_to_agent_memory():
+    for tool in ("Edit", "Write", "MultiEdit"):
+        assert gate(tool, {"file_path": "/repo/.claude/agent-memory/notes.md"}) == "deny"
+        assert gate(tool, {"file_path": "D:\\repo\\.claude\\agent-memory\\notes.md"}) == "deny"
+        assert gate(tool, {"file_path": "/repo/app/Models/User.php"}) is None
+
+
+def test_gate_fails_open_on_bad_input():
+    assert gate(None, None, agent_run=True, raw="not json") is None
+    assert gate(None, None, agent_run=True, raw="") is None
 
 
 def main():
