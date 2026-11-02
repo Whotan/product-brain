@@ -21,7 +21,7 @@ happened, not what was hoped for.
 | Branches · merge requests | <repo>: `<branch>` · <link> (one per repo) |
 | Commits | <short SHAs> |
 | **Environment** | **[<environment name>](<URL>)**, running commit `<sha>`, deployed by <pipeline link or who> |
-| Status | Ready for review · Waiting for approval: <what> · Blocked: <reason> · Merged with open gate items: <follow-up key> |
+| Status | Computed from the evidence below, never from memory: Complete · Partial · No progress · Waiting for decision: <what, and who decides> · Failed: <reason>. Add "Merged with open gate items: <follow-up key>" when it applies |
 | Date | YYYY-MM-DD |
 
 The Environment row is required where the team deploys task branches. If the change is not
@@ -35,6 +35,13 @@ The change in plain terms, two to five sentences.
 |---|---|---|
 | AC 1 | yes · no · partly | test name, screenshot, or step in §3 |
 
+**Pushed**
+
+| Repo | Branch | Commits | Files | Lines (+/−) |
+|---|---|---|---|---|
+
+"Nothing pushed" when the table is empty. Work that is not pushed is not done.
+
 **Changes from plan.md**
 
 | Plan said | Done instead | Why |
@@ -42,24 +49,41 @@ The change in plain terms, two to five sentences.
 
 "None" if the plan was followed exactly.
 
-## 2. What needs attention
+## 2. Not done and needs attention
 
-Decisions the agent made that a human should confirm, follow-ups (with ticket keys if filed),
-and anything left out on purpose. "None" only after saying what was considered.
+**Not done**: every planned item that is not finished, with the reason. Readers act on this list
+first, so it is never left out; "Nothing" only when every planned item has its evidence in §1.
 
-## 3. How to test manually
+| Planned item | Why not done | What it needs |
+|---|---|---|
 
-Someone who has not read the code can follow this.
+Then the decisions the agent made that a human should confirm, follow-ups (with ticket keys if
+filed), and anything left out on purpose. "None" only after saying what was considered.
 
-- **Environment**: <URL>
-- **Account · role**: <which login>
-- **Data needed**: <and how to get it>
+## 3. How to check it by hand
 
-1. Step, then what to expect.
-2. …
+Written for a product manager who has not read the code. Pick the depth that fits the time:
 
-Repeat the steps in every locale the hub uses, primary first, when the change shows anything on
-screen.
+| Level | Time | Covers |
+|---|---|---|
+| Level 1 — Quick | ≤ 5 min | the one main path the change exists for |
+| Level 2 — Standard | ≤ 20 min | every visible change, in every locale the hub uses (primary first), for each affected role, plus the main error message |
+| Level 3 — Deep | ≤ 60 min | edge cases, amounts and units, who must **not** see or do it, phone width, and neighbouring features at risk |
+
+Each step gives **Where** (the environment link), **Log in as** (a named test account, never a real
+person), **Do**, **You should see** (on-screen labels quoted exactly) and a checkbox.
+
+**Level 1**
+
+- [ ] **Where** <URL> · **Log in as** <test account> · **Do** <action> · **You should see** <result>
+
+**Level 2**
+
+- [ ] …
+
+**Level 3**
+
+- [ ] …
 
 ## 4. Risks and failures
 
@@ -85,9 +109,17 @@ screen.
 "No findings" is a valid result. The table header stays. If code changed after the review,
 the review was run again on those commits, and this table includes that run.
 
-## 6. E2E tests
+## 6. Test changes and runs
 
-**Scenarios added or changed**
+**Test changes**: the tests this change updated, added and deleted, within its own impact area.
+A test that was written but never run counts as not run.
+
+| Test | Updated · added · deleted | Why | Labels (priority, weight, domain, type) | Ran · result |
+|---|---|---|---|---|
+
+"None" only with the reason no test was affected.
+
+**E2E scenarios added or changed**
 
 | Scenario id | App | New · changed | What it checks · what changed | Catalogue · test file |
 |---|---|---|---|---|
