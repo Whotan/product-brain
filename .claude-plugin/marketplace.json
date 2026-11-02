@@ -10,6 +10,11 @@
       "description": "The brainify skill + pb CLI: create and maintain a Product Brain hub. Installing puts pb on PATH and makes 'set up product brain' available — no manual copy, no PATH editing. Also ships the brand-system skill (one product-level DESIGN.md, compiled to brand/) and the delivery-roadmap, release-notes, update-product-hub and hub-portal artifact skills, all styled only from that brand."
     },
     {
+      "name": "brain-harness",
+      "source": "./plugins/brain-harness",
+      "description": "Built-in, non-negotiable base rules injected into every session and agent run (evidence not claims, reports say what wasn't done, one change one ticket one branch, named owners decide, tests travel with the change, …), plus a gate that keeps agent runs from committing, pushing or starting untyped sub-agents."
+    },
+    {
       "name": "git-workflow",
       "source": "./plugins/git-workflow",
       "description": "Commit-message and merge-request rules in every session, a commit-message hook, a ticket-scope gate before MR/PR creation, and verify-ticket-scope / review-mr skills."

@@ -44,6 +44,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -927,22 +928,155 @@ def layout_report(hub: Path, cfg: dict):
     return layout_problems(cfg, git_paths(hub)), notes
 
 
+# A change report must say what wasn't done, what happened to the tests, and how a person checks
+# the change by hand at three depths; readers act on the gaps, so a report without them misleads.
+REPORT_HEADINGS = ("Not done", "Test changes", "How to check it by hand")
+REPORT_LEVELS = ("Level 1", "Level 2", "Level 3")
+TASK_KEY_RE = re.compile(r"^[A-Z][A-Z0-9]*-[0-9]+$")
+
+
+def report_missing(text: str) -> list:
+    """The honest-report sections a report's text lacks: headings by name, levels anywhere."""
+    headings = [line.lower() for line in text.splitlines() if line.lstrip().startswith("#")]
+    body = text.lower()
+    return ([h for h in REPORT_HEADINGS if not any(h.lower() in line for line in headings)]
+            + [lvl for lvl in REPORT_LEVELS if lvl.lower() not in body])
+
+
+def report_problems(hub: Path, cfg: dict, paths) -> list:
+    """One message per active task report (<tasks.dir>/<KEY>/report.md) missing a required section.
+    Opt-in with `tasks.report_check: true`, because a hub may keep its own report template.
+    Archived and drafted tasks, and tasks absorbed into a spec, are not checked."""
+    tasks = tasks_config(cfg)
+    tdir = tasks.get("dir")
+    if not tdir or tasks.get("report_check") is not True:
+        return []
+    depth = len(tdir.split("/")) + 2
+    problems = []
+    for p in paths:
+        parts = p.split("/")
+        if (len(parts) != depth or not p.startswith(tdir + "/") or parts[-1] != "report.md"
+                or not TASK_KEY_RE.match(parts[-2])):
+            continue
+        try:
+            text = (hub / p).read_text(encoding="utf-8-sig")
+        except OSError:
+            continue
+        status = next((line for line in text.splitlines() if line.startswith("| Status")), "")
+        if "Absorbed into" in status:
+            continue
+        missing = report_missing(text)
+        if missing:
+            problems.append(f"{p}: missing {', '.join(missing)}")
+    return problems
+
+
+def cmd_report_check(path: str) -> int:
+    try:
+        missing = report_missing(Path(path).read_text(encoding="utf-8-sig"))
+    except OSError as e:
+        die(f"cannot read {path}: {e}")
+    if missing:
+        print(f"Report is missing: {', '.join(missing)}")
+        return 1
+    print("Report: ok — it says what wasn't done, the test changes and how to check it by hand.")
+    return 0
+
+
+def _domain_people(domain: dict) -> list:
+    """Owner (a name or a list of names) then backup, in order, without repeats."""
+    owner = domain.get("owner") or []
+    names = (owner if isinstance(owner, list) else [owner]) + [domain.get("backup")]
+    return [n for i, n in enumerate(names) if n and n not in names[:i]]
+
+
+def owners_problems(hub: Path, cfg: dict) -> list:
+    """Problems with the hub's decision owners (`owners` in brain.config.json): the table file,
+    people the domains name, and the GitLab handles CODEOWNERS needs. [] when no owners are set."""
+    owners = cfg.get("owners")
+    if not owners:
+        return []
+    problems = []
+    rel = owners.get("file", "docs/knowledge/decision-owners.md")
+    if not (hub / rel).exists():
+        problems.append(f"owners.file {rel} does not exist")
+    people, seen = owners.get("people") or {}, set()
+    for d in owners.get("domains") or []:
+        did = d.get("id", "?")
+        if did in seen:
+            problems.append(f"domain {did} is listed more than once")
+        seen.add(did)
+        for name in _domain_people(d):
+            if name not in people:
+                problems.append(f"domain {did}: {name} is not in owners.people")
+            elif d.get("paths") and not (people[name] or {}).get("gitlab"):
+                problems.append(f"domain {did}: {name} has no gitlab handle, so CODEOWNERS can't name them")
+        if d.get("paths") and not d.get("repo"):
+            problems.append(f"domain {did}: has paths but no repo")
+    return problems
+
+
+def codeowners(cfg: dict, repo_id: str) -> str:
+    """GitLab CODEOWNERS text for one repo: one section per owned domain. One approval from the
+    owner or the backup satisfies a section; a domain owned by several people together needs all of
+    them (`[name][N]`). "" when the hub names no owner paths in that repo."""
+    owners = cfg.get("owners") or {}
+    people = owners.get("people") or {}
+    sections = []
+    for d in owners.get("domains") or []:
+        if d.get("repo") != repo_id or not d.get("paths"):
+            continue
+        handles = " ".join(f"@{people[n]['gitlab']}" for n in _domain_people(d))
+        owner = d.get("owner")
+        approvals = f"[{len(owner)}]" if isinstance(owner, list) and len(owner) > 1 else ""
+        sections.append(f"[{d.get('name', d.get('id'))}]{approvals} {handles}\n"
+                        + "".join(f"{p}\n" for p in d["paths"]))
+    if not sections:
+        return ""
+    return (f"# Generated by `pb owners codeowners {repo_id}` from the hub's brain.config.json (owners).\n"
+            "# Edit the hub, not this file.\n\n" + "\n".join(sections))
+
+
+def cmd_owners(hub: Path, action: str, repo_id: str = None) -> int:
+    cfg = load_config(hub)
+    if action == "codeowners":
+        text = codeowners(cfg, repo_id)
+        if not text:
+            print(f"[pb] ERROR: no owner paths for repo '{repo_id}' in brain.config.json", file=sys.stderr)
+            return 1
+        sys.stdout.write(text)
+        return 0
+    problems = owners_problems(hub, cfg)
+    for p in problems:
+        print(f"  - {p}")
+    if not problems:
+        print("Owners: ok" if cfg.get("owners") else "Owners: none set in brain.config.json")
+    return 1 if problems else 0
+
+
 def cmd_check(hub: Path) -> int:
     cfg = load_config(hub)
     try:
         bad, notes = layout_report(hub, cfg)
+        notes += owners_problems(hub, cfg)
+        reports = report_problems(hub, cfg, git_paths(hub))
     except (OSError, subprocess.CalledProcessError):
         die("pb check needs git on PATH and the hub to be a git repo")
-    if not bad and not notes:
+    if not bad and not notes and not reports:
         print("Layout: ok — everything is where the hub layout expects it.")
         return 0
     if bad:
         print("Outside the hub layout:")
         for line in _grouped(bad):
             print(f"  - {line}")
+    if reports:
+        print("Change reports missing required sections:")
+        for line in reports:
+            print(f"  - {line}")
     for n in notes:
         print(f"Note: {n}")
-    print("\n" + layout_help(cfg))
+    if bad or notes:
+        print("\n" + layout_help(cfg))
     return 1
 
 
@@ -961,17 +1095,26 @@ def cmd_check_hook() -> int:
         if not cfg_path.exists():
             return 0
         cfg = json.loads(cfg_path.read_text(encoding="utf-8-sig"))
-        bad = layout_problems(cfg, git_paths(hub, changed_only=True))
+        changed = git_paths(hub, changed_only=True)
+        bad = layout_problems(cfg, changed)
+        reports = report_problems(hub, cfg, changed)
     except Exception:
         return 0
-    if not bad:
+    if not bad and not reports:
         return 0
-    lines = "\n".join(f"  - {line}" for line in _grouped(bad))
-    print(f"Product Brain layout check: these new or changed files are outside the hub layout:\n"
-          f"{lines}\n\n{layout_help(cfg)}\n\n"
-          "Before finishing, move each one where it belongs (git mv if tracked), or into .work/ if "
-          "it is scratch. If a file looks like the user's own and you're unsure where it goes, ask "
-          "them instead of moving or deleting it. Re-check with `pb check`.", file=sys.stderr)
+    if bad:
+        lines = "\n".join(f"  - {line}" for line in _grouped(bad))
+        print(f"Product Brain layout check: these new or changed files are outside the hub layout:\n"
+              f"{lines}\n\n{layout_help(cfg)}\n\n"
+              "Before finishing, move each one where it belongs (git mv if tracked), or into .work/ if "
+              "it is scratch. If a file looks like the user's own and you're unsure where it goes, ask "
+              "them instead of moving or deleting it. Re-check with `pb check`.", file=sys.stderr)
+    if reports:
+        lines = "\n".join(f"  - {line}" for line in reports)
+        print(f"Product Brain report check: these change reports lack required sections:\n{lines}\n\n"
+              "Add each missing section from the evidence: what was not done and why, the tests "
+              "updated, added and deleted, and how to check the change by hand at Levels 1, 2 and 3. "
+              "Re-check with `pb report check <file>`.", file=sys.stderr)
     return 2
 
 
@@ -1036,6 +1179,16 @@ def main():
     f.add_argument("--code-only", action="store_true", help="only return code symbols (skip docs)")
     f.add_argument("--repo", help="scope the search to one repo id (e.g. backend-api)")
     f.add_argument("--limit", type=int, default=15, help="max results (default 15)")
+    r = sub.add_parser("report", help="check a change report for the honest-report sections")
+    r_sub = r.add_subparsers(dest="report_cmd", required=True)
+    rc = r_sub.add_parser("check", help="exit 1 and name what's missing: Not done, Test changes, "
+                          "How to check it by hand, Levels 1-3")
+    rc.add_argument("file", help="the report to check")
+    o = sub.add_parser("owners", help="check the hub's decision owners, or print a repo's CODEOWNERS")
+    o_sub = o.add_subparsers(dest="owners_cmd", required=True)
+    o_sub.add_parser("check", help="the owners table file exists and every domain names known people")
+    oc = o_sub.add_parser("codeowners", help="print the GitLab CODEOWNERS file for one repo id")
+    oc.add_argument("repo", help="repo id from brain.config.json, e.g. backend-api")
     v = sub.add_parser("version", help="show the Product Brain version (and check for updates)")
     v.add_argument("--check", action="store_true", help="fetch and report whether a newer version exists upstream")
     v.add_argument("--hook", action="store_true", help=argparse.SUPPRESS)
@@ -1048,6 +1201,8 @@ def main():
         return
     if args.cmd == "check" and (args.hook or args.selftest):
         sys.exit(cmd_check_hook() if args.hook else selftest())
+    if args.cmd == "report":
+        sys.exit(cmd_report_check(args.file))
 
     hub = Path(args.hub).resolve()
     if not hub.exists():
@@ -1060,6 +1215,8 @@ def main():
             cmd_status(hub)
         elif args.cmd == "check":
             sys.exit(cmd_check(hub))
+        elif args.cmd == "owners":
+            sys.exit(cmd_owners(hub, args.owners_cmd, getattr(args, "repo", None)))
         elif args.cmd == "adopt":
             cmd_adopt(hub, args.path, args.id, args.copy, args.force)
         elif args.cmd == "find":
