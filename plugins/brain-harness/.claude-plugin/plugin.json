@@ -1,0 +1,6 @@
+{
+  "name": "brain-harness",
+  "version": "1.4.0",
+  "description": "Built-in, non-negotiable base rules for every Product Brain session and agent run, injected at session start, plus a gate hook that keeps agent runs from committing, pushing or starting untyped sub-agents.",
+  "author": { "name": "Product Brain maintainers" }
+}
