@@ -49,13 +49,17 @@ was actually built:
 
 ## 3. E2E
 
-- Write the new scenarios for every user-facing surface the change touches: the plan's deferred
-  list, plus any the new blast radius adds. Update the scenarios whose expectations changed. The
-  catalogue entry and the test change go in the same commit.
-- Run each added or changed scenario three times, in each locale it covers. All repeats must pass.
+- End-to-end scenarios: follow the hub constitution's rule on which changes need one and whether a
+  red run holds the merge. If the hub names critical flows, only those need a scenario.
+- Write the scenarios that rule asks for: the plan's deferred list, plus any the new blast radius
+  adds. Update the scenarios whose expectations changed. The catalogue entry and the test change go
+  in the same commit.
+- Run each scenario you added or changed as the hub's conventions say (for example three times, in
+  each locale it covers), when the hub has a job or command that runs them.
 - A red or flaky scenario is a defect. Find the cause from its trace, then fix the app, or the test
-  if the test is wrong. Never skip, delete or loosen the scenario, or raise its timeout, to get it
-  green. A quarantined test never counts as a pass for a scenario this task adds or changes.
+  if the test is wrong. Whether it holds the merge is the hub's rule, not this skill's. Never skip,
+  delete or loosen the scenario, or raise its timeout, to get it green. A quarantined test never
+  counts as a pass for a scenario this task adds or changes.
 - Apps with no E2E harness: follow the plan template's E2E notes.
 
 ## 4. Full code review
@@ -83,7 +87,7 @@ If fixing something changes what a user sees (a margin, a label, a state):
   [../../references/ui-mockups.md](../../references/ui-mockups.md).
 - Ask the writer (or another team member) about that row by name. The playground confirmation
   does not cover it.
-- A UI bug fixed here also gets the E2E scenario that would have caught it.
+- A UI bug fixed here also gets the E2E scenario that would have caught it, where the hub's rule asks for one.
 - The gate cannot pass while a `G#` row is Pending. The reviewer may choose to revert the change
   instead.
 
