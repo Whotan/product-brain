@@ -65,7 +65,7 @@ UNIT = "\x1f"
 DEFAULT_RELEASE_BRANCH_REGEX = r"^(release|hotfix)[-/._]"
 
 CONVENTIONAL = re.compile(
-    r"^(?P<type>feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert)"
+    r"^(?P<type>feat|fix|critical-fix|bug|perf|refactor|docs|test|build|ci|chore|style|revert)"
     r"(?:\((?P<scope>[^)]*)\))?(?P<breaking>!)?:\s*(?P<subject>.+)$",
     re.IGNORECASE,
 )
@@ -74,6 +74,8 @@ REVERTS = re.compile(r'^Revert\s+"(.+)"\s*$', re.IGNORECASE)
 SECTION_FOR_TYPE = {
     "feat": "Added",
     "fix": "Fixed",
+    "critical-fix": "Fixed",
+    "bug": "Fixed",
     "perf": "Changed",
     "refactor": "Changed",
     "build": "Changed",
