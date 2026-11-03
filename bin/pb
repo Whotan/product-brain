@@ -1013,16 +1013,26 @@ def owners_problems(hub: Path, cfg: dict) -> list:
                 problems.append(f"domain {did}: {name} has no gitlab handle, so CODEOWNERS can't name them")
         if d.get("paths") and not d.get("repo"):
             problems.append(f"domain {did}: has paths but no repo")
+    for repo_id, name in (owners.get("repos") or {}).items():
+        if name not in people:
+            problems.append(f"repo {repo_id}: owner {name} is not in owners.people")
+        elif not (people[name] or {}).get("gitlab"):
+            problems.append(f"repo {repo_id}: owner {name} has no gitlab handle, so CODEOWNERS can't name them")
     return problems
 
 
 def codeowners(cfg: dict, repo_id: str) -> str:
     """GitLab CODEOWNERS text for one repo: one section per owned domain. One approval from the
     owner or the backup satisfies a section; a domain owned by several people together needs all of
-    them (`[name][N]`). "" when the hub names no owner paths in that repo."""
+    them (`[name][N]`). The repo's owner (`owners.repos`) comes first as an optional section (`^`):
+    GitLab shows them on every merge request but never waits for them. "" when the hub names no
+    owner for that repo."""
     owners = cfg.get("owners") or {}
     people = owners.get("people") or {}
     sections = []
+    repo_owner = (owners.get("repos") or {}).get(repo_id)
+    if repo_owner:
+        sections.append(f"^[Repo owner] @{people[repo_owner]['gitlab']}\n*\n")
     for d in owners.get("domains") or []:
         if d.get("repo") != repo_id or not d.get("paths"):
             continue

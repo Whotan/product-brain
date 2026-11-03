@@ -189,6 +189,21 @@ def test_codeowners_sections():
     )
 
 
+def test_codeowners_repo_owner_is_an_optional_first_section():
+    cfg = owners_cfg(repos={"api": "Saeed", "web": "Ashkan"})
+    text = PB["codeowners"](cfg, "api")
+    assert "# Edit the hub, not this file.\n\n^[Repo owner] @Saeed.y\n*\n\n[Back-end data model] @Saeed.y" in text, text
+    # a repo with a repo owner but no owned paths still gets a file
+    assert PB["codeowners"](cfg, "web").endswith("\n\n^[Repo owner] @Ashkan\n*\n")
+
+
+def test_owners_problems_repo_owner_must_be_a_person_with_a_gitlab_handle():
+    [p] = owners_problems(owners_cfg(repos={"api": "Nobody"}))
+    assert "api" in p and "Nobody" in p
+    [p] = owners_problems(owners_cfg(repos={"api": "Arash"}))
+    assert "Arash" in p and "gitlab" in p
+
+
 def test_codeowners_unknown_repo_is_an_error():
     assert PB["codeowners"](owners_cfg(), "web") == ""
     with tempfile.TemporaryDirectory() as tmp:
