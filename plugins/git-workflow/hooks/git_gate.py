@@ -6,6 +6,9 @@
 2. `glab mr create` / `gh pr create` — denied until the verify-ticket-scope skill has written
    a PASS (or an explicit user waiver) for the current HEAD into <git-dir>/pb-scope-ok.
 
+A hub whose own work is not ticketed sets `commits.ticket_required: false` in its
+brain.config.json: its commits may leave the ticket out, and its MRs have no ticket scope to check.
+
 Never blocks on its own failure: an unparseable command or an internal error is let through,
 because a gate that breaks the agent when the gate itself is wrong loses everyone's trust.
 """
@@ -18,9 +21,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+TYPES = "feat fix critical-fix bug refactor perf test docs style chore ci build revert"
 COMMIT_RE = re.compile(
-    r"^(feat|fix|bug|refactor|perf|test|docs|style|chore|ci)"
+    rf"^({'|'.join(TYPES.split())})"
     r"(\([a-z][a-z0-9-]*\))?: \[[A-Z][A-Z0-9]*-[0-9]+\] \S.*$"
+)
+UNTICKETED_RE = re.compile(
+    rf"^({'|'.join(TYPES.split())})"
+    r"(\([a-z][a-z0-9-]*\))?: (\[[A-Z][A-Z0-9]*-[0-9]+\] )?\S.*$"
 )
 EXEMPT_PREFIXES = ("Merge ", "Revert ", "fixup!", "squash!", "amend!")
 # A repository that already enforces its own commit format wins over ours.
@@ -63,6 +71,17 @@ def workdir_for(cmd, payload, git_opts=""):
     return base
 
 
+def ticket_required(root):
+    """False only when the repo's own brain.config.json says its work carries no ticket."""
+    if not root:
+        return True
+    try:
+        config = json.loads((Path(root) / "brain.config.json").read_text(encoding="utf-8"))
+        return (config.get("commits") or {}).get("ticket_required") is not False
+    except (OSError, ValueError, AttributeError):
+        return True
+
+
 def commit_subject(rest):
     """The subject of `git commit <rest>`, "" when none is given inline, None to skip."""
     heredoc = HEREDOC.search(rest)
@@ -96,16 +115,20 @@ def check_commit(cmd, payload):
     root = git(workdir_for(cmd, payload, match.group(1)), "rev-parse", "--show-toplevel")
     if root and any((Path(root) / f).exists() for f in OWN_FORMAT_FILES):
         return
-    if COMMIT_RE.match(subject):
+    ticketed = ticket_required(root)
+    if (COMMIT_RE if ticketed else UNTICKETED_RE).match(subject):
         return
     emit("deny", (
         f'Commit message rejected: "{subject}"\n\n'
-        "Required: type(scope): [TASK-ID] description\n"
-        "  type  : feat fix bug refactor perf test docs style chore ci\n"
+        f"Required: type(scope): {'[TASK-ID] ' if ticketed else ''}description\n"
+        f"  type  : {TYPES}\n"
         "  scope : optional, lowercase letters/digits/dashes\n"
-        "  TASK-ID: uppercase key + number, e.g. [PROJ-123] — take it from the branch name or ask the user\n"
-        "Example: feat(auth): [PROJ-101] add two-factor authentication flow\n"
-        "(git-workflow plugin — see its commit-message rule)"
+        + ("  TASK-ID: uppercase key + number, e.g. [PROJ-123] — take it from the branch name or ask the user\n"
+           "Example: feat(auth): [PROJ-101] add two-factor authentication flow\n"
+           if ticketed else
+           "  This repo's work carries no ticket (commits.ticket_required: false in brain.config.json).\n"
+           "Example: docs(runbook): explain the release train\n")
+        + "(git-workflow plugin — see its commit-message rule)"
     ))
 
 
@@ -115,6 +138,8 @@ def check_mr(cmd, payload):
     if os.environ.get("PB_SCOPE_WAIVED") == "1":
         emit("allow", "Ticket-scope gate waived via PB_SCOPE_WAIVED=1.")
     workdir = workdir_for(cmd, payload)
+    if not ticket_required(git(workdir, "rev-parse", "--show-toplevel")):
+        return  # no ticket, so no ticket scope to check
     git_dir = git(workdir, "rev-parse", "--absolute-git-dir")
     if not git_dir:
         emit("ask", f"Not inside a git repository ({workdir}); cannot verify ticket scope.")

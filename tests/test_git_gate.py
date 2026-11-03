@@ -50,6 +50,24 @@ def main():
         assert run("git commit -F msg.txt", repo) is None
         assert run('echo "git commit -m nope"', repo) is None
         assert run("git status", repo) is None
+        for kind in ("critical-fix(payments)", "build", "revert(auth)"):
+            assert run(f'git commit -m "{kind}: [PROJ-7] the app repos allow this type"', repo) is None, kind
+
+        # a hub whose own work carries no ticket (commits.ticket_required: false in brain.config.json)
+        hub = Path(tmp) / "hub"
+        hub.mkdir()
+        git(hub, "init", "-q")
+        git(hub, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "init")
+        (hub / "brain.config.json").write_text(json.dumps({"product": "x"}))
+        assert run('git commit -m "chore(owners): add the repo owners"', hub) == "deny", "ticket required by default"
+        (hub / "brain.config.json").write_text(json.dumps({"commits": {"ticket_required": False}}))
+        assert run('git commit -m "chore(owners): add the repo owners"', hub) is None
+        assert run(f'git commit -m "{good}"', hub) is None, "a ticket is still allowed"
+        assert run('git commit -m "added stuff"', hub) == "deny", "the type is still required"
+        assert run('glab mr create --fill', hub) is None, "no ticket, so no ticket scope to check"
+        (hub / "brain.config.json").write_text("{not json")
+        assert run('git commit -m "chore(owners): add the repo owners"', hub) == "deny", "unreadable config: default"
+
         (repo / ".husky").mkdir()
         (repo / ".husky/commit-msg").write_text("#!/bin/sh\n")
         assert run('git commit -m "repo owns its format"', repo) is None, "repo's own hook wins"
