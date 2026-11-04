@@ -26,7 +26,7 @@ need the technical owner's recorded approval before they merge, because they are
 ### 6. Tests travel with the change
 Every change updates the tests whose expected behaviour changed, adds tests for new behaviour, and
 deletes stale ones, within its own impact area, with a reason for each. A test that was written but
-never run counts as not run.
+never run counts as not run. Test behaviour, not structure: a change with no logic (a schema-only migration, config, copy, styling, a declaration) needs no new test, but a change to logic always does.
 
 ### 7. Clients hear only what a human approved
 Text for clients goes out only after a person approves it. Internal text is English; client text is in

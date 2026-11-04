@@ -36,7 +36,19 @@ def run(cwd, *args):
     return proc.returncode, (json.loads(proc.stdout) if proc.returncode == 0 else proc.stderr)
 
 
+def check_known_types():
+    import importlib.util
+    sys.dont_write_bytecode = True
+    spec = importlib.util.spec_from_file_location("gather_epic_facts", SCRIPT)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    for t in ("critical-fix", "bug"):
+        r = mod.parse_commit(f"{t}(payments): [PROJ-7] stop double charge", "")
+        assert r["format_ok"] and r["type"] == t, r
+
+
 def main():
+    check_known_types()
     with tempfile.TemporaryDirectory() as tmp:
         hub = Path(tmp) / "hub"
         (hub / "docs").mkdir(parents=True)
