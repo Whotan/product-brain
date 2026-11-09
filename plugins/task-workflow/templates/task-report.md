@@ -151,9 +151,9 @@ and it is also listed in §4.
 
 ## 8. UI/UX against the approved mockups
 
-| # | Approved mockup | Built (screenshot per locale) | Matches | Differences |
+| # | Approved mockup | Built (screenshot per locale, uploaded to the merge request, never committed) | Matches | Differences |
 |---|---|---|---|---|
-| U1 | [mockups/U1-slug.html](mockups/U1-slug.html) | [<locale>](evidence/U1-<locale>.png) | yes · no | |
+| U1 | [mockups/U1-slug.html](mockups/U1-slug.html) | [<locale>](<link to the uploaded screenshot>) | yes · no | |
 
 **Sign-off on the final deployed result**: Pending. This is filled in only from a team member's
 own words (the writer by default): `<name>, YYYY-MM-DD, <source with link>`. For a playground

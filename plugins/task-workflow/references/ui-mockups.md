@@ -13,9 +13,16 @@ defaults below.
 
 ```
 <task folder>/mockups/
-  current/U1-<app>-<screen>-<locale>-<width>.png   the screen as it is today, one per locale
   U1-<slug>.html                                   the mockup, one file per row
 ```
+
+**Screenshots are never committed.** Images stay in a repository's history forever, even after
+the file is deleted, and a screenshot of a real environment can show personal data. Save the
+screenshots of today's screen (`U1-<app>-<screen>-<locale>-<width>.png`, one per locale) in a
+scratch folder outside the repository, publish them with the mockup as the artifact's supporting
+files (step 4), and upload any you want on the ticket or the merge request there; GitLab and Jira
+store uploads outside the repository. Use test data only. A hub that keeps task folders should
+make `.gitignore` refuse images under them (`<tasks.dir>/**/*.png` and the like).
 
 One row per screen or component. All the changes to one screen share a row and a mockup.
 
@@ -65,7 +72,8 @@ and fix every failure before showing the mockup.
 
 ## 4. Share it and wait
 
-Publish the HTML with the Artifact tool, including the `current/` screenshots as supporting files.
+Publish the HTML with the Artifact tool, including the screenshots of today's screen (from the scratch
+folder) as supporting files.
 Put the link in the row's Mockup cell next to the file link. Then ask the writer (or whichever
 team member is reviewing), for each row: **approve, or what should change?**
 
