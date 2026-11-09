@@ -1,6 +1,6 @@
 {
   "name": "finance",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Month-end billing for a Jira Server/Data Center + Tempo project: Tempo worklogs into the project's tab of a shared finance workbook (only new data, after one review the PM approves), next month's planned hours as Tempo allocations, optional epic split, client worklog CSV, invoice tab and SLA invoiceable hours. Per-hub config in brain.config.json > finance.",
   "author": {
     "name": "Product Brain maintainers"

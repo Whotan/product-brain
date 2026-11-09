@@ -1,6 +1,6 @@
 {
   "name": "guardrails",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Blocks writes that violate shared engineering standards, for whichever stacks the repository actually contains.",
   "author": {
     "name": "Product Brain maintainers"

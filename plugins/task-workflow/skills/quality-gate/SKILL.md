@@ -97,7 +97,7 @@ If fixing something changes what a user sees (a margin, a label, a state):
   the Environment row (URL, commit, pipeline).
 - Update report §1–§8 from this run: changes from the plan, risks and not-fixed items, the
   code-review table, added and changed E2E scenarios with their run counts, the quality-check
-  table, and UI screenshots.
+  table, and UI screenshots (uploaded to the merge request and linked, never committed).
 - Fill in §9. Then set the header:
 
 | Result | Mode | Status |
