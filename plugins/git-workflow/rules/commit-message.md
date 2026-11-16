@@ -9,10 +9,11 @@ type(scope): [TASK-ID] description
 Enforced by the `git-workflow` hook on `git commit -m` inside Claude:
 
 ```text
-^(feat|fix|bug|refactor|perf|test|docs|style|chore|ci)(\([a-z][a-z0-9-]*\))?: \[[A-Z][A-Z0-9]*-[0-9]+\] .+$
+^(feat|fix|critical-fix|bug|refactor|perf|test|docs|style|chore|ci|build|revert)(\([a-z][a-z0-9-]*\))?: \[[A-Z][A-Z0-9]*-[0-9]+\] .+$
 ```
 
-- `type` — required, one of: `feat`, `fix`, `bug`, `refactor`, `perf`, `test`, `docs`, `style`, `chore`, `ci`
+- `type` — required, one of: `feat`, `fix`, `critical-fix`, `bug`, `refactor`, `perf`, `test`,
+  `docs`, `style`, `chore`, `ci`, `build`, `revert`
 - `(scope)` — optional, lowercase letters, digits and dashes
 - `[TASK-ID]` — required, comes **after** `type(scope):`, uppercase key + dash + digits, e.g. `[PROJ-576]`
 - `description` — required, imperative mood ("add", not "added")
@@ -22,6 +23,12 @@ The ticket comes after `type(scope):`, never before. No Gitmoji. Merge, revert, 
 
 If the repository already enforces its own commit format (a `commit-msg` git hook or a
 commitlint config), the hook steps aside and the repository's format wins.
+
+A hub whose own work is not ticketed sets `"commits": { "ticket_required": false }` in its
+`brain.config.json`. Commits there may leave `[TASK-ID]` out (`docs(runbook): explain the release
+train`), and its merge requests skip the ticket-scope check, since there is no ticket to check
+against. The type is still required. App repos have no `brain.config.json`, so this never
+loosens them.
 
 ## Finding the ticket
 
@@ -35,10 +42,12 @@ notice this change?
 
 - `feat` — new user-visible behaviour: a new screen, field, filter or endpoint
 - `fix` / `bug` — user-visible behaviour that was wrong and now is not
+- `critical-fix` — a `fix` that ships as an urgent fix, outside the normal release train
 - `refactor` — the behaviour is identical, the code is not
 - `perf` — the behaviour is identical and measurably faster or lighter
 - `test`, `docs`, `style` — only tests, only documentation, only formatting
-- `ci` — only pipeline configuration
+- `ci` — only pipeline configuration; `build` — only the build system or packaging
+- `revert` — undoes an earlier commit, written by hand rather than by `git revert`
 - `chore` — ships nothing to a user: dependency bumps, tooling, config, merging the base branch in
 
 `chore` is the most overused type. A commit that ships a feature typed as `chore` makes

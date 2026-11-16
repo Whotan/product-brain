@@ -90,8 +90,8 @@ a team member approve it (ask the writer first). **A mockup is optional.** Ask t
 
 - **No mockup:** the row states the change precisely in words (what is disabled, added or moved,
   on which screen, in every locale the hub uses, with any proposed copy marked *proposed*), and
-  the Mockup cell says `none, skipped by <writer>`. A screenshot of today's screen may be saved in
-  `mockups/current/` and linked, but is not required. The team member approves that written
+  the Mockup cell says `none, skipped by <writer>`. A screenshot of today's screen may be uploaded to the
+  ticket and linked (never committed), but is not required. The team member approves that written
   change.
 - **Mockup wanted:** follow [../../references/ui-mockups.md](../../references/ui-mockups.md) step
   by step: capture the current UI, read the real component, build the mockup from the brand,

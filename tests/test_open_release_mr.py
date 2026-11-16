@@ -66,6 +66,7 @@ def main():
         commit(repo, "feat(auth): add SSO login", "b.txt")
         commit(repo, "fix(auth): stop token expiring early", "c.txt")
         commit(repo, "chore: bump deps", "d.txt")
+        commit(repo, "critical-fix(pay): stop double charge", "g.txt")
         commit(repo, "temp", "e.txt")
         commit(repo, 'Revert "temp"', "f.txt")
         git(repo, "push", "-q", "origin", "release/1.4.0")
@@ -81,6 +82,7 @@ def main():
         rc, out, err = run(hub)
         check(rc == 0 and "## Added" in out and "## Changed" in out and "## Fixed" in out, f"plan: {out}{err}")
         check("add SSO login" in out and "temp" not in out.replace("plan only", ""), "revert pair dropped")
+        check("stop double charge" in out and out.index("## Fixed") < out.index("stop double charge"), "critical-fix lands under Fixed")
         check("MCP tool" in out, "plan points at the MCP route too")
         check("could not check" in out, "with no CLI the plan says the duplicate check could not be made")
 

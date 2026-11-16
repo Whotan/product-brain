@@ -63,7 +63,7 @@ AREA_RULES = [
 TAG_PATTERN = None  # releases.tag_regex, compiled in main()
 
 CONVENTIONAL = re.compile(
-    r"^(?P<type>feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert)"
+    r"^(?P<type>feat|fix|critical-fix|bug|perf|refactor|docs|test|build|ci|chore|style|revert)"
     r"(?:\((?P<scope>[^)]*)\))?(?P<breaking>!)?:\s*(?P<subject>.+)$",
     re.IGNORECASE,
 )

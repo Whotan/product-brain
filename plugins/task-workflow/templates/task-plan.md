@@ -30,7 +30,7 @@ Why this mode was chosen, in one or two sentences. What each mode runs is fixed:
 | Lint, static analysis, type checks and translation keys (the hub's conventions name the commands) | Yes, fixed | Yes, fixed |
 | Static-analysis service on the merge request (SonarQube or similar), new-code findings | Yes, fixed | Yes, fixed |
 | Code review | Full, with each repo's full review (see the conventions). Every finding fixed. | Light: `code-review` at `low`. Every finding fixed. |
-| E2E scenarios added, updated and run | Yes | Skipped. Run by `/quality-gate` |
+| E2E scenarios, as the hub constitution's rule asks (which changes need one, whether a red run holds the merge) | Yes | Skipped. Handled by `/quality-gate` |
 | Draft merge request opened, so CI runs | Yes | Yes |
 | Deployed to a test environment | Yes | Yes, so the writer can confirm the result |
 | Merged into the base branch | After review of `report.md` | Only after `/quality-gate` passes |
@@ -73,7 +73,7 @@ A new endpoint or action has a test that goes through its route or public entry 
   scenarios are still named now, so the gate knows where to start.
 - **App with no E2E harness**: say whether this task stands the harness up, or falls back to
   feature tests plus a checked walkthrough in every locale.
-- `None` only when no user-facing surface changes, with the reason.
+- `None` when the hub's rule asks for no scenario for this change (if the hub names critical flows, only those need one), with the reason.
 
 ## UI/UX
 

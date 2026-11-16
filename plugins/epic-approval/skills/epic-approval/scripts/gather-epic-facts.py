@@ -51,9 +51,9 @@ DEFAULTS = {
 TICKET_RE = re.compile(r"\b([A-Z][A-Z0-9]+-[0-9]+)\b")
 # type(scope)!: [TICKET] description — the git-workflow commit rule, plus the conventional "!".
 COMMIT_RE = re.compile(
-    r"^(?P<type>[a-z]+)(?:\((?P<scope>[^)]*)\))?(?P<breaking>!)?: (?:\[(?P<ticket>[A-Z][A-Z0-9]*-[0-9]+)\] )?(?P<desc>.+)$"
+    r"^(?P<type>[a-z]+(?:-[a-z]+)*)(?:\((?P<scope>[^)]*)\))?(?P<breaking>!)?: (?:\[(?P<ticket>[A-Z][A-Z0-9]*-[0-9]+)\] )?(?P<desc>.+)$"
 )
-KNOWN_TYPES = {"feat", "fix", "bug", "refactor", "perf", "test", "docs", "style", "chore", "ci", "build", "revert"}
+KNOWN_TYPES = {"feat", "fix", "critical-fix", "bug", "refactor", "perf", "test", "docs", "style", "chore", "ci", "build", "revert"}
 # Old names use any separator (release-5-5, release/1.4, release_2.3); new ones are always semantic.
 VERSION_RE = re.compile(r"(\d+(?:[._-]\d+){0,3})")
 SEMVER_PREFIX = "release."

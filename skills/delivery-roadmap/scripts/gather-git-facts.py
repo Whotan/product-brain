@@ -47,7 +47,7 @@ from roadmap_hub import (fail, find_hub, get, load_config, rel_to_hub, repos,  #
 ACTIVE_WINDOW_DAYS = 45
 
 CONVENTIONAL = re.compile(
-    r"^(feat|fix|chore|docs|refactor|test|perf|style|ci|build)(\(.+\))?!?:")
+    r"^(feat|fix|critical-fix|bug|chore|docs|refactor|test|perf|style|ci|build)(\(.+\))?!?:")
 
 DEFAULT_RELEASE_BRANCH_REGEX = r"^(release|hotfix)[-/._]"
 
