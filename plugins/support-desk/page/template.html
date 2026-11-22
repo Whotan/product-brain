@@ -1,0 +1,625 @@
+<meta charset="utf-8">
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky ticket queue on the left, one ticket's full dossier on the right; stacks on phones.
+   Styled only through --ds-* roles: neutral fallbacks here, the hub's brand/brand.css inlined in the BRAND block below. */
+:root{
+  --ds-canvas:#F6F7FB;--ds-surface:#FFFFFF;--ds-inset:#EBEBF4;--ds-ink:#20212B;--ds-muted:#585D70;--ds-border:#E3E3EB;
+  --ds-primary:#4F46E5;--ds-primary-strong:#312E81;--ds-primary-soft:#EEF2FF;--ds-on-primary:#FFFFFF;
+  --ds-success:#0bb65d;--ds-success-ink:oklch(50.8% 0.118 165.612);--ds-success-soft:color-mix(in oklab,#0bb65d 12%,transparent);
+  --ds-warning:#F59E0B;--ds-warning-ink:oklch(55.5% 0.163 48.998);--ds-warning-soft:color-mix(in oklab,#F59E0B 14%,transparent);
+  --ds-danger:#DC2626;--ds-danger-ink:#B91C1C;--ds-danger-soft:color-mix(in oklab,#DC2626 10%,transparent);
+  --ds-info-ink:#2899C4;
+  --mark-a:#2962E8;--mark-b:#162554;
+  --ds-font-body:Inter,Vazirmatn,"Segoe UI",system-ui,sans-serif;
+  --ds-font-fa:Vazirmatn,Inter,"Segoe UI",system-ui,sans-serif;
+  --ds-font-mono:Consolas,Monaco,"Courier New",monospace;
+  --ds-radius-sm:4px;--ds-radius-md:8px;--ds-radius-lg:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ds-canvas:#17153a;--ds-surface:#20212B;--ds-inset:oklch(27.8% 0.033 256.848);--ds-ink:#F1F1F4;--ds-muted:oklch(70.7% 0.022 261.325);--ds-border:oklch(37.3% 0.034 259.733);
+  --ds-primary:#818CF8;--ds-primary-strong:#C7D2FE;--ds-primary-soft:#312E81;--ds-on-primary:#1E1B4B;
+  --ds-success:#81d9ae;--ds-success-ink:#81d9ae;--ds-success-soft:color-mix(in oklab,#81d9ae 16%,transparent);
+  --ds-warning:#F59E0B;--ds-warning-ink:#F5B544;--ds-warning-soft:color-mix(in oklab,#F59E0B 18%,transparent);
+  --ds-danger:#F87171;--ds-danger-ink:#F87171;--ds-danger-soft:color-mix(in oklab,#F87171 16%,transparent);
+  --mark-a:#818CF8;--mark-b:#F1F1F4;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ds-canvas:#17153a;--ds-surface:#20212B;--ds-inset:oklch(27.8% 0.033 256.848);--ds-ink:#F1F1F4;--ds-muted:oklch(70.7% 0.022 261.325);--ds-border:oklch(37.3% 0.034 259.733);
+  --ds-primary:#818CF8;--ds-primary-strong:#C7D2FE;--ds-primary-soft:#312E81;--ds-on-primary:#1E1B4B;
+  --ds-success:#81d9ae;--ds-success-ink:#81d9ae;--ds-success-soft:color-mix(in oklab,#81d9ae 16%,transparent);
+  --ds-warning:#F59E0B;--ds-warning-ink:#F5B544;--ds-warning-soft:color-mix(in oklab,#F59E0B 18%,transparent);
+  --ds-danger:#F87171;--ds-danger-ink:#F87171;--ds-danger-soft:color-mix(in oklab,#F87171 16%,transparent);
+  --mark-a:#818CF8;--mark-b:#F1F1F4;color-scheme:dark}
+
+/* BRAND:BEGIN */
+__BRAND__
+/* BRAND:END */
+.brand .logo-dark{display:none}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .brand .logo-light{display:none}:root:not([data-theme="light"]) .brand .logo-dark{display:block}}
+:root[data-theme="dark"] .brand .logo-light{display:none}:root[data-theme="dark"] .brand .logo-dark{display:block}
+
+*{box-sizing:border-box}
+body{background:var(--ds-canvas);color:var(--ds-ink);font-family:var(--ds-font-body);font-size:14px;line-height:1.55}
+.fa{font-family:var(--ds-font-fa);direction:rtl;text-align:right;line-height:1.9}
+a{color:var(--ds-primary)}
+:focus-visible{outline:2px solid var(--ds-primary);outline-offset:2px}
+
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:34px;height:auto}
+.brand h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.brand small{display:block;color:var(--ds-muted);font-size:12px;font-weight:500}
+.progress{margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar{width:180px;height:8px;border-radius:99px;background:var(--ds-inset);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .ok{background:var(--ds-success)} .bar .hold{background:var(--ds-warning)}
+.progress .txt{font-variant-numeric:tabular-nums;color:var(--ds-muted);font-size:13px}
+.progress .txt b{color:var(--ds-ink)}
+
+.howto{background:var(--ds-primary-soft);color:var(--ds-ink);border-radius:var(--ds-radius-md);padding:10px 14px;font-size:13px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.howto code{font-family:var(--ds-font-mono);background:var(--ds-surface);padding:1px 6px;border-radius:var(--ds-radius-sm);font-size:12px}
+.howto .sync{margin-left:auto;color:var(--ds-muted);font-size:12px}
+
+.grid{display:grid;grid-template-columns:330px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* queue */
+.queue{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--ds-surface);border:1px solid var(--ds-border);border-radius:var(--ds-radius-lg);overflow:hidden;max-height:calc(100vh - 40px);display:flex;flex-direction:column}
+@media (max-width:860px){.queue{position:static;max-height:none}}
+.filters{display:flex;gap:4px;padding:10px;border-bottom:1px solid var(--ds-border);flex-wrap:wrap}
+.filters button{font:inherit;font-size:12px;font-weight:600;border:1px solid transparent;background:none;color:var(--ds-muted);padding:5px 10px;border-radius:99px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ds-primary-soft);color:var(--ds-primary-strong);border-color:color-mix(in oklab,var(--ds-primary) 30%,transparent)}
+.filters button span{font-variant-numeric:tabular-nums;opacity:.7;margin-left:3px}
+.list{overflow:auto;padding:6px}
+.grp{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-muted);padding:12px 10px 6px}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:start;width:100%;text-align:left;font:inherit;color:inherit;background:none;border:1px solid transparent;border-radius:var(--ds-radius-md);padding:9px 10px;cursor:pointer}
+.item:hover{background:var(--ds-inset)}
+.item[aria-current="true"]{background:var(--ds-primary-soft);border-color:color-mix(in oklab,var(--ds-primary) 35%,transparent)}
+.item .key{font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.item .t{font-size:13px;min-width:0;overflow-wrap:anywhere}
+.item .meta{grid-column:2/4;display:flex;gap:6px;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:4px;border:2px solid var(--ds-border);background:transparent}
+.dot.approved{background:var(--ds-success);border-color:var(--ds-success)}
+.dot.hold{background:var(--ds-warning);border-color:var(--ds-warning)}
+.dot.edited{border-color:var(--ds-primary)}
+.dot.noreply{background:var(--ds-inset);border-color:var(--ds-muted)}
+
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;background:var(--ds-inset);color:var(--ds-muted);white-space:nowrap}
+.chip.p1{background:var(--ds-danger-soft);color:var(--ds-danger-ink)}
+.chip.p2{background:var(--ds-warning-soft);color:var(--ds-warning-ink)}
+.chip.p3{background:var(--ds-inset);color:var(--ds-muted)}
+.chip.ok{background:var(--ds-success-soft);color:var(--ds-success-ink)}
+.chip.hold{background:var(--ds-warning-soft);color:var(--ds-warning-ink)}
+.chip.cls{background:var(--ds-primary-soft);color:var(--ds-primary-strong)}
+
+/* detail */
+.detail{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--ds-surface);border:1px solid var(--ds-border);border-radius:var(--ds-radius-lg);padding:20px;min-width:0}
+.dhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.dhead h2{margin:0;font-size:20px;letter-spacing:-.01em}
+.dhead h2 a{color:inherit;text-decoration:none}
+.dhead h2 a:hover{text-decoration:underline}
+.dhead .ext{font-size:12px;margin-left:auto}
+.subtitle{margin:8px 0 0;font-size:17px;font-weight:600}
+.subtitle-en{margin:2px 0 0;color:var(--ds-muted)}
+.facts{display:flex;gap:6px 18px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ds-muted)}
+.facts b{color:var(--ds-ink);font-weight:600}
+
+h3{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-muted);margin:0 0 10px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:640px){.two{grid-template-columns:minmax(0,1fr)}}
+.quote{background:var(--ds-inset);border-radius:var(--ds-radius-md);padding:12px 14px;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.en{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.att{margin-top:8px;font-size:12px;color:var(--ds-muted)}
+
+.thread{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.msg{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;font-size:13px}
+.msg .who{color:var(--ds-muted);font-size:12px}
+.msg .who b{display:block;color:var(--ds-ink);font-size:12px}
+.msg.us .who b{color:var(--ds-primary)}
+
+table.checks{width:100%;border-collapse:collapse;font-size:13px}
+.tablewrap{overflow-x:auto}
+table.checks td{border-top:1px solid var(--ds-border);padding:9px 8px;vertical-align:top}
+table.checks tr:first-child td{border-top:none}
+table.checks td.ref{font-family:var(--ds-font-mono);font-size:12px;width:34%;overflow-wrap:anywhere}
+table.checks td.v{width:96px}
+.v span{font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;white-space:nowrap}
+.v .confirmed{background:var(--ds-success-soft);color:var(--ds-success-ink)}
+.v .refuted{background:var(--ds-danger-soft);color:var(--ds-danger-ink)}
+.v .cant{background:var(--ds-inset);color:var(--ds-muted)}
+.truth{font-size:15px;margin:14px 0 0;padding-top:14px;border-top:1px solid var(--ds-border)}
+.truth b{font-weight:700}
+.move{display:flex;gap:10px;align-items:baseline;margin-top:10px;font-size:13px}
+.move code{font-family:var(--ds-font-mono);font-size:12px;background:var(--ds-inset);padding:1px 6px;border-radius:var(--ds-radius-sm);overflow-wrap:anywhere}
+
+/* reply editor */
+.reply{border:1.5px solid var(--ds-primary);box-shadow:0 8px 32px 0 color-mix(in oklab,var(--ds-primary) 14%,transparent)}
+.reply.is-approved{border-color:var(--ds-success)}
+.reply.is-hold{border-color:var(--ds-warning)}
+.rhead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.rhead h3{margin:0}
+.rhead .state{margin-left:auto}
+textarea{width:100%;min-height:190px;resize:vertical;font:inherit;font-family:var(--ds-font-fa);font-size:15px;line-height:1.95;direction:rtl;text-align:right;color:var(--ds-ink);background:var(--ds-canvas);border:1px solid var(--ds-border);border-radius:var(--ds-radius-md);padding:12px 14px}
+textarea:focus{outline:2px solid var(--ds-primary);outline-offset:0;border-color:transparent}
+textarea[readonly]{opacity:.85}
+.placeholder-warn{margin-top:8px;font-size:12px;color:var(--ds-warning-ink);font-weight:600}
+.gloss{font-size:12px;color:var(--ds-muted);margin:8px 0 0}
+.note{margin-top:12px}
+.note label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
+.note input{width:100%;font:inherit;font-size:13px;color:var(--ds-ink);background:var(--ds-canvas);border:1px solid var(--ds-border);border-radius:var(--ds-radius-md);padding:8px 10px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.btn{font:inherit;font-size:13px;font-weight:600;border-radius:var(--ds-radius-md);padding:8px 14px;cursor:pointer;border:1px solid var(--ds-border);background:var(--ds-surface);color:var(--ds-ink)}
+.btn:hover:not(:disabled){background:var(--ds-inset)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.approve{background:var(--ds-success);border-color:var(--ds-success);color:#06301b}
+.btn.approve:hover:not(:disabled){background:color-mix(in oklab,var(--ds-success) 85%,black)}
+.btn.hold{color:var(--ds-warning-ink)}
+.btn.link{border:none;background:none;color:var(--ds-muted);padding:8px 6px;text-decoration:underline}
+.saved{font-size:12px;color:var(--ds-muted);margin-left:auto}
+.nav{display:flex;justify-content:space-between;gap:8px}
+.ro{font-size:12px;color:var(--ds-warning-ink);margin-top:8px}
+@media (prefers-reduced-motion:no-preference){.item,.btn{transition:background .12s}}
+/* search, sort, closed toggle */
+.qtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px;border-bottom:1px solid var(--ds-border)}
+.qtools input[type=search]{flex:1 1 140px;min-width:0;font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--ds-border);border-radius:8px;background:var(--ds-surface,transparent);color:var(--ds-ink)}
+.qtools input[type=search]:focus{outline:2px solid var(--ds-primary);outline-offset:1px}
+.qtools select{font:inherit;font-size:12px;padding:5px 6px;border:1px solid var(--ds-border);border-radius:8px;background:var(--ds-surface,transparent);color:var(--ds-ink)}
+.qtools label{font-size:12px;color:var(--ds-muted);display:inline-flex;gap:5px;align-items:center;cursor:pointer;white-space:nowrap}
+.chip.dt{background:none;border:1px dashed var(--ds-border);color:var(--ds-muted)}
+.chip.shut{background:var(--ds-inset);color:var(--ds-muted)}
+.item.is-closed .t{color:var(--ds-muted)}
+/* tabs, tags, move approval */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--ds-border);margin-bottom:16px;overflow-x:auto;scrollbar-width:thin}
+.tabs button{font:inherit;font-size:14px;font-weight:600;color:var(--ds-muted);background:none;border:none;border-bottom:2px solid transparent;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;gap:8px;align-items:center}
+.tabs button:hover{color:var(--ds-ink)}
+.tabs button[aria-selected="true"]{color:var(--ds-primary-strong);border-bottom-color:var(--ds-primary)}
+.tabs .n{font-size:11px;font-variant-numeric:tabular-nums;background:var(--ds-inset);color:var(--ds-muted);border-radius:99px;padding:1px 7px}
+.tabs .n.todo{background:var(--ds-primary-soft);color:var(--ds-primary-strong)}
+.tagbar{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--ds-border);flex-wrap:wrap;align-items:center}
+.tagbar .lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ds-muted);margin-right:2px}
+.tag{font:inherit;font-size:11px;font-weight:600;border:1px solid var(--ds-border);background:var(--ds-surface);color:var(--ds-muted);padding:2px 8px;border-radius:99px;cursor:pointer;white-space:nowrap}
+.tag span{opacity:.65;margin-left:3px;font-variant-numeric:tabular-nums}
+.tag[aria-pressed="true"]{background:var(--ds-ink);color:var(--ds-surface);border-color:var(--ds-ink)}
+.tag.clear{border:none;text-decoration:underline;background:none}
+.chip.tg{background:transparent;border:1px solid var(--ds-border);font-weight:500}
+.chip.mv{background:var(--ds-primary-soft);color:var(--ds-primary-strong)}
+.move-card .flow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px}
+.move-card .now{font-weight:700}
+.move-card select{font:inherit;font-size:14px;color:var(--ds-ink);background:var(--ds-canvas);border:1px solid var(--ds-border);border-radius:var(--ds-radius-md);padding:7px 10px;min-width:220px;max-width:100%}
+.move-card .why{font-size:13px;color:var(--ds-muted);margin:10px 0 0}
+.move-card.is-approved{border-color:var(--ds-success)}
+.move-card.is-applied{border-color:var(--ds-success);background:var(--ds-success-soft)}
+.link-card .links{list-style:none;margin:4px 0 12px;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.link-card .links a{font-weight:600}
+.link-card .lform{display:flex;flex-direction:column;gap:8px}
+.link-card .lrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.link-card select,.link-card textarea{font:inherit;font-size:14px;color:var(--ds-ink);background:var(--ds-canvas);border:1px solid var(--ds-border);border-radius:var(--ds-radius-md);padding:7px 10px;max-width:100%}
+.link-card textarea{width:100%;min-height:64px;resize:vertical}
+.link-card label{font-size:12px;font-weight:600}
+.link-card .why{font-size:13px;color:var(--ds-muted);margin:8px 0 0}
+.link-card.is-requested{border-color:var(--ds-primary)}
+.link-card.is-created{border-color:var(--ds-success);background:var(--ds-success-soft)}
+.empty-tab{padding:24px;color:var(--ds-muted)}
+.dot.posted{background:var(--ds-success);border-color:var(--ds-success);box-shadow:inset 0 0 0 2px var(--ds-surface)}
+.reply.is-posted{border-color:var(--ds-success);box-shadow:none}
+.claude{margin-top:12px;padding:12px 14px;border-radius:var(--ds-radius-md);background:var(--ds-inset);font-size:13px;line-height:1.6}
+.claude b{display:block;font-size:12px;margin-bottom:2px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      __LOGO__
+      <div><h1>Support desk</h1><small id="sub"></small></div>
+    </div>
+    <div class="progress">
+      <div class="bar" aria-hidden="true"><i class="ok" id="barOk"></i><i class="hold" id="barHold"></i></div>
+      <div class="txt" id="progTxt"></div>
+    </div>
+  </header>
+
+  <div class="howto">
+    <span>For each ticket: edit the reply, then <b>Approve</b> it or put it <b>On hold</b>, and approve a <b>move in Jira</b> (the suggested one is preselected). When you're done, run <code>/support-desk:apply</code> in Claude Code. Only approved replies and approved moves are sent.</span>
+    <span class="sync" id="sync">Connecting…</span>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="App" id="tabs"></nav>
+
+  <div class="grid">
+    <aside class="queue" aria-label="Tickets">
+      <div class="qtools">
+        <input type="search" id="q" placeholder="Search by number, e.g. 215" aria-label="Search by ticket number" inputmode="search" autocomplete="off">
+        <select id="sortSel" aria-label="Sort tickets">
+          <option value="pri">Sort: priority</option>
+          <option value="created">Sort: created (newest)</option>
+          <option value="activity">Sort: last update / reply</option>
+        </select>
+        <label><input type="checkbox" id="showClosed"> Show closed / done<span id="cClosed"></span></label>
+      </div>
+      <div class="filters" role="group" aria-label="Filter by review state">
+        <button type="button" data-f="all" aria-pressed="true">All<span id="cAll"></span></button>
+        <button type="button" data-f="todo" aria-pressed="false">To review<span id="cTodo"></span></button>
+        <button type="button" data-f="approved" aria-pressed="false">Approved / posted<span id="cOk"></span></button>
+        <button type="button" data-f="hold" aria-pressed="false">On hold<span id="cHold"></span></button>
+        <button type="button" data-f="move" aria-pressed="false">Moves approved<span id="cMove"></span></button>
+        <button type="button" data-f="link" aria-pressed="false" id="fLink" hidden>Issues requested<span id="cLink"></span></button>
+      </div>
+      <div class="tagbar" role="group" aria-label="Filter by tag" id="tagbar"></div>
+      <div class="list" id="list"></div>
+    </aside>
+    <main class="detail" id="detail" role="tabpanel"></main>
+  </div>
+</div>
+
+<script>
+const T = __TICKETS__;
+const BUILT = __BUILT__;
+const CFG = __CONFIG__;   // from the hub's brain.config.json > support_desk
+
+const APPS = CFG.apps;
+const APPNAME = Object.fromEntries(APPS);
+const TAGS = CFG.tags;
+// Jira workflow per flow: [current status] -> statuses a move may target.
+const FLOW = CFG.flow;
+const flowOf = t => ((FLOW[CFG.typeFlow[t.type] || CFG.defaultFlow] || {})[t.jira]) || [];
+
+const S = {};   // replies/<KEY>: {reply, state, note, claude, posted, updatedAt}
+const MV = {};  // moves/<KEY>:   {to, state:"approved"|"none", appliedAt, from, updatedAt}
+const LK = {};  // links/<KEY>:   {state:"requested"|"cancelled"|"created"|"failed", issueType, brief, issue, createdAt, error, by, updatedAt}
+const LINK = CFG.linkedIssue;  // null when the hub has not set support_desk.linked_issue
+let db = null, canWrite = true, filter = "all", ME = null;  // ME: the viewer's opaque id, stored as "by" on what they approve
+const pref = (k,d)=>{ try{ const v=localStorage.getItem(CFG.storePrefix+k); return v==null?d:JSON.parse(v);}catch(e){return d;} };
+const setPref = (k,v)=>{ try{ localStorage.setItem(CFG.storePrefix+k, JSON.stringify(v)); }catch(e){} };
+let sortBy = pref("sort","pri"), showClosed = pref("closed",false), query = "";
+const CLOSED = new RegExp("^(" + CFG.closed.map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")$");
+const isClosed = t => CLOSED.test(t.jira);
+const actAt = t => [t.updatedAt,t.lastReplyAt].filter(Boolean).sort().pop() || t.createdAt || "";
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmtD = s => { if(!s) return ""; const [y,m,d]=s.slice(0,10).split("-"); return `${+d} ${MON[+m-1]}${y!==String(new Date().getFullYear())?" "+y:""}`; };
+const qNum = () => (query.match(/\d+/)||[""])[0];
+function qMatch(t){
+  if(!query) return true;
+  const n = qNum();
+  if(n) return t.key.split("-")[1].startsWith(n);
+  return (t.ten||"").toLowerCase().includes(query.toLowerCase()) || (t.tfa||"").includes(query);
+}
+const tagSel = new Set();
+let current = (location.hash || "").slice(1);
+if (!T.some(t => t.key === current)) current = (T.find(t=>!isClosed(t))||T[0]).key;
+let tab = pref("tab", T.find(t=>t.key===current).app);
+if (tab!=="all" && T.find(t=>t.key===current).app!==tab) tab = T.find(t=>t.key===current).app;
+
+const $ = id => document.getElementById(id);
+// Bracketed text in a reply is a placeholder to fill before approving, except the ones the hub allows.
+const stripAllowed = s => CFG.allowedPlaceholders.reduce((a,p)=>a.split("["+p+"]").join(""), s);
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const stateOf = t => (S[t.key] && S[t.key].state) || (t.noreply ? "noreply" : "draft");
+const replyOf = t => (S[t.key] && typeof S[t.key].reply === "string") ? S[t.key].reply : t.reply;
+const edited = t => replyOf(t) !== t.reply;
+const isDone = s => s==="approved"||s==="posted"||s==="closed";
+const moveApproved = t => MV[t.key] && MV[t.key].state==="approved" && !MV[t.key].appliedAt;
+const linkRequested = t => LK[t.key] && LK[t.key].state==="requested";
+const inTab = t => tab==="all" || t.app===tab;
+const visible = t => showClosed || !isClosed(t) || t.key===current;
+
+function counts(list){
+  let ok=0,hold=0,todo=0,mv=0,lk=0;
+  list.forEach(t=>{const s=stateOf(t); if(isDone(s))ok++; else if(s==="hold")hold++; else if(s==="draft")todo++; if(moveApproved(t))mv++; if(linkRequested(t))lk++;});
+  return {ok,hold,todo,mv,lk,all:list.length};
+}
+
+function renderTop(){
+  const c = counts(T);
+  $("barOk").style.width = (c.ok/c.all*100)+"%";
+  $("barHold").style.width = (c.hold/c.all*100)+"%";
+  $("progTxt").innerHTML = `<b>${c.ok}</b> approved or posted · <b>${c.hold}</b> on hold · <b>${c.todo}</b> to review · <b>${c.mv}</b> moves approved`;
+  $("sub").textContent = `${T.length} ${CFG.project} tickets (${T.filter(t=>!isClosed(t)).length} open) · ${BUILT}`;
+  $("tabs").innerHTML = [["all","All"],...APPS].map(([k,l])=>{
+    const list=T.filter(t=>(k==="all"||t.app===k) && (showClosed||!isClosed(t))), cc=counts(list);
+    return `<button type="button" role="tab" data-tab="${k}" aria-selected="${k===tab}">${l}<span class="n ${cc.todo?"todo":""}" title="${cc.todo} to review of ${cc.all}">${cc.todo?cc.todo+" / ":""}${cc.all}</span></button>`;
+  }).join("");
+  const cc = counts(T.filter(t=>inTab(t)&&(showClosed||!isClosed(t))));
+  $("cClosed").textContent = ` (${T.filter(t=>inTab(t)&&isClosed(t)).length})`;
+  $("cAll").textContent=cc.all; $("cTodo").textContent=cc.todo; $("cOk").textContent=cc.ok; $("cHold").textContent=cc.hold; $("cMove").textContent=cc.mv;
+  $("fLink").hidden = !LINK; $("cLink").textContent=cc.lk;
+}
+
+function match(t){
+  if (query) { if (!qMatch(t)) return false; }
+  else { if (!inTab(t)) return false; if (!showClosed && isClosed(t)) return false; }
+  if (tagSel.size && !(t.tags||[]).some(g=>tagSel.has(g))) return false;
+  const s = stateOf(t);
+  if (filter==="all") return true;
+  if (filter==="todo") return s==="draft";
+  if (filter==="approved") return isDone(s);
+  if (filter==="move") return moveApproved(t);
+  if (filter==="link") return linkRequested(t);
+  return s===filter;
+}
+
+function renderTags(){
+  const list = T.filter(t=>inTab(t)&&(showClosed||!isClosed(t)));
+  const n = {}; list.forEach(t=>(t.tags||[]).forEach(g=>n[g]=(n[g]||0)+1));
+  const used = TAGS.filter(g=>n[g]);
+  $("tagbar").innerHTML = used.length ? `<span class="lbl">Tags</span>` + used.map(g=>`<button type="button" class="tag" data-tag="${g}" aria-pressed="${tagSel.has(g)}">${g}<span>${n[g]}</span></button>`).join("") + (tagSel.size?`<button type="button" class="tag clear" data-tag="">clear</button>`:"") : "";
+}
+
+function stChipOf(t){
+  const s = stateOf(t);
+  return s==="posted"?`<span class="chip ok">Posted</span>`:s==="closed"?`<span class="chip ok">Closed, no reply</span>`:s==="approved"?`<span class="chip ok">Approved</span>`:s==="hold"?`<span class="chip hold">On hold</span>`:s==="noreply"?`<span class="chip">No reply yet</span>`:edited(t)?`<span class="chip cls">Edited</span>`:"";
+}
+
+function itemHtml(t){
+  const s = stateOf(t), p = t.pri;
+  const dotCls = s==="draft" ? (edited(t)?"edited":"") : (s==="closed"?"posted":s);
+  const mv = moveApproved(t) ? `<span class="chip mv">→ ${esc(MV[t.key].to)}</span>` : "";
+  const dt = sortBy==="created" ? `<span class="chip dt" title="Created in Jira">created ${fmtD(t.createdAt)}</span>`
+           : `<span class="chip dt" title="Last update or reply in Jira">${sortBy==="activity"?"updated ":""}${fmtD(actAt(t))}</span>`;
+  const shut = isClosed(t) ? `<span class="chip shut">${esc(t.jira)}</span>` : "";
+  const app = (tab==="all"||query) ? `<span class="chip tg">${esc(APPNAME[t.app])}</span>` : "";
+  return `<button type="button" class="item${isClosed(t)?" is-closed":""}" data-k="${t.key}" aria-current="${t.key===current}">
+    <span class="dot ${dotCls}" aria-hidden="true"></span>
+    <span class="t"><span class="key">${t.key}</span> · ${esc(t.ten)}</span><span></span>
+    <span class="meta"><span class="chip ${p.toLowerCase()}">${p}</span>${shut}${stChipOf(t)}${mv}${dt}${app}${(t.tags||[]).map(g=>`<span class="chip tg">${g}</span>`).join("")}</span>
+  </button>`;
+}
+function listed(){
+  const items = T.filter(match);
+  if (sortBy==="created") items.sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+  else if (sortBy==="activity") items.sort((a,b)=>actAt(b).localeCompare(actAt(a)));
+  return items;
+}
+function renderList(){
+  let html = "";
+  const items = listed();
+  if (query) html += `<div class="grp">${items.length} match${items.length===1?"":"es"} for “${esc(query)}” in all apps</div>`;
+  if (sortBy==="pri" && !query) {
+    const groups = [["P1","P1 · blocks booking, paying or data"],["P2","P2 · degrades the experience"],["P3","P3 · questions and nice-to-haves"]];
+    groups.forEach(([p,label])=>{
+      const g = items.filter(t=>t.pri===p); if(!g.length) return;
+      html += `<div class="grp">${label}</div>` + g.map(itemHtml).join("");
+    });
+  } else {
+    if (!query) html += `<div class="grp">${sortBy==="created"?"Newest first, by creation date":"Most recent update or reply first"}</div>`;
+    html += items.map(itemHtml).join("");
+  }
+  if(!items.length) html = (query?`<div class="grp">No ticket matches “${esc(query)}”.</div>`:"") + (query?"":`<p class="empty-tab">${T.some(t=>inTab(t)&&(showClosed||!isClosed(t)))?"Nothing matches these filters.":"No open tickets here. Tick “Show closed / done” to see the rest."}</p>`);
+  $("list").innerHTML = html;
+}
+
+let dirty = false;
+function renderDetail(){
+  const t = T.find(x=>x.key===current);
+  if (!t || (!inTab(t) && !query)) { $("detail").innerHTML = `<section class="card empty-tab">Pick a ticket on the left.</section>`; return; }
+  const s = stateOf(t);
+  let tabList = listed(); if (!tabList.includes(t)) tabList = [t]; const idx = tabList.indexOf(t);
+  const vLabel = {confirmed:"confirmed",refuted:"refuted",cant:"can't tell"};
+  const thread = (t.thread||[]).length ? `<div class="thread">${t.thread.map(([who,d,txt])=>`<div class="msg ${who}"><div class="who"><b>${who==="us"?"Us":esc(CFG.customerLabel)}</b>${esc(d)}</div><div>${esc(txt)}</div></div>`).join("")}</div>` : "";
+  const hasPh = /\[[^\]]+\]/.test(stripAllowed(replyOf(t)));
+  const D = S[t.key]||{}, done = s==="posted"||s==="closed", w = canWrite && !done;
+  const M = MV[t.key]||{}, opts = flowOf(t);
+  const mvSel = M.appliedAt ? "" : (M.state==="approved" ? M.to : (M.state==="none" ? "" : (t.suggest||"")));
+  const also = (t.alsoApps||[]).length ? `<span>Also affects <b>${t.alsoApps.map(a=>esc(APPNAME[a]||a)).join(", ")}</b></span>` : "";
+  $("detail").innerHTML = `
+  <section class="card">
+    <div class="dhead">
+      <h2><a href="${esc(CFG.jiraUrl)}/browse/${t.key}" target="_blank" rel="noopener">${t.key}</a></h2>
+      <span class="chip ${t.pri.toLowerCase()}">${t.pri}</span><span class="chip cls">${esc(t.cls)}</span>${(t.tags||[]).map(g=>`<span class="chip tg">${g}</span>`).join("")}
+      <a class="ext" href="${esc(CFG.jiraUrl)}/browse/${t.key}" target="_blank" rel="noopener">Open in Jira ↗</a>
+    </div>
+    <p class="subtitle fa">${esc(t.tfa)}</p>
+    <p class="subtitle-en">${esc(t.ten)}</p>
+    <div class="facts"><span>Jira status <b>${esc(t.jira)}</b></span><span>Type <b>${esc(t.type)}</b></span><span>Opened <b>${esc(t.created)}</b></span>${also}</div>
+  </section>
+
+  <section class="card">
+    <h3>What the ${esc(CFG.customerLabel.toLowerCase())} asked</h3>
+    <div class="two">
+      <div><p class="quote fa">${esc(t.ask)}</p>${t.att?`<div class="att">Attachments: ${esc(t.att)}</div>`:""}</div>
+      <p class="en">${esc(t.asken)}</p>
+    </div>
+    ${(t.thread||[]).length?`<h3 style="margin-top:18px">Thread so far</h3>`:""}${thread}
+  </section>
+
+  <section class="card">
+    <h3>What we found</h3>
+    <div class="tablewrap"><table class="checks"><tbody>
+      ${(t.checks||[]).map(([r,v,n])=>`<tr><td class="ref">${esc(r)}</td><td class="v"><span class="${esc(v)}">${vLabel[v]||esc(v)}</span></td><td>${esc(n)}</td></tr>`).join("")}
+    </tbody></table></div>
+    <p class="truth"><b>In short:</b> ${esc(t.truth)}</p>
+    <div class="move"><h3 style="margin:0;flex:none">Next step</h3><span>${esc(t.move)}</span></div>
+  </section>
+
+  <section class="card reply ${done?"is-posted":s==="approved"?"is-approved":s==="hold"?"is-hold":""}">
+    <div class="rhead">
+      <h3>Reply to the ${esc(CFG.customerLabel.toLowerCase())}</h3>
+      ${edited(t)?`<span class="chip cls">Edited</span>`:""}
+      <span class="state">${s==="posted"?`<span class="chip ok">Posted to Jira${D.posted&&D.posted.at?" · "+esc(D.posted.at):""}</span>`:s==="closed"?`<span class="chip ok">Closed by you, no reply sent</span>`:s==="approved"?`<span class="chip ok">Approved, ready to post</span>`:s==="hold"?`<span class="chip hold">On hold, won't be posted</span>`:s==="noreply"?`<span class="chip">No reply needed yet</span>`:`<span class="chip">Draft</span>`}</span>
+    </div>
+    <label for="replyBox" style="position:absolute;left:-9999px">Persian reply</label>
+    <textarea id="replyBox" class="fa" ${w?"":"readonly"}>${esc(replyOf(t))}</textarea>
+    ${hasPh?`<div class="placeholder-warn">Fill in the bracketed placeholder before approving.</div>`:""}
+    <p class="gloss">English gloss: ${esc(t.gloss)}</p>
+    <div class="note"><label for="noteBox">Note to Claude (optional)</label>
+      <input id="noteBox" type="text" value="${esc(D.note||"")}" ${w?"":"readonly"}></div>
+    ${D.claude?`<div class="claude"><b>Claude's answer</b>${esc(D.claude)}</div>`:""}
+    ${D.posted&&D.posted.actions?`<div class="claude"><b>What Claude did in Jira</b>${esc(D.posted.actions)}</div>`:""}
+    <div class="actions" ${done?`style="display:none"`:""}>
+      <button type="button" class="btn approve" id="bApprove" ${w?"":"disabled"}>${s==="approved"?"Approved ✓":"Approve"}</button>
+      <button type="button" class="btn hold" id="bHold" ${w?"":"disabled"}>${s==="hold"?"On hold":"Put on hold"}</button>
+      <button type="button" class="btn" id="bSave" disabled>Save edit</button>
+      ${s==="approved"||s==="hold"?`<button type="button" class="btn link" id="bDraft" ${w?"":"disabled"}>Back to draft</button>`:""}
+      ${edited(t)?`<button type="button" class="btn link" id="bReset" ${w?"":"disabled"}>Restore Claude's draft</button>`:""}
+      <span class="saved" id="saved">${D.updatedAt?"Saved "+new Date(D.updatedAt).toLocaleString():""}</span>
+    </div>
+  </section>
+
+  <section class="card move-card ${M.appliedAt?"is-applied":moveApproved(t)?"is-approved":""}">
+    <div class="rhead"><h3>Move in Jira</h3>
+      <span class="state">${M.appliedAt?`<span class="chip ok">Moved ${esc(M.from||"")} → ${esc(M.to)} · ${esc(M.appliedAt)}</span>`:moveApproved(t)?`<span class="chip ok">Approved: → ${esc(M.to)}</span>`:`<span class="chip">Not approved</span>`}</span></div>
+    ${opts.length && !M.appliedAt ? `
+    <div class="flow"><span class="now">${esc(t.jira)}</span><span aria-hidden="true">→</span>
+      <label for="mvSel" style="position:absolute;left:-9999px">Move to</label>
+      <select id="mvSel" ${canWrite?"":"disabled"}>
+        <option value="">Stay in ${esc(t.jira)}${!t.suggest?" (suggested)":""}</option>
+        ${opts.map(o=>`<option value="${esc(o)}" ${o===mvSel?"selected":""}>${esc(o)}${o===t.suggest?" (suggested)":""}</option>`).join("")}
+      </select>
+      <button type="button" class="btn approve" id="mvApprove" ${canWrite?"":"disabled"}>${moveApproved(t)?"Approved ✓":"Approve move"}</button>
+      ${moveApproved(t)?`<button type="button" class="btn link" id="mvClear" ${canWrite?"":"disabled"}>Withdraw</button>`:""}
+    </div>` : M.appliedAt ? "" : `<p class="why">No moves are available from ${esc(t.jira)}.</p>`}
+    ${t.suggestWhy?`<p class="why"><b>Why${t.suggest?" "+esc(t.suggest):" stay"}:</b> ${esc(t.suggestWhy)}</p>`:""}
+  </section>
+
+  ${LINK ? linkCard(t) : ""}
+
+  <div class="nav">
+    <button type="button" class="btn" id="bPrev" ${idx<=0?"disabled":""}>← Previous</button>
+    <button type="button" class="btn" id="bNext" ${idx>=tabList.length-1?"disabled":""}>Next →</button>
+  </div>`;
+
+  dirty = false;
+  $("bPrev").onclick = ()=>go(tabList[idx-1].key);
+  $("bNext").onclick = ()=>go(tabList[idx+1].key);
+  if ($("mvApprove")) $("mvApprove").onclick = ()=>{
+    const to = $("mvSel").value;
+    saveMove(t, to ? {to, state:"approved"} : {to:"", state:"none"});
+  };
+  if ($("mvClear")) $("mvClear").onclick = ()=>saveMove(t, {to:"", state:"none"});
+  if ($("lkCreate")) $("lkCreate").onclick = ()=>saveLink(t, {state:"requested", issueType:$("lkType").value, brief:$("lkBrief").value.trim()});
+  if ($("lkBrief")) $("lkBrief").addEventListener("input", ()=>{ dirty = true; });  // keep live updates from wiping what is being typed
+  if ($("lkCancel")) $("lkCancel").onclick = ()=>saveLink(t, {state:"cancelled", issueType:(LK[t.key]||{}).issueType||"", brief:(LK[t.key]||{}).brief||""});
+  if (done) return;
+  const box = $("replyBox"), note = $("noteBox");
+  const markDirty = ()=>{ dirty = true; $("bSave").disabled = !canWrite; $("saved").textContent = "Unsaved changes"; };
+  box.addEventListener("input", markDirty);
+  note.addEventListener("input", markDirty);
+  $("bSave").onclick = ()=>save(t, stateOf(t)==="noreply"?"draft":stateOf(t));
+  $("bApprove").onclick = ()=>{
+    if (/\[[^\]]+\]/.test(stripAllowed(box.value))) { $("saved").textContent = "Replace the [placeholder] first."; box.focus(); return; }
+    save(t,"approved");
+  };
+  $("bHold").onclick = ()=>save(t,"hold");
+  if ($("bDraft")) $("bDraft").onclick = ()=>save(t, t.noreply?"noreply":"draft");
+  if ($("bReset")) $("bReset").onclick = ()=>{ box.value = t.reply; save(t, stateOf(t)==="approved"?"draft":stateOf(t)); };
+}
+
+async function save(t, state){
+  const o = S[t.key]||{}, keep = {};
+  if (o.claude) keep.claude = o.claude;
+  const body = {...keep, reply:$("replyBox").value, note:$("noteBox").value, state, updatedAt:new Date().toISOString(), key:t.key, ...(ME?{by:ME}:{})};
+  S[t.key] = body; dirty = false; renderAll();
+  if (!db) { $("saved").textContent = "Not saved: storage unavailable."; return; }
+  try { await db.doc("replies/"+t.key).set(body); }
+  catch(e){ S[t.key] = o; renderAll(); $("saved").textContent = "Couldn't save. Try again."; }
+}
+
+function linkCard(t){
+  const L = LK[t.key]||{}, known = t.links||[];
+  const list = known.length ? `<ul class="links">${known.map(([k,st,sum,rel])=>`<li><a href="${esc(CFG.jiraUrl)}/browse/${esc(k)}" target="_blank" rel="noopener">${esc(k)}</a> · ${esc(rel||"linked")} · ${esc(st)}${sum?" · "+esc(sum):""}</li>`).join("")}</ul>` : "";
+  const created = L.state==="created" && L.issue;
+  const head = created ? `<span class="chip ok">Created <a href="${esc(CFG.jiraUrl)}/browse/${esc(L.issue)}" target="_blank" rel="noopener">${esc(L.issue)}</a></span>`
+    : L.state==="requested" ? `<span class="chip ok">Requested: ${esc(L.issueType||"")} in ${esc(LINK.project)}</span>`
+    : L.state==="failed" ? `<span class="chip hold">Not created</span>` : `<span class="chip">None requested</span>`;
+  const types = LINK.types||["Task"];
+  const body = created ? `<p class="why">Created by Claude on apply${L.createdAt?" · "+esc(L.createdAt):""}, with its description written from this ticket, and linked here.</p>`
+    : L.state==="requested" ? `<p class="why">${L.brief?`<b>Brief:</b> ${esc(L.brief)}<br>`:""}It will be written up, created in ${esc(LINK.project)} and linked to ${t.key} on the next <code>/support-desk:apply</code>.</p>
+      <div class="lrow"><button type="button" class="btn link" id="lkCancel" ${canWrite?"":"disabled"}>Cancel request</button></div>`
+    : `<div class="lform">
+        <div class="lrow"><label for="lkType">Issue type</label>
+          <select id="lkType" ${canWrite?"":"disabled"}>${types.map(x=>`<option value="${esc(x)}" ${x===(L.issueType||(t.type==="Bug"&&types.includes("Bug")?"Bug":types[0]))?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
+        <label for="lkBrief">What should it cover? (optional; Claude starts from the findings above)</label>
+        <textarea id="lkBrief" ${canWrite?"":"readonly"}>${esc(L.brief||"")}</textarea>
+        <div class="lrow"><button type="button" class="btn approve" id="lkCreate" ${canWrite?"":"disabled"}>Create linked issue</button></div>
+        ${L.state==="failed"&&L.error?`<p class="why"><b>Last attempt:</b> ${esc(L.error)}</p>`:""}
+      </div>`;
+  return `<section class="card link-card ${created?"is-created":L.state==="requested"?"is-requested":""}">
+    <div class="rhead"><h3>Linked issue in ${esc(LINK.project)}</h3><span class="state">${head}</span></div>
+    ${list}${body}
+  </section>`;
+}
+
+async function saveLink(t, m){
+  const o = LK[t.key];
+  const body = {...m, key:t.key, updatedAt:new Date().toISOString(), ...(ME?{by:ME}:{})};
+  LK[t.key] = body; renderAll();
+  if (!db) return;
+  try { await db.doc("links/"+t.key).set(body); }
+  catch(e){ if (o) LK[t.key]=o; else delete LK[t.key]; renderAll(); }
+}
+
+async function saveMove(t, m){
+  const o = MV[t.key];
+  const body = {...m, key:t.key, from:t.jira, updatedAt:new Date().toISOString(), ...(ME?{by:ME}:{})};
+  MV[t.key] = body; renderAll();
+  if (!db) return;
+  try { await db.doc("moves/"+t.key).set(body); }
+  catch(e){ if (o) MV[t.key]=o; else delete MV[t.key]; renderAll(); }
+}
+
+function go(k){
+  current = k; if (tab!=="all" && !query) tab = T.find(t=>t.key===k).app;
+  try { history.replaceState(null,"","#"+k); } catch(e) { location.hash = k; }
+  renderAll();
+  if (window.matchMedia("(max-width:860px)").matches) $("detail").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function renderAll(){ renderTop(); renderTags(); renderList(); renderDetail(); }
+
+$("list").addEventListener("click", e=>{ const b=e.target.closest(".item"); if(b) go(b.dataset.k); });
+$("tabs").addEventListener("click", e=>{
+  const b=e.target.closest("[data-tab]"); if(!b) return;
+  tab=b.dataset.tab; tagSel.clear(); setPref("tab",tab);
+  if (query) { query=""; $("q").value=""; }
+  const first = T.find(t=>match(t)) || T.find(inTab);
+  if (first) { current=first.key; try{history.replaceState(null,"","#"+current);}catch(_){} }
+  renderAll();
+});
+$("tagbar").addEventListener("click", e=>{
+  const b=e.target.closest("[data-tag]"); if(!b) return;
+  const g=b.dataset.tag; if(!g) tagSel.clear(); else if(tagSel.has(g)) tagSel.delete(g); else tagSel.add(g);
+  renderTags(); renderList();
+});
+document.querySelectorAll(".filters button").forEach(b=>b.addEventListener("click",()=>{
+  filter=b.dataset.f; document.querySelectorAll(".filters button").forEach(x=>x.setAttribute("aria-pressed",x===b)); renderList();
+}));
+$("q").addEventListener("input", e=>{
+  query = e.target.value.trim();
+  renderTop(); renderList();
+  const first = listed()[0];
+  if (query && qNum() && first && listed().length===1) go(first.key);
+});
+$("q").addEventListener("keydown", e=>{ if(e.key==="Enter"){ const f=listed()[0]; if(f) go(f.key); } if(e.key==="Escape"){ e.target.value=""; query=""; renderAll(); } });
+$("sortSel").value = sortBy;
+$("sortSel").addEventListener("change", e=>{ sortBy=e.target.value; setPref("sort",sortBy); renderList(); renderDetail(); });
+$("showClosed").checked = showClosed;
+$("showClosed").addEventListener("change", e=>{ showClosed=e.target.checked; setPref("closed",showClosed); renderAll(); });
+window.addEventListener("hashchange",()=>{ const k=location.hash.slice(1); if(T.some(t=>t.key===k)&&k!==current) go(k); });
+
+renderAll();
+
+(async()=>{
+  const sync = $("sync");
+  let timer = setTimeout(()=>{ sync.textContent = "Can't reach saved data yet; showing Claude's drafts."; }, 10000);
+  try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch(e){ db = null; }
+  if (!db){ clearTimeout(timer); canWrite=false; sync.textContent="Read-only: open this page signed in to save."; renderAll(); return; }
+  try {
+    const u = await window.claude.use("user");
+    if (u && typeof u.can === "function") { const w = await u.can("data.write"); if (w === false) canWrite = false; }
+    if (u && typeof u.id === "function") { try { ME = await u.id(); } catch(e){} }
+  } catch(e){}
+  const onErr = ()=>{ clearTimeout(timer); sync.textContent = "Saved data unavailable; edits won't be kept."; canWrite=false; renderAll(); };
+  const apply = (target)=>snap=>{
+    if (!snap.metadata.fromCache){ clearTimeout(timer); sync.textContent = canWrite ? "Saved automatically to this page" : "Read-only for you"; }
+    snap.docs.forEach(d=>{ const v=d.data(); if(v) target[d.id]=v; });
+    if (dirty) { renderTop(); renderList(); } else renderAll();
+  };
+  db.collection("replies").onSnapshot(apply(S), onErr);
+  db.collection("moves").onSnapshot(apply(MV), onErr);
+  if (LINK) db.collection("links").onSnapshot(apply(LK), onErr);
+})();
+</script>

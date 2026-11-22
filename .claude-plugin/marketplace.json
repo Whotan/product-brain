@@ -40,6 +40,11 @@
       "description": "Month-end billing for a Jira Server/Data Center + Tempo project: compares Tempo worklogs with the project's tab in a shared finance workbook, writes only new data after one review the PM approves (missing month rows and people's columns included, totals fixed on the written row, earlier months audited, not changed), and plans next month as Tempo allocations. Optional epic split, client worklog CSV, invoice tab and SLA invoiceable hours. Config per hub in brain.config.json > finance."
     },
     {
+      "name": "support-desk",
+      "source": "./plugins/support-desk",
+      "description": "A shared review page for a Jira Service Desk project: /support-desk:update pulls new tickets and customer replies from Jira, fact-checks and drafts a reply and a suggested move for each, and republishes the page; teammates approve on the page; /support-desk:apply posts the approved replies and moves to Jira under the runner's own token. Config per hub in brain.config.json > support_desk."
+    },
+    {
       "name": "guardrails",
       "source": "./plugins/guardrails",
       "description": "Blocks Claude writes that violate shared engineering standards (secrets, debug output, unsafe PHP/TS/React patterns and more), for whichever stacks each repo actually contains. Runs as a hook \u2014 nothing is written to your repos."
