@@ -39,3 +39,8 @@
   say so — skipped is not clean.
 - The `sonar-preflight` agent can triage likely static-analysis findings locally, before the
   push that would otherwise cost a pipeline round trip.
+
+## Reviewing a teammate's MR
+
+- Use the `peer-review-mr` skill. Review in its own worktree, never commit to the author's branch,
+  and post comments or approve only when the user says so.
