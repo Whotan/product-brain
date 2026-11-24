@@ -129,6 +129,7 @@ never ask the user to paste one into the chat.
 - "Rebuild the graph from scratch" → `pb sync --rebuild`.
 - "Update Product Brain" / "upgrade the tooling" → run `pb version --check`, tell the user to run `/plugin marketplace update product-brain` then `/reload-plugins`, then `pb sync` and the `brainify` audit to turn on anything new. If `pb version` names a personal skill or an old `pb` path, point that out as the likely shadowing copy and suggest removing it.
 - "Set up my connections" → the `connect-tools` skill.
+- "Review MR !<n>" / an MR or PR link to review → the `peer-review-mr` skill (git-workflow plugin). It never posts or approves without your word.
 - "Check SonarQube on MR !<n>" → follow `docs/runbooks/check-sonarqube-on-mr.md` if the hub has it, otherwise the `review-mr` skill (git-workflow plugin).
 - "What domains do we have?" → read `domains.md` / query graph communities.
 - "Tidy the hub" / "check the layout" → run `pb check`, then propose where each listed file should go (move nothing until the user agrees).

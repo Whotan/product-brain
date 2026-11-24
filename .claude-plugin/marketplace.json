@@ -17,7 +17,7 @@
     {
       "name": "git-workflow",
       "source": "./plugins/git-workflow",
-      "description": "Commit-message and merge-request rules in every session, a commit-message hook, a ticket-scope gate before MR/PR creation, and verify-ticket-scope / review-mr skills."
+      "description": "Commit-message and merge-request rules in every session, a commit-message hook, a ticket-scope gate before MR/PR creation, and verify-ticket-scope / review-mr / peer-review-mr skills."
     },
     {
       "name": "epic-approval",

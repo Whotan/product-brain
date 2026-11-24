@@ -44,7 +44,7 @@ changes** — pushing to `main` alone ships nothing to existing users (a fresh i
 2. **Bump in lockstep:** `VERSION`, `.claude-plugin/plugin.json` `version`, every
    `plugins/*/.claude-plugin/plugin.json` `version`, and the `version:` in
    `skills/brainify/SKILL.md` frontmatter. Use semver (feature → minor, fix → patch). Also update
-   the `currently \`x.y.z\`` mention in `README.md`. `python3 tests/test_git_gate.py` fails if any
+   the `currently \`x.y.z\`` mention in `README.md`. Add the release's entry at the top of `CHANGELOG.md`. `python3 tests/test_git_gate.py` fails if any
    plugin manifest is off `VERSION` or a `plugins/` folder is missing from `marketplace.json`.
 3. Commit the bump, push, and tell users to run `/plugin marketplace update product-brain` then
    `/reload-plugins` (auto-update users get it in the background after a session starts).
