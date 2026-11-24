@@ -1,0 +1,8 @@
+{
+  "name": "support-desk",
+  "version": "1.8.0",
+  "description": "A shared review page for a Jira Service Desk project: /support-desk:update pulls new tickets and customer replies from Jira, fact-checks each one with the hub's triage rules, drafts the reply and suggests a Jira move, and republishes the page; teammates edit, approve or hold each reply and move on the page; /support-desk:apply posts the approved replies and makes the approved moves in Jira under the runner's own token. Per-hub config in brain.config.json > support_desk.",
+  "author": {
+    "name": "Product Brain maintainers"
+  }
+}
